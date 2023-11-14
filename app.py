@@ -31,7 +31,7 @@ with app.app_context():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.get("/")
 def index():
-    return render_template("index.html")
+    return redirect(url_for("get_home"))
 
 @app.get("/create/")
 def get_home():
