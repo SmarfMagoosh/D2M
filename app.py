@@ -10,7 +10,7 @@ sys.path.append(scriptdir)
 dbfile = os.path.join(scriptdir, "database.sqlite3")
 
 # initializing the app
-app = Flask(__file__)
+app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['SECRET_KEY'] = 'privatizestamppulverizeunwell' # made using dice ware
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{dbfile}"
@@ -34,7 +34,7 @@ def index():
     return redirect(url_for("get_home"))
 
 @app.get("/create/")
-def get_home():
+def get_create():
     return render_template("create.html")
 
 @app.get("/home/")
@@ -42,19 +42,19 @@ def get_home():
     return render_template("home.html")
 
 @app.get("/login/")
-def get_home():
+def get_login():
     return render_template("login.html")
 
 @app.get("/post/")
-def get_home():
+def get_post():
     return render_template("post.html")
 
 @app.get("/profile/")
-def get_home():
+def get_profile():
     return render_template("profile.html")
 
 @app.get("/settings/")
-def get_home():
+def get_settings():
     return render_template("settings.html")
 
 
@@ -65,3 +65,9 @@ def get_home():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# MAIN
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if __name__ == "__main__":
+    app.run(debug = True)

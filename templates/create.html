@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %} 
+    Create 
+{% endblock %}
+
+{% block head %}
+    <script src = "../static/js/create.js"></script>
+    <link rel = "stylesheet" href = "../static/css/create.css">
+{% endblock %}
+
+{% block content %}
+<div id = "left-content">
+    <div id = "tool-bar">
+        <span>
+            <label>Spacing: </label> <p id = "spacing-perc" style = "display: inline;">0%</p>
+            <br>
+            <input type = "range" min = "0" max = "100" oninput="document.getElementById('spacing-perc').innerHTML = `${this.value}%`">
+        </span>
+        <span>
+            <button onclick="//TODO">Add Image</button>
+        </span>
+        <span>
+            <button onclick="//TODO">Draw</button>
+        </span>
+        <span>
+            <button onclick="//TODO">Filters</button>
+        </span>
+    </div>
+    <div id = "meme">
+        <label for = "fileInput" id = "fileInputLabel">
+            <input id = "fileInput" type = "file" accept = "image/*" oninput = "baseMemeUploaded(this)">
+            <p>Upload a File</p>
+        </label>
+        <img src = "" alt = "" id = "meme-base" hidden>
+    </div>
+</div>
+<div id = "right-content">
+
+</div>
+{% endblock %}
