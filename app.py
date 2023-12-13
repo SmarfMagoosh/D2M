@@ -2,7 +2,7 @@ import os, sys, hashlib, json
 from flask import Flask, session, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
-from sqlalchemy import Integer, String, JSON, Boolean
+from sqlalchemy import Integer, String, JSON, Boolean, SQLAlchemy
 
 # add the script directory to the python path
 scriptdir = os.path.abspath(os.path.dirname(__file__))
@@ -20,6 +20,39 @@ db = SQLAlchemy(app)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+with app.app_context():
+    db.drop_all()
+    db.create_all()
+
+    #  backImage TEXT, username TEXT, FOREIGN KEY (username) REFERENCES users (username) ON DELETE CASCADE ON UPDATE CASCADE)')
+    class Post(db.Model):
+        __tablename__ = 'Posts'
+        postID = db.Column(db.Integer, primary_key=True)
+        spacing = db.Column(db.Integer, nullable=False)
+        title = db.Column(db.Unicode, nullable=False)
+        backImage = db.Column(db.Unicode, nullable=False)
+        username = db.Column(db.Unicode, nullable=False)
+        username = db.relationship('Users', backref='username')
+        def __str__(self):
+            return f"Post(title ={self.title}, code={self.postID})"
+        def __repr__(self):
+            return f"Post({self.postID})"
+
+
+    # Create posts  to be inserted
+    post1 = Post(postID= 1, spacing = 0 , title="excel is not a valid database!!!",
+                 backImage = "4 rules.png", username = "Sean Queary Lanard")
+    post2 = Post(postID= 2, spacing = 0 , title="get gimbal locked idiot",
+                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi")
+    post3 = Post(postID= 3, spacing = 0 , title="why must I do this?",
+                 backImage = "Stop doing databases.png", username = "The Zhangster")
+
+
+    # Add all of these records to the session and commit changes
+    db.session.add_all((post1, post2, post3))
+    db.session.commit()
+
 
 #define db classes and tables here
 
