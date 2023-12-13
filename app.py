@@ -30,6 +30,11 @@ class User(db.Model) :
     passwordHash = db.Column(db.String, nullable = False)
     reputationID = db.Column(db.Integer, db.ForeignKey('UserReputations.reputationID'))
     userSettingsID = db.Column(db.Integer, db.ForeignKey('UserSettings.userSettingsID'))
+    
+    # classes that use this class for a foreign key, allows access to list
+    # also allows the classes that use the foreign key to use <class>.owner
+    postList = db.relationship('Post', backref='owner')
+    postList = db.relationship('Comment', backref='owner')
 
 class UserReputation(db.Model) :
     __tablename__ = 'UserReputations'
@@ -47,9 +52,27 @@ class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True)
     spacing = db.Column(db.Integer, nullable = False)
-    title = db.Column(db.String, nullable = False)
+    title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
+    
+    # objects that use this class for a foreign key, allows access to list
+    # also allows the classes that use the foreign key to use <class>.parentPost
+    extraImages = db.relationship('ExtraPostImage', backref='parentPost')
+    comments = db.relationship('Comment', backref='parentPost')
+    textBoxes = db.relationship('TextBox', backref='parentPost')
+    
+    def to_json(self):
+	    return {
+			"id": self.postID,
+			"spacing": self.spacing,
+			"title": self.title,
+			"backImage": self.backImage,
+			"username": self.username,
+            "extraImages": [i.to_json() for i in self.extraImages],
+            "comments": [c.to_json() for c in self.comments],
+            "textBoxes": [t.to_json() for t in self.textBoxes],
+		}
 
 class ExtraPostImage(db.Model) :
     __tablename__ = 'ExtraPostImages'
@@ -59,6 +82,16 @@ class ExtraPostImage(db.Model) :
     postition = db.Column(db.String, nullable = False)
     orientation = db.Column(db.String, nullable = False)
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    
+    def to_json(self):
+	    return {
+			"imageID": self.imageID,
+			"url": self.url,
+			"size": self.size,
+			"position": self.postition,
+			"orientation": self.orientation,
+            "parentPost": self.postID,
+		}
 
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
@@ -71,14 +104,37 @@ class TextBox(db.Model) :
     fontSize = db.Column(db.Float, nullable = False)
     content = db.Column(db.String, nullable = False)
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    
+    def to_json(self):
+	    return {
+			"id": self.textBoxID,
+			"orientation": self.orientation,
+			"shadowColor": self.shadowColor,
+			"color": self.color,
+			"position": self.position,
+            "font": self.font,
+            "fontSize": self.fontSize,
+            "content": self.content,
+            "parentPost": self.postID,
+		}
 
 class Comment(db.Model) :
     __tablename__ = 'Comments'
     commentID = db.Column(db.Integer, primary_key = True)
     content = db.Column(db.String, nullable = False)
+    # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    
+    def to_json(self):
+	    return {
+			"id": self.commentID,
+			"content": self.content,
+			"timePosted": self.timePosted,
+			"owner": self.username,
+			"parentPost": self.postID,
+		}
 
 
 with app.app_context():
@@ -89,6 +145,7 @@ with app.app_context():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # TODO: most of these routes need a way of knowing who the current logged in user is, though that will probably be handled on that end
+# actually seems like the session variable will be necessary
 @app.get("/")
 def index():
     return redirect(url_for("get_home"))
@@ -97,18 +154,30 @@ def index():
 def get_create():
     return render_template("create.html")
 
+@app.post("/create/")
+def post_meme():
+    return
+
 @app.get("/home/")
 def get_home():
-    return render_template("home.html")
+    # gets the most recent 30 posts hopefully and sends them to the frontend
+    recent = Post.query.order_by(Post.postID).limit(30).all()
+    return render_template("home.html", postList=[p.to_json() for p in recent])
 
 @app.get("/login/")
 def get_login():
     return render_template("login.html")
 
+@app.post("/login/")
+def post_login():
+    return
+
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
-    return render_template("post.html")
+    # just plain get might work better, not sure, but it would return None with a failure rather than aborting
+    post = Post.query.get_or_404(post_id)
+    return render_template("post.html", data=post.to_json())
 
 @app.get("/profile/")
 @app.get("/profile/<int:user_id>/")
