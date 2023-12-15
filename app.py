@@ -187,10 +187,6 @@ def index():
 def get_create():
     return render_template("create.html")
 
-@app.post("/create/")
-def post_meme():
-    return
-
 @app.get("/home/")
 def get_home():
     # gets the most recent 30 posts hopefully and sends them to the frontend
@@ -200,10 +196,6 @@ def get_home():
 @app.get("/login/")
 def get_login():
     return render_template("login.html")
-
-@app.post("/login/")
-def post_login():
-    return
 
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
@@ -232,6 +224,10 @@ def post_create():
     data = request.json
     print(data)
     return []
+
+@app.post("/login/")
+def post_login():
+    return ""
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

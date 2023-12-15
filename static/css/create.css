@@ -10,6 +10,7 @@
 #left-content, #left-content {
     border: black solid 2px;
     margin: 0.5rem;
+    height: fit-content
 }
 
 /* MEME DISPLAY */
