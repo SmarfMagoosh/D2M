@@ -178,7 +178,7 @@ def get_create():
 def get_home():
     # gets the most recent 30 posts hopefully and sends them to the frontend
     recent = Post.query.order_by(Post.postID).limit(30).all()
-    return render_template("home.html", postList=[p.to_json() for p in recent])
+    return render_template("home.html", posts=[p.to_json() for p in recent])
 
 @app.get("/login/")
 def get_login():
@@ -189,7 +189,7 @@ def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
     # just plain get might work better, not sure, but it would return None with a failure rather than aborting
     post = Post.query.get_or_404(post_id)
-    return render_template("post.html", data=post.to_json())
+    return render_template("post.html", post=post.to_json())
 
 @app.get("/profile/")
 @app.get("/profile/<int:user_id>/")
