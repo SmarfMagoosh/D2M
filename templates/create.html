@@ -11,31 +11,48 @@
 
 {% block content %}
 <div id = "left-content">
-    <div id = "tool-bar">
-        <span>
-            <label>Spacing: </label> <p id = "spacing-perc" style = "display: inline;">0%</p>
-            <br>
-            <input type = "range" min = "0" max = "100" oninput="document.getElementById('spacing-perc').innerHTML = `${this.value}%`">
-        </span>
-        <span>
+    <div id = "image-tool-bar" hidden = "true">
+        <div>
+            <p id = "spacing-perc" style = "display: inline;">Spacing:  0%</p>
+            <input type = "range" min = "0" max = "100" 
+                oninput = "document.getElementById('spacing-perc').innerHTML = `Spacing: ${this.value}%`">
+        </div>
+        <div>
             <button onclick="//TODO">Add Image</button>
-        </span>
-        <span>
+        </div>
+        <div>
             <button onclick="//TODO">Draw</button>
-        </span>
-        <span>
+        </div>
+        <div>
             <button onclick="//TODO">Filters</button>
-        </span>
+        </div>
     </div>
     <div id = "meme">
         <label for = "fileInput" id = "fileInputLabel">
             <input id = "fileInput" type = "file" accept = "image/*" oninput = "baseMemeUploaded(this)">
-            <p>Upload a File</p>
+            <p>Begin by Uploading an Image</p>
         </label>
-        <img src = "" alt = "" id = "meme-base" hidden>
+        <img id = "meme-img" alt = ""></canvas>
     </div>
 </div>
 <div id = "right-content">
-
+    <div id = "text-tool-bar">
+        <div>
+            <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
+        </div>
+        <div>
+            <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
+        </div>
+        <div>
+            <button>Add Text Area</button>
+        </div>
+        <div>
+            <textarea placeholder = "Give your post a title!" id = "post-title"></textarea>
+        </div>
+        <div>
+            <button onclick = "post()">Post!</button>
+            <button onclick = "cancelPost()">Cancel</button>
+        </div>
+    </div>
 </div>
 {% endblock %}
