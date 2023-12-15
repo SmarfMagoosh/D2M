@@ -177,7 +177,7 @@ def get_create():
 def get_home():
     # gets the most recent 30 posts hopefully and sends them to the frontend
     recent = Post.query.order_by(Post.postID).limit(30).all()
-    return render_template("home.html", postList=[p.to_json() for p in recent])
+    return render_template("home.html", posts=[p.to_json() for p in recent])
 
 @app.get("/login/")
 def get_login():
