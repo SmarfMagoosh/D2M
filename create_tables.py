@@ -11,5 +11,16 @@ conn.execute('CREATE TABLE IF NOT EXISTS extraPostImages (imageID INTEGER PRIMAR
 conn.execute('CREATE TABLE IF NOT EXISTS textBoxes (textBoxID INTEGER, orientation TEXT, shadowColor TEXT, color TEXT, position TEXT, font TEXT, fontSize REAL, content TEXT, postID INTEGER, FOREIGN KEY (postID) REFERENCES posts (postID) ON DELETE CASCADE ON UPDATE CASCADE)')
 conn.execute('CREATE TABLE IF NOT EXISTS comments (commentID INTEGER PRIMARY KEY, username TEXT, postID INTEGER, content TEXT, timePosted TEXT, FOREIGN KEY (username) REFERENCES users (username) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (postID) REFERENCES posts (postID) ON DELETE CASCADE ON UPDATE CASCADE)')
 
+
+conn.execute('DROP TABLE IF EXISTS comments')
+conn.execute('DROP TABLE IF EXISTS textBoxes')
+conn.execute('DROP TABLE IF EXISTS extraPostImages')
+conn.execute('DROP TABLE IF EXISTS posts')
+conn.execute('DROP TABLE IF EXISTS userSettings')
+conn.execute('DROP TABLE IF EXISTS userReputations')
+conn.execute('DROP TABLE IF EXISTS users')
+
+
+
 print("Created table successfully!")
 conn.close

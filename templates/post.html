@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %} 
+    Post 
+{% endblock %}
+
+{% block head %}
+    <script src = "../static/js/post.js"></script>
+    <link rel = "stylesheet" href = "../static/css/post.css">
+{% endblock %}
+
+{% block content %}
+
+{% for post in posts %}
+<div id = "left-content">
+    <div id = "meme">
+        <!-- put the image source here!-->
+        <img src = "{{post.backImage}}" alt = "{{post.title}}" id = "{{post.postID}}" hidden>
+    </div>
+</div>
+<div id = "right-content">
+    <div id = "details">
+        <!-- put the meme details here!-->
+        <h2> {{post.title}} </h2>
+        <h3> {{post.username}} </h3>
+
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
