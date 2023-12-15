@@ -188,7 +188,7 @@ def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
     # just plain get might work better, not sure, but it would return None with a failure rather than aborting
     post = Post.query.get_or_404(post_id)
-    return render_template("post.html", data=post.to_json())
+    return render_template("post.html", post=post.to_json())
 
 @app.get("/profile/")
 @app.get("/profile/<int:user_id>/")
