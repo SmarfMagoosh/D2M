@@ -52,17 +52,20 @@ function baseMemeUploaded(input) {
 
 function post() {
     meme = {
-        textboxes: []
+        textboxes: [],
+        imgData: document.getElementById("meme-img").src,
+        title: document.getElementById("post-title").value
     }
     for (let textarea of document.getElementsByClassName("text-box")) {
         meme.textboxes.push({
             text: "hello world"
         })
     }
-    fetch(`${window.location.href}`, {
+    fetch(window.location.href, {
         method: "POST",
-        body: ["hello world"]
-    })
+        body: JSON.stringify(meme),
+        headers: { "Content-type": "application/json; charset=UTF-8" }
+    });
 }
 
 function cancelPost() {

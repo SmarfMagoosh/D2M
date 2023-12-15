@@ -3,6 +3,7 @@ from flask import Flask, session, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
+import base64
 
 # add the script directory to the python path
 scriptdir = os.path.abspath(os.path.dirname(__file__))
@@ -54,10 +55,10 @@ class UserSetting(db.Model) :
 
 class Post(db.Model) :
     __tablename__ = 'Posts'
-    postID = db.Column(db.Integer, primary_key = True)
+    postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     spacing = db.Column(db.Integer, nullable = False)
     title = db.Column(db.String, nullable = True)
-    backImage = db.Column(db.String, nullable = False)
+    backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     
     # objects that use this class for a foreign key, allows access to list
@@ -208,7 +209,18 @@ def get_settings():
 
 @app.post("/create/")
 def post_meme():
-    print(request.json)
+    body = request.json
+    data = body['imgData'][23:]
+    id = len(Post.query.all()) + 1
+    # TODO save under unique name somehow (based on post ID I would guess)
+    with open(f"./static/images/{id}.jpeg", "wb") as file:
+         file.write(base64.b64decode(data))
+    post_inst = Post(
+        spacing = 0, # TODO on sprint 1
+        title = data['title'],
+        backImage = f"./static/images/{id}.jpeg",
+        username = "Carnge Melon Baller"
+    )
     return "hello world"
 
 @app.post("/login/")
