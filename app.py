@@ -34,7 +34,16 @@ class User(db.Model) :
     email = db.Column(db.String, nullable = False)
     passwordHash = db.Column(db.String, nullable = False)
     reputationID = db.Column(db.Integer, db.ForeignKey('UserReputations.reputationID'))
-    userSettingsID = db.Column(db.Integer, db.ForeignKey('UserSettings.userSettingsID'))
+    #TODO: add these
+    #bio
+    #pfp
+    #banner
+    pfp = db.Column(db.String, nullable = False)
+    banner = db.Column(db.String, nullable = False)
+    #backup email
+    #rename email to gcc email
+    #fold settings class into user
+    #TODO: update to_json, consider making to_json only give things frontend needs to know
     
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
@@ -47,12 +56,6 @@ class UserReputation(db.Model) :
     timesReported = db.Column(db.Integer, nullable = False)
     numReports = db.Column(db.Integer, nullable = False)
 
-class UserSetting(db.Model) :
-    __tablename__ = 'UserSettings'
-    userSettingsID = db.Column(db.Integer, primary_key = True)
-    pfp = db.Column(db.String, nullable = False)
-    banner = db.Column(db.String, nullable = False)
-
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
@@ -60,6 +63,7 @@ class Post(db.Model) :
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
     username = db.Column(db.String, db.ForeignKey('Users.username'))
+    numLikes = db.Column(db.Integer, default=0)
     
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -74,6 +78,7 @@ class Post(db.Model) :
 			"title": self.title,
 			"backImage": self.backImage,
 			"username": self.username,
+            "numLikes": self.numLikes,
             "extraImages": [i.to_json() for i in self.extraImages],
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
