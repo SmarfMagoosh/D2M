@@ -239,16 +239,16 @@ def post_login():
 # count is an optional field (after question mark), specifies how many posts to load, defaults to 30
 @app.get("/API/recent/")
 def get_recent():
-    #TODO: UNTESTED, DO THIS
-    start_id = request.args.get('start_id', -1)
+    start_id = int(request.args.get('start_id', -1))
     count = request.args.get('count', 30)
     recent = ''
+    print(str(start_id) + " " + str(count))
     if start_id == -1:
         recent = Post.query.order_by(Post.postID.desc()) \
                         .limit(count) \
                         .all()
     else:
-        recent = Post.query.filter_by(Post.postID<start_id) \
+        recent = Post.query.filter(Post.postID<start_id) \
                         .order_by(Post.postID.desc()) \
                         .limit(count) \
                         .all()
