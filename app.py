@@ -60,7 +60,6 @@ class Post(db.Model) :
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
     username = db.Column(db.String, db.ForeignKey('Users.username'))
-    deleted = db.Column(db.Bool, nullable = False)
     
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -178,8 +177,7 @@ def get_create():
 @app.get("/home/")
 def get_home():
     # gets the most recent 30 posts hopefully and sends them to the frontend
-    recent = Post.query.filter_by(deleted=False) \
-                        .order_by(Post.postID.desc()) \
+    recent = Post.query.order_by(Post.postID.desc()) \
                         .limit(30) \
                         .all()
     return render_template("home.html", posts=[p.to_json() for p in recent])
@@ -238,26 +236,23 @@ def post_login():
 # returns a JSON object containing the post ids of the most recent (TODO:number) posts
 # start_id is an optional field (after question mark), specifies the post id to start from
 #       this is used if the user approaches the end of the pre-loaded content on the page to get posts below the final one
-# count is an optional field (after question mark), specifies how many posts to load
+# count is an optional field (after question mark), specifies how many posts to load, defaults to 30
 @app.get("/API/recent/")
 def get_recent():
+    #TODO: UNTESTED, DO THIS
     start_id = request.args.get('start_id', -1)
     count = request.args.get('count', 30)
-    # return json with most recent non-deleted post ids
     recent = ''
     if start_id == -1:
-        recent = Post.query.filter_by(deleted=False) \
-                        .order_by(Post.postID.desc()) \
+        recent = Post.query.order_by(Post.postID.desc()) \
                         .limit(count) \
                         .all()
     else:
-        recent = Post.query.filter_by(deleted=False) \
-                        .filter_by(Post.postID<start_id) \
+        recent = Post.query.filter_by(Post.postID<start_id) \
                         .order_by(Post.postID.desc()) \
                         .limit(count) \
                         .all()
-    #TODO: return json
-    return 
+    return [p.to_json() for p in recent]
 
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
