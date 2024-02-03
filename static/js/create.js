@@ -7,15 +7,19 @@ window.addEventListener("DOMContentLoaded", () => {
         document.getElementById("text-1"),
         document.getElementById("text-2")
     ]
-    window.create.img = document.getElementById("meme-img")
     window.create.meme = document.getElementById("meme")
+
+    // get canvas and context for it
+    window.create.canvas = document.getElementById("meme-img")
+    window.create.canvas.width = window.create.canvas.parentNode.clientWidth - 20
+    window.create.ctx = window.create.canvas.getContext("2d")
+
+    // add event listeners to textboxes
     for (let tb of window.create.textBoxes) {
         tb.oninput = function() {
-            console.log(document.getElementById("meme-" + tb.id))
             document.getElementById("meme-" + tb.id).innerHTML = tb.value
         }
     }
-
 })
 
 function baseMemeUploaded(input) {
@@ -25,13 +29,31 @@ function baseMemeUploaded(input) {
         if (base.size < MAX_FILE_SIZE) {
             let reader = new FileReader();
             reader.onload = function() {
-                window.create.img.src = reader.result
+                // get input image as <img>
+                window.create.baseImg = new Image()
+                window.create.baseImg.src = reader.result
+                let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
+                window.create.dimensions = {
+                    width: window.create.canvas.width, 
+                    height: aspectRatio * window.create.canvas.width
+                }
+
+                // adjust width and height of img to fit meme and draw it
+                window.create.canvas.height = window.create.dimensions.height
+                window.create.ctx.drawImage(
+                    window.create.baseImg, 
+                    0, 
+                    0, 
+                    window.create.canvas.width, 
+                    window.create.canvas.height
+                )
             }
             reader.readAsDataURL(base);
-            input.hidden = true;
-            window.create.img.hidden = false;
+            input.remove()
+
             document.getElementById("fileInputLabel").remove()
 
+            // Add text boxes
             let d1 = document.createElement("div");
             d1.classList = ["meme-text"]
             d1.style.top = "2rem"
@@ -70,4 +92,16 @@ function post() {
 
 function cancelPost() {
     window.location.replace(`${window.location.origin}/home`)
+}
+
+function adjustSpacing(elem) {
+    console.log(window.create.baseImg)
+    window.create.canvas.height = window.create.dimensions.height * (1 + elem.value)
+    window.create.ctx.drawImage(
+        window.create.baseImg,
+        0,
+        window.create.dimensions.height * elem.value,
+        window.create.dimensions.width,
+        window.create.dimensions.height
+    )
 }
