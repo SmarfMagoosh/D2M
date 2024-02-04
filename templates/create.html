@@ -13,9 +13,15 @@
 <div id = "left-content">
     <div id = "image-tool-bar" hidden = "true">
         <div>
-            <p id = "spacing-perc" style = "display: inline;">Spacing:  0%</p>
-            <input type = "range" min = "0" max = "100" 
-                oninput = "document.getElementById('spacing-perc').innerHTML = `Spacing: ${this.value}%`">
+            <p style = "display: inline;">Spacing</p>
+            <select onchange = "adjustSpacing(this)">
+                <option value = ".0" >0% </option>
+                <option value = ".1">10%</option>
+                <option value = ".2">20%</option>
+                <option value = ".3">30%</option>
+                <option value = ".4">40%</option>
+                <option value = ".5">50%</option>
+            </select>
         </div>
         <div>
             <button onclick="//TODO">Add Image</button>
@@ -32,7 +38,7 @@
             <input id = "fileInput" type = "file" accept = "image/*" oninput = "baseMemeUploaded(this)">
             <p>Begin by Uploading an Image</p>
         </label>
-        <img id = "meme-img" alt = ""></canvas>
+        <canvas id = "meme-img" height = "100" width = "100"></canvas>
     </div>
 </div>
 <div id = "right-content">
