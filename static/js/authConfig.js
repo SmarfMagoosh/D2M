@@ -8,7 +8,7 @@ const msalConfig = {
     auth: {
         clientId: '1a216859-dca0-4c6a-9d27-4eb96dd00ab3', // This is the ONLY mandatory field that you need to supply.
         authority: 'https://login.microsoftonline.com/83918960-2218-4cd3-81fe-302a8e771da9', // Defaults to "https://login.microsoftonline.com/common"
-        redirectUri: 'http://127.0.0.1:5000/home/',//'http://localhost:3000/', // You must register this URI on Azure Portal/App Registration. Defaults to window.location.href e.g. http://localhost:3000/
+        redirectUri: 'http://localhost/', // You must register this URI on Azure Portal/App Registration. Defaults to window.location.href e.g. http://localhost:3000/
         navigateToLoginRequestUrl: true, // If "true", will navigate back to the original request location before processing the auth code response.
     },
     cache: {

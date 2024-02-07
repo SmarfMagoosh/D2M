@@ -5,6 +5,12 @@ from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
 import base64
 
+"""
+set FLASK_APP=app.py
+python -m flask run --host=0.0.0.0 --port=80
+"""
+
+
 # add the script directory to the python path
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(scriptdir)
