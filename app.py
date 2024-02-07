@@ -177,7 +177,9 @@ def get_create():
 @app.get("/home/")
 def get_home():
     # gets the most recent 30 posts hopefully and sends them to the frontend
-    recent = Post.query.order_by(Post.postID).limit(30).all()
+    recent = Post.query.order_by(Post.postID.desc()) \
+                        .limit(30) \
+                        .all()
     return render_template("home.html", posts=[p.to_json() for p in recent])
 
 @app.get("/login/")
@@ -232,13 +234,25 @@ def post_login():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # returns a JSON object containing the post ids of the most recent (TODO:number) posts
-# start_id is an optional field, specifies the post id to start from
+# start_id is an optional field (after question mark), specifies the post id to start from
 #       this is used if the user approaches the end of the pre-loaded content on the page to get posts below the final one
+# count is an optional field (after question mark), specifies how many posts to load, defaults to 30
 @app.get("/API/recent/")
-@app.get("/API/recent/<int:start_id>/")
-def get_recent(start_id=-1):
-    # return json with most recent non-deleted post ids
-    return
+def get_recent():
+    start_id = int(request.args.get('start_id', -1))
+    count = request.args.get('count', 30)
+    recent = ''
+    print(str(start_id) + " " + str(count))
+    if start_id == -1:
+        recent = Post.query.order_by(Post.postID.desc()) \
+                        .limit(count) \
+                        .all()
+    else:
+        recent = Post.query.filter(Post.postID<start_id) \
+                        .order_by(Post.postID.desc()) \
+                        .limit(count) \
+                        .all()
+    return [p.to_json() for p in recent]
 
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
