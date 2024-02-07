@@ -1,0 +1,28 @@
+/* This is a comment in CSS */
+
+/* Style for the body element - sets the background color and font */
+body {
+    background-color: #f0f0f0; /* Light gray background */
+    font-family: Arial, sans-serif; /* Arial font, with sans-serif as the fallback */
+  }
+  
+  /* Style for paragraphs within a class named 'content' */
+  .content p {
+    color: #666666; /* Medium gray text */
+    line-height: 1.5; /* 1.5 times the normal line height */
+    margin-bottom: 20px; /* 20 pixels of space below paragraphs */
+  }
+  
+  /* Style for links (a elements) - sets color and removes text decoration */
+  a {
+    color: #007BFF; /* Blue color for links */
+    text-decoration: none; /* No underline on links */
+  }
+  
+  .row {
+
+    /* data-masonry: '{"percentPosition": true }'; */
+    text-decoration: none;
+  }
+  
+  
