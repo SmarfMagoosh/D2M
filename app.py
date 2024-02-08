@@ -34,11 +34,13 @@ with app.app_context():
 class User(db.Model) :
     __tablename__ = 'Users'
     username = db.Column(db.String, primary_key = True)
-    email = db.Column(db.String, nullable = False)
-    reputationID = db.Column(db.Integer, db.ForeignKey('UserReputations.reputationID'))
+    gccEmail = db.Column(db.String, nullable = False)
+    
     bio = db.Column(db.String, nullable = True)
+    
     backupEmail = db.Column(db.String, nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
+    
     timesReported = db.Column(db.Integer, nullable = False)
     numReports = db.Column(db.Integer, nullable = False)
     
