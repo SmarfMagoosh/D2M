@@ -52,7 +52,7 @@ class User(db.Model) :
     
     def postlist_to_json(self):
         return {
-            "posts": [p.postID for p in self.postList]
+            "posts": [p.render_json() for p in self.postList]
 		}
 
 class Report(db.Model) :
@@ -85,14 +85,23 @@ class Post(db.Model) :
             "backImage": self.backImage,
             "textBoxes": [t.to_json() for t in self.textBoxes],
         }
-    #TODO: make sure this is all I need for 
-    def main_page_json(self):
+    def render_json(self):
         return {
             "id": self.postID,
             "title": self.title,
             "thumbnail": self.backImage, #TODO: reference to the thumbnail
             "username": self.username,
             "numLikes": self.numLikes,
+        }
+    def page_json(self):
+        return {
+            "id": self.postID,
+            "title": self.title,
+            "username": self.username,
+            "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
+            "numLikes": self.numLikes,
+            "comments": [c.to_json() for c in self.comments],
+            "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO
         }
     def to_json(self):
         return {
@@ -188,7 +197,7 @@ def get_home():
     recent = Post.query.order_by(Post.postID.desc()) \
                         .limit(DEFAULT_POSTS_LOADED) \
                         .all()
-    return render_template("home.html", posts=[p.main_page_json() for p in recent])
+    return render_template("home.html", posts=[p.render_json() for p in recent])
 
 @app.get("/login/")
 def get_login():
@@ -263,7 +272,7 @@ def get_recent():
                         .limit(count) \
                         .all()
     
-    return [p.main_page_json() for p in recent]
+    return [p.render_json() for p in recent]
 
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
