@@ -11,7 +11,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // get canvas and context for it
     window.create.canvas = document.getElementById("meme-img")
-    window.create.canvas.width = window.create.canvas.parentNode.clientWidth - 20
+    setTimeout(() => {
+        window.create.canvas.width = window.create.canvas.parentNode.clientWidth - 20
+    }, 50)
     window.create.ctx = window.create.canvas.getContext("2d")
 
     // add event listeners to textboxes
@@ -22,7 +24,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 })
 
-function baseMemeUploaded(input) {
+function upload_base_image(input) {
     const MAX_FILE_SIZE = 1_000_000
     if (FileReader && input.files && input.files.length) {
         let base = input.files[0]
@@ -39,14 +41,14 @@ function baseMemeUploaded(input) {
                 }
 
                 // adjust width and height of img to fit meme and draw it
-                window.create.canvas.height = window.create.dimensions.height
-                window.create.ctx.drawImage(
-                    window.create.baseImg, 
-                    0, 
-                    0, 
-                    window.create.canvas.width, 
-                    window.create.canvas.height
-                )
+                setTimeout(() => {
+                    window.create.canvas.height = window.create.dimensions.height
+                    window.create.ctx.drawImage(
+                        window.create.baseImg, 0, 0, 
+                        window.create.canvas.width, 
+                        window.create.canvas.height
+                    )
+                }, 50)
             }
             reader.readAsDataURL(base);
             input.remove()
@@ -73,15 +75,15 @@ function baseMemeUploaded(input) {
 }
 
 function post() {
+    // post body
     meme = {
+        // textboxes for the meme
         textboxes: [],
         imgData: document.getElementById("meme-img").src,
         title: document.getElementById("post-title").value
     }
     for (let textarea of document.getElementsByClassName("text-box")) {
-        meme.textboxes.push({
-            text: "hello world"
-        })
+        meme.textboxes.push(textarea.value)
     }
     fetch(window.location.href, {
         method: "POST",
@@ -90,13 +92,12 @@ function post() {
     });
 }
 
-function cancelPost() {
+function cancel_post() {
     window.location.replace(`${window.location.origin}/home`)
 }
 
-function adjustSpacing(elem) {
-    console.log(window.create.baseImg)
-    window.create.canvas.height = window.create.dimensions.height * (1 + elem.value)
+function adjust_spacing(elem) {
+    window.create.canvas.height = window.create.dimensions.height * (1 + Number(elem.value))
     window.create.ctx.drawImage(
         window.create.baseImg,
         0,
@@ -104,4 +105,24 @@ function adjustSpacing(elem) {
         window.create.dimensions.width,
         window.create.dimensions.height
     )
+}
+
+function add_text_box(elem) {
+    let cont = document.createElement("div")
+    
+    let box = document.createElement("textarea")
+    box.placeholder = `Text #${elem.children.length + 1}`
+    box.id = `text-${elem.children.length + 1}`
+    box.classList = ['text-box']
+    
+    let btn = document.createElement("button")
+    btn.classList = ['btn']
+    btn.innerHTML = "<i class = 'fa fa-trash'></i>"
+    btn.onclick = function(ev) {
+        ev.target.parentNode.remove()
+    }
+
+    cont.appendChild(box)
+    cont.appendChild(btn)
+    elem.append(cont)
 }

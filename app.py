@@ -212,17 +212,18 @@ def get_settings():
 @app.post("/create/")
 def post_meme():
     body = request.json
-    data = body['imgData'][23:]
-    id = len(Post.query.all()) + 1
-    # TODO save under unique name somehow (based on post ID I would guess)
-    with open(f"./static/images/{id}.jpeg", "wb") as file:
-         file.write(base64.b64decode(data))
-    post_inst = Post(
-        spacing = 0, # TODO on sprint 1
-        title = data['title'],
-        backImage = f"./static/images/{id}.jpeg",
-        username = "Carnge Melon Baller"
-    )
+    print(body)
+    # data = body['imgData'][23:]
+    # id = len(Post.query.all()) + 1
+    # # TODO save under unique name somehow (based on post ID I would guess)
+    # with open(f"./static/images/{id}.jpeg", "wb") as file:
+    #      file.write(base64.b64decode(data))
+    # post_inst = Post(
+    #     spacing = 0, # TODO on sprint 1
+    #     title = data['title'],
+    #     backImage = f"./static/images/{id}.jpeg",
+    #     username = "Carnge Melon Baller"
+    # )
     return "hello world"
 
 @app.post("/login/")
