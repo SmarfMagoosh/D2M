@@ -39,29 +39,24 @@ class User(db.Model) :
     bio = db.Column(db.String, nullable = True)
     backupEmail = db.Column(db.String, nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
+    timesReported = db.Column(db.Integer, nullable = False)
+    numReports = db.Column(db.Integer, nullable = False)
     
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
     postList = db.relationship('Post', backref='owner')
     commentList = db.relationship('Comment', backref='owner')
+    reportList = db.relationship('Report', backref='reporter')
     
     def postlist_to_json(self):
         return {
             "posts": [p.postID for p in self.postList]
 		}
 
-class UserReputation(db.Model) :
-    __tablename__ = 'UserReputations'
-    reputationID = db.Column(db.Integer, primary_key = True)
-    timesReported = db.Column(db.Integer, nullable = False)
-    numReports = db.Column(db.Integer, nullable = False)
-    user = db.relationship('User', backref='reputation')
-    reportList = db.relationship('Report', backref='reporter')
-
 class Report(db.Model) :
     __tablename__ = 'Reports'
     reportID = db.Column(db.Integer, primary_key = True)
-    reporter = db.Column(db.Integer, db.ForeignKey('UserReputation.reputationID'))
+    username = db.Column(db.Integer, db.ForeignKey('User.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
     
