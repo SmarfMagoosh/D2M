@@ -174,7 +174,7 @@ with app.app_context():
 # actually seems like the session variable will be necessary
 @app.get("/")
 def index():
-    return redirect(url_for("get_login"))
+    return redirect(url_for("get_home"))
 
 @app.get("/create/")
 def get_create():
