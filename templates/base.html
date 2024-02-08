@@ -13,6 +13,11 @@
     <title>{% block title %}{% endblock %} - D2M</title>
     <link rel="stylesheet" href="../static/css/styling.css">
     <script src = "../static/js/scripting.js"></script>
+
+    <!-- msal.min.js can be used in the place of msal.js; included msal.js to make debug easy -->
+    <script id="load-msal" src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.js"
+    integrity="sha384-BO4qQ2RTxj2akCJc7t6IdU9aRg6do4LGIkVVa01Hm33jxM+v2G+4q+vZjmOCywYq"
+    crossorigin="anonymous"></script>
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -26,12 +31,23 @@
               <a href="profile.html">Profile</a>
               [bookmarks]
               <a href="settings.html">Settings</a>
-              <a href="..\login">Login</a>
+              <!-- <a href="..\login">Login</a> -->
             </div>
+          </div>
+          <div class="collapse navbar-collapse justify-content-end">
+            <button type="button" id="signIn" class="btn btn-secondary" onclick="signIn()">Sign-in</button>
+            <button type="button" id="signOut" class="btn btn-success d-none" onclick="signOut()">Sign-out</button>
           </div>
     </nav>
     <div id = "main-content-div">
         {% block content %}{% endblock %}
     </div>
+
+  <!-- importing app scripts (load order is important) -->
+  <script type="text/javascript" src="./../static/js/authConfig.js"></script>
+  <script type="text/javascript" src="./../static/js/login.js"></script>
+
+  <!-- uncomment the above line and comment the line below if you would like to use the redirect flow -->
+  <script type="text/javascript" src="./../static/js/authRedirect.js"></script>
 </body>
 </html>
