@@ -7,6 +7,7 @@
 {% block head %}
     <script src = "../static/js/create.js"></script>
     <link rel = "stylesheet" href = "../static/css/create.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 {% endblock %}
 
 {% block content %}
@@ -14,13 +15,18 @@
     <div id = "image-tool-bar" hidden = "true">
         <div>
             <p style = "display: inline;">Spacing</p>
-            <select onchange = "adjustSpacing(this)">
-                <option value = ".0" >0% </option>
+            <select onchange = "adjust_spacing(this)">
+                <option value = ".0" selected>0% </option>
                 <option value = ".1">10%</option>
                 <option value = ".2">20%</option>
                 <option value = ".3">30%</option>
                 <option value = ".4">40%</option>
                 <option value = ".5">50%</option>
+                <option value = ".6">60%</option>
+                <option value = ".7">70%</option>
+                <option value = ".8">80%</option>
+                <option value = ".9">90%</option>
+                <option value = "1.0">100%</option>
             </select>
         </div>
         <div>
@@ -35,29 +41,37 @@
     </div>
     <div id = "meme">
         <label for = "fileInput" id = "fileInputLabel">
-            <input id = "fileInput" type = "file" accept = "image/*" oninput = "baseMemeUploaded(this)">
+            <input id = "fileInput" type = "file" accept = "image/*" oninput = "upload_base_image(this)">
             <p>Begin by Uploading an Image</p>
         </label>
-        <canvas id = "meme-img" height = "100" width = "100"></canvas>
+        <canvas id = "meme-img" height = "100"></canvas>
     </div>
 </div>
 <div id = "right-content">
     <div id = "text-tool-bar">
         <div>
-            <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
+            <div>
+                <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
+                <button class = 'btn' onclick = 'this.parentNode.remove()'>
+                    <i class = 'fa fa-trash'></i>
+                </button>
+            </div>
+            <div>
+                <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
+                <button class = 'btn' onclick = 'this.parentNode.remove()'>
+                    <i class = 'fa fa-trash'></i>
+                </button>
+            </div>
         </div>
         <div>
-            <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
-        </div>
-        <div>
-            <button>Add Text Area</button>
+            <button onclick = "add_text_box(this.parentNode.previousElementSibling)">Add Text Area</button>
         </div>
         <div>
             <textarea placeholder = "Give your post a title!" id = "post-title"></textarea>
         </div>
         <div>
             <button onclick = "post()">Post!</button>
-            <button onclick = "cancelPost()">Cancel</button>
+            <button onclick = "cancel_post()">Cancel</button>
         </div>
     </div>
 </div>
