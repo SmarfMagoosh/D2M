@@ -31,13 +31,11 @@
               <a href="profile.html">Profile</a>
               [bookmarks]
               <a href="settings.html">Settings</a>
-              <!-- <a href="..\login">Login</a> -->
             </div>
           </div>
-          <div class="collapse navbar-collapse justify-content-end">
-            <button type="button" id="signIn" class="btn btn-secondary" onclick="signIn()">Sign-in</button>
-            <button type="button" id="signOut" class="btn btn-success d-none" onclick="signOut()">Sign-out</button>
-          </div>
+        <div class="collapse navbar-collapse justify-content-end">
+          <button type="button" id="signIn" class="btn btn-secondary" onclick="signIn()">Sign-in</button>
+        </div>
     </nav>
     <div id = "main-content-div">
         {% block content %}{% endblock %}
@@ -46,8 +44,8 @@
   <!-- importing app scripts (load order is important) -->
   <script type="text/javascript" src="./../static/js/authConfig.js"></script>
   <script type="text/javascript" src="./../static/js/login.js"></script>
-
-  <!-- uncomment the above line and comment the line below if you would like to use the redirect flow -->
   <script type="text/javascript" src="./../static/js/authRedirect.js"></script>
+  <script type="text/javascript" src="./../static/js/navBar.js"></script>
+
 </body>
 </html>
