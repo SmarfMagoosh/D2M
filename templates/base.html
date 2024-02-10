@@ -12,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} - D2M</title>
     <link rel="stylesheet" href="../static/css/styling.css">
+    <link rel="stylesheet" href="../static/css/login.css">
     <script src = "../static/js/scripting.js"></script>
 
     <!-- msal.min.js can be used in the place of msal.js; included msal.js to make debug easy -->
@@ -31,11 +32,46 @@
               <a href="profile.html">Profile</a>
               [bookmarks]
               <a href="settings.html">Settings</a>
+
+              
             </div>
           </div>
-        <div class="collapse navbar-collapse justify-content-end">
-          <button type="button" id="signIn" class="btn btn-secondary" onclick="signIn()">Sign-in</button>
+        
+        <button onclick="document.getElementById('id01').style.display='block'" style="width:auto;">Login</button>
+
+        <div id="id01" class="modal">
+          
+          <form class="modal-content animate" action="/action_page.php" method="post">
+            <div class="imgcontainer">
+              <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+              <!-- <img src="img_avatar2.png" alt="Avatar" class="avatar"> -->
+            </div>
+
+            <div class="container">
+              <label for="uname"><b>Username</b></label>
+              <input type="text" placeholder="Enter Username" name="uname" required>
+              <br>
+              <label for="psw"><b>Password</b></label>
+              <input type="password" placeholder="Enter Password" name="psw" required>
+              <br>
+              <button type="button" id="signIn" class="btn btn-secondary" onclick="signIn()">MSAL</button>
+              <!-- <button type="submit">Login</button> -->
+              <!-- <label>
+                <input type="checkbox" checked="checked" name="remember"> Remember me
+              </label> -->
+            </div>
+
+            <div class="container" style="background-color:#f1f1f1">
+              <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button>
+              <br>
+              <span class="psw">Forgot <a href="#">password?</a></span>
+            </div>
+          </form>
         </div>
+
+        <!-- <div class="collapse navbar-collapse justify-content-end">
+          <button type="button" id="signIn" class="btn btn-secondary" onclick="signIn()">Sign-in</button>
+        </div> -->
     </nav>
     <div id = "main-content-div">
         {% block content %}{% endblock %}
@@ -46,6 +82,18 @@
   <script type="text/javascript" src="./../static/js/login.js"></script>
   <script type="text/javascript" src="./../static/js/authRedirect.js"></script>
   <script type="text/javascript" src="./../static/js/navBar.js"></script>
+
+  <script>
+    // Get the modal
+    var modal = document.getElementById('id01');
+    
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+  </script>
 
 </body>
 </html>
