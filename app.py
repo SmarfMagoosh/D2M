@@ -3,7 +3,10 @@ from flask import Flask, session, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
+from apscheduler.schedulers.background import BackgroundScheduler
 import base64
+import atexit
+import time
 
 # for easy changing of defaults
 DEFAULT_POSTS_LOADED = 30
@@ -20,6 +23,9 @@ app.config['SECRET_KEY'] = 'privatizestamppulverizeunwell' # made using dice war
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{dbfile}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# setup for sorting by likes
+last_update = time.time()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -71,9 +77,9 @@ class Post(db.Model) :
     backImage = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
-    numLikesd1 = db.Column(db.Integer) # [0,10) min ago
-    numLikesd2 = db.Column(db.Integer) # [10,20) min ago
-    numLikesd3 = db.Column(db.Integer) # [20,30) min ago
+    numLikesD1 = db.Column(db.Integer) # [0,10) min ago
+    numLikesD2 = db.Column(db.Integer) # [10,20) min ago
+    numLikesD3 = db.Column(db.Integer) # [20,30) min ago
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -161,6 +167,12 @@ class Comment(db.Model) :
 			"parentPost": self.postID,
 		}
 
+def update_like_backend():
+    with app.app_context():
+        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+        db.session.commit()
+    last_update = time.time()
+    print(last_update)
 
 with app.app_context():
     db.drop_all()
@@ -179,6 +191,11 @@ with app.app_context():
     db.session.add_all((post1, post2, post3))
     db.session.commit()
 
+# for the update to like backups every 10 minutes
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=update_like_backend, trigger="interval", minutes=10)
+scheduler.start()
+atexit.register(lambda: scheduler.shutdown())
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GET ROUTES (return an html document)
