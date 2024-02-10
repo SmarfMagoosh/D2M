@@ -58,7 +58,7 @@ class User(db.Model) :
 class Report(db.Model) :
     __tablename__ = 'Reports'
     reportID = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.Integer, db.ForeignKey('User.username'))
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
     
@@ -71,6 +71,9 @@ class Post(db.Model) :
     backImage = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
+    numLikesd1 = db.Column(db.Integer) # [0,10) min ago
+    numLikesd2 = db.Column(db.Integer) # [10,20) min ago
+    numLikesd3 = db.Column(db.Integer) # [20,30) min ago
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
