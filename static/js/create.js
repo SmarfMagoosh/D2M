@@ -1,3 +1,5 @@
+import subjx from "subjx"
+
 window.addEventListener("DOMContentLoaded", () => {
     // create namespace for window
     window.create = {}
@@ -10,10 +12,8 @@ window.addEventListener("DOMContentLoaded", () => {
     window.create.meme = document.getElementById("meme")
 
     // get canvas and context for it
-    window.create.canvas = document.getElementById("meme-img")
-    setTimeout(() => {
-        window.create.canvas.width = window.create.canvas.parentNode.clientWidth - 20
-    }, 50)
+    window.create.canvas = document.getElementById("meme-img") 
+    window.create.canvas.width = window.create.canvas.parentNode.clientWidth - 20 // TODO: async issues
     window.create.ctx = window.create.canvas.getContext("2d")
 
     // add event listeners to textboxes
@@ -30,7 +30,7 @@ function upload_base_image(input) {
         let base = input.files[0]
         if (base.size < MAX_FILE_SIZE) {
             let reader = new FileReader();
-            reader.onload = function() {
+            reader.onload = async function() {
                 // get input image as <img>
                 window.create.baseImg = new Image()
                 window.create.baseImg.src = reader.result
@@ -40,15 +40,13 @@ function upload_base_image(input) {
                     height: aspectRatio * window.create.canvas.width
                 }
 
-                // adjust width and height of img to fit meme and draw it
-                setTimeout(() => {
-                    window.create.canvas.height = window.create.dimensions.height
-                    window.create.ctx.drawImage(
-                        window.create.baseImg, 0, 0, 
-                        window.create.canvas.width, 
-                        window.create.canvas.height
-                    )
-                }, 50)
+                // adjust width and height of img to fit meme and draw it 
+                window.create.canvas.height = window.create.dimensions.height // TODO: async issues
+                window.create.ctx.drawImage(
+                    window.create.baseImg, 0, 0, 
+                    window.create.canvas.width, 
+                    window.create.canvas.height
+                )
             }
             reader.readAsDataURL(base);
             input.remove()
@@ -65,6 +63,8 @@ function upload_base_image(input) {
             d2.classList = ["meme-text"]
             d2.style.bottom = "2rem"
             d2.id = "meme-text-2"
+
+            window.create.textBoxes.forEach(box => box.oninput());
 
             window.create.meme.appendChild(d1)
             window.create.meme.appendChild(d2)
@@ -108,21 +108,43 @@ function adjust_spacing(elem) {
 }
 
 function add_text_box(elem) {
+    // create container
     let cont = document.createElement("div")
     
+    //create and style textbox
     let box = document.createElement("textarea")
     box.placeholder = `Text #${elem.children.length + 1}`
     box.id = `text-${elem.children.length + 1}`
     box.classList = ['text-box']
+    box.oninput = function() {
+        document.getElementById("meme-" + box.id).innerHTML = box.value
+    }
+
+    // create and style div of text to be displayed on the meme
+    let meme_text = document.createElement("div");
+    meme_text.classList = ["meme-text"]
+    meme_text.style.top = "50%"
+    meme_text.id = `meme-text-${elem.children.length + 1}`
     
+    // create and style the delete button
     let btn = document.createElement("button")
     btn.classList = ['btn']
     btn.innerHTML = "<i class = 'fa fa-trash'></i>"
     btn.onclick = function(ev) {
-        ev.target.parentNode.remove()
+        delete_box(ev.target.parentNode.children[0].id, ev.target)
     }
 
+    window.create.textBoxes.push(box);
+
+    // append everything to respective elements
     cont.appendChild(box)
     cont.appendChild(btn)
     elem.append(cont)
+    window.create.meme.appendChild(meme_text)
+}
+
+function delete_box(id, btn) {
+    btn.remove();
+    document.getElementById(id).remove();
+    document.getElementById(`meme-${id}`).remove();
 }
