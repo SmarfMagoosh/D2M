@@ -89,7 +89,7 @@ class Post(db.Model) :
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": self.backImage, #TODO: reference to the thumbnail
+            "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
             "username": self.username,
             "numLikes": self.numLikes,
         }
@@ -101,7 +101,7 @@ class Post(db.Model) :
             "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
-            "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO
+            "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO 
         }
     def to_json(self):
         return {
