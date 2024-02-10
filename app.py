@@ -58,7 +58,7 @@ class User(db.Model) :
 class Report(db.Model) :
     __tablename__ = 'Reports'
     reportID = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.Integer, db.ForeignKey('User.username'))
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
     
@@ -71,6 +71,9 @@ class Post(db.Model) :
     backImage = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
+    numLikesd1 = db.Column(db.Integer) # [0,10) min ago
+    numLikesd2 = db.Column(db.Integer) # [10,20) min ago
+    numLikesd3 = db.Column(db.Integer) # [20,30) min ago
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -89,7 +92,7 @@ class Post(db.Model) :
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": self.backImage, #TODO: reference to the thumbnail
+            "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
             "username": self.username,
             "numLikes": self.numLikes,
         }
@@ -101,7 +104,7 @@ class Post(db.Model) :
             "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
-            "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO
+            "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO 
         }
     def to_json(self):
         return {
