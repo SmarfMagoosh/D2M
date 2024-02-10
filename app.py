@@ -5,6 +5,9 @@ from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
 import base64
 
+# for easy changing of defaults
+DEFAULT_POSTS_LOADED = 30
+
 # add the script directory to the python path
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(scriptdir)
@@ -31,72 +34,86 @@ with app.app_context():
 class User(db.Model) :
     __tablename__ = 'Users'
     username = db.Column(db.String, primary_key = True)
-    email = db.Column(db.String, nullable = False)
-    passwordHash = db.Column(db.String, nullable = False)
-    reputationID = db.Column(db.Integer, db.ForeignKey('UserReputations.reputationID'))
-    userSettingsID = db.Column(db.Integer, db.ForeignKey('UserSettings.userSettingsID'))
+    gccEmail = db.Column(db.String, nullable = False)
+    
+    bio = db.Column(db.String, nullable = True)
+    
+    backupEmail = db.Column(db.String, nullable = True)
+    backupPasswordHash = db.Column(db.String, nullable = True)
+    
+    timesReported = db.Column(db.Integer, nullable = False)
+    numReports = db.Column(db.Integer, nullable = False)
     
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
     postList = db.relationship('Post', backref='owner')
-    postList = db.relationship('Comment', backref='owner')
+    commentList = db.relationship('Comment', backref='owner')
+    reportList = db.relationship('Report', backref='reporter')
+    
+    def postlist_to_json(self):
+        return {
+            "posts": [p.render_json() for p in self.postList]
+		}
 
-class UserReputation(db.Model) :
-    __tablename__ = 'UserReputations'
-    reputationID = db.Column(db.Integer, primary_key = True)
-    timesReported = db.Column(db.Integer, nullable = False)
-    numReports = db.Column(db.Integer, nullable = False)
-
-class UserSetting(db.Model) :
-    __tablename__ = 'UserSettings'
-    userSettingsID = db.Column(db.Integer, primary_key = True)
-    pfp = db.Column(db.String, nullable = False)
-    banner = db.Column(db.String, nullable = False)
+class Report(db.Model) :
+    __tablename__ = 'Reports'
+    reportID = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.Integer, db.ForeignKey('User.username'))
+    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    reason = db.Column(db.String, nullable = False)
+    
 
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     spacing = db.Column(db.Integer, nullable = False)
     title = db.Column(db.String, nullable = True)
-    backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
+    backImage = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
-    
+    numLikes = db.Column(db.Integer, default=0)
+
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
-    extraImages = db.relationship('ExtraPostImage', backref='parentPost')
     comments = db.relationship('Comment', backref='parentPost')
     textBoxes = db.relationship('TextBox', backref='parentPost')
-    
+    reportsList = db.relationship('Report', backref='post')
+
+    def remix_json(self):
+        return {
+            "spacing": self.spacing,
+            "title": "Remix of " + self.title,
+            "backImage": self.backImage,
+            "textBoxes": [t.to_json() for t in self.textBoxes],
+        }
+    def render_json(self):
+        return {
+            "id": self.postID,
+            "title": self.title,
+            "thumbnail": self.backImage, #TODO: reference to the thumbnail
+            "username": self.username,
+            "numLikes": self.numLikes,
+        }
+    def page_json(self):
+        return {
+            "id": self.postID,
+            "title": self.title,
+            "username": self.username,
+            "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
+            "numLikes": self.numLikes,
+            "comments": [c.to_json() for c in self.comments],
+            "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO
+        }
     def to_json(self):
-	    return {
-			"id": self.postID,
-			"spacing": self.spacing,
-			"title": self.title,
-			"backImage": self.backImage,
-			"username": self.username,
-            "extraImages": [i.to_json() for i in self.extraImages],
+        return {
+            "id": self.postID,
+            "spacing": self.spacing,
+            "title": self.title,
+            "backImage": self.backImage,
+            "username": self.username,
+            "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-		}
-
-class ExtraPostImage(db.Model) :
-    __tablename__ = 'ExtraPostImages'
-    imageID = db.Column(db.Integer, primary_key = True)
-    url = db.Column(db.String, nullable = False)
-    size = db.Column(db.Float, nullable = False)
-    postition = db.Column(db.String, nullable = False)
-    orientation = db.Column(db.String, nullable = False)
-    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
-    
-    def to_json(self):
-	    return {
-			"imageID": self.imageID,
-			"url": self.url,
-			"size": self.size,
-			"position": self.postition,
-			"orientation": self.orientation,
-            "parentPost": self.postID,
-		}
+        }
 
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
@@ -176,11 +193,11 @@ def get_create():
 
 @app.get("/home/")
 def get_home():
-    # gets the most recent 30 posts hopefully and sends them to the frontend
+    # gets the most recent posts and sends them to the frontend
     recent = Post.query.order_by(Post.postID.desc()) \
-                        .limit(30) \
+                        .limit(DEFAULT_POSTS_LOADED) \
                         .all()
-    return render_template("home.html", posts=[p.to_json() for p in recent])
+    return render_template("home.html", posts=[p.render_json() for p in recent])
 
 @app.get("/login/")
 def get_login():
@@ -233,31 +250,34 @@ def post_login():
 # QUERY/API ROUTES (return a json object)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# returns a JSON object containing the post ids of the most recent (TODO:number) posts
+# returns a JSON object containing the post ids of the most recent DEFAULT_POSTS_LOADED posts
 # start_id is an optional field (after question mark), specifies the post id to start from
-#       this is used if the user approaches the end of the pre-loaded content on the page to get posts below the final one
-# count is an optional field (after question mark), specifies how many posts to load, defaults to 30
-@app.get("/API/recent/")
+#       the purpose of this is to allow loading posts once the page runs out
+# count is an optional field (after question mark), specifies how many posts to load, defaults to DEFAULT_POSTS_LOADED
+# example: /API/recent?start_id=10&count=30 will load up to 30 memes made before id 10
+@app.get("/API/get_recent/")
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
-    count = request.args.get('count', 30)
-    recent = ''
+    count = request.args.get('count', DEFAULT_POSTS_LOADED)
+    # username = request.args.get('username', None)
+    recent = Post.query
     print(str(start_id) + " " + str(count))
-    if start_id == -1:
-        recent = Post.query.order_by(Post.postID.desc()) \
+    
+    if start_id != -1:
+        recent = recent.filter(Post.postID<start_id)
+    # if username != None:
+    #     recent = recent.filter(Post.username==username)
+    
+    recent = recent.order_by(Post.postID.desc()) \
                         .limit(count) \
                         .all()
-    else:
-        recent = Post.query.filter(Post.postID<start_id) \
-                        .order_by(Post.postID.desc()) \
-                        .limit(count) \
-                        .all()
-    return [p.to_json() for p in recent]
+    
+    return [p.render_json() for p in recent]
 
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
 # def get_post(post_id):
-    # return json with image link, text boxes + box settings, filters, extra image links/postitions/etc., number of likes
+    # return json with image link, text boxes + box settings, filters, number of likes
     # return
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
