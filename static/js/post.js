@@ -1,5 +1,7 @@
-// this is a workaround to get post data from the backend, used to create the variable postData
-// postData contains the JSON of the post
-function getData(data){
-    return data
-}
+// post.js
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Assuming you have a script tag somewhere in your HTML where you can embed JavaScript
+    window.post = {}
+    
+});

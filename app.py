@@ -218,7 +218,7 @@ def get_post(post_id):
 @app.get("/profile/")
 @app.get("/profile/<int:user_id>/")
 def get_profile(user_id = -1):
-    # if(user_id > -1) # load another user's profile
+    # if(user_id > -1) # load a different person's profile
     return render_template("profile.html")
 
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
@@ -281,10 +281,10 @@ def get_recent():
     return [p.render_json() for p in recent]
 
 # returns a JSON object containing all of the data necessary to reproduce the post specified
-@app.get("/API/getpostdata/<int:post_id>/")
-def get_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    return post.to_json()
+# @app.get("/API/getpostdata/<int:post_id>/")
+# def get_post(post_id):
+    # return json with image link, text boxes + box settings, filters, number of likes
+    # return
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
