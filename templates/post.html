@@ -4,27 +4,18 @@
     Post 
 {% endblock %}
 
-{% block head %}
+    <!-- THIS SHOULD GET THE DATA PASSED IN TO THE TEMPLATE AND SAVE IT AS JS VARIABLE postData-->
     <script src = "../static/js/post.js"></script>
-    <link rel = "stylesheet" href = "../static/css/post.css">
-{% endblock %}
-
-{% block content %}
-
-<div id = "left-content">
-    <div id = "meme">
-        <!-- put the image source here!-->
-        <img src = "../../static/images/{{post['backImage']}}" alt = "" id = "{{post['postID']}}">
-    </div>
-</div>
-<div id = "right-content">
-    <div id = "details">
-        <!-- put the meme details here!-->
-        <h2> {{ post["title"] }} </h2>
-        <h3> {{ post["username"] }} </h3>
-
-    </div>
-</div>
+    <script type="text/javascript">
+      const postData = getData({{data|tojson}})
+    </script>
 
 
-{% endblock %}
+</head>
+<body>
+  <main>
+    <div id="post-image" class="flex-container"></div>
+    <div id="post-text" class="flex-container"></div>
+  </main>
+</body>
+</html>
