@@ -52,13 +52,13 @@
         <div>
             <div>
                 <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
-                <button class = 'btn' onclick = 'this.parentNode.remove()'>
+                <button class = 'btn' onclick = 'delete_box(this.parentNode.children[0].id, this)'>
                     <i class = 'fa fa-trash'></i>
                 </button>
             </div>
             <div>
                 <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
-                <button class = 'btn' onclick = 'this.parentNode.remove()'>
+                <button class = 'btn' onclick = 'delete_box(this.parentNode.children[0], this)'>
                     <i class = 'fa fa-trash'></i>
                 </button>
             </div>
