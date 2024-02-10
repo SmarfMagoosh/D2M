@@ -3,11 +3,24 @@
     display: grid;
     grid-template-columns: 50% 50%;
     margin: auto;
+        padding: 5%;
+
 }
 
 #left-content {
     border: black solid 2px;
     margin: 1rem;
+
+    height: auto; /* Allow the height to adjust based on the image */
+    overflow: hidden; /* Hide any overflow from the image */
+    
+   
+}
+/* Style for the image */
+#post-image img {
+    width: auto; /* Make the image fill the container horizontally */
+    height: auto; /* Allow the height to adjust based on the original aspect ratio */
+    display: block; /* Ensure the image behaves as a block element */
 }
 
 #right-content {

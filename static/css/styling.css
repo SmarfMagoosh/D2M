@@ -65,6 +65,25 @@
     color: black; /* Black text on hover */
 }
 
-::content{
-  padding-top: 10%;
+/* Styles for the circular button */
+.circular-button {
+  width: 6rem; /* Set the width of the button */
+  height: 6rem; /* Set the height of the button */
+  border-radius: 50%; /* Make the button circular by setting border-radius to 50% */
+  background-color: #ff0000; /* Set background color for the button */
+  color: white; /* Set text color */
+  border: none; /* Remove border */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  position: fixed; /* Position the button relative to the viewport */
+  bottom: 20px; /* Distance from the bottom of the viewport */
+  right: 20px; /* Distance from the right of the viewport */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow effect */
+  outline: none; /* Remove default focus outline */
+  font-size: 4rem;
 }
+
+/* Style the button on hover */
+.create-button:hover {
+  background-color: #b30000; /* Darker shade of blue */
+}
+
