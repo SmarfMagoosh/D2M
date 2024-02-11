@@ -1,27 +1,37 @@
-import subjx from "subjx"
 
-window.addEventListener("DOMContentLoaded", () => {
+$("document").ready(() => {
     // create namespace for window
     window.create = {}
 
     // locate important elems
-    window.create.textBoxes = [
-        document.getElementById("text-1"),
-        document.getElementById("text-2")
-    ]
-    window.create.meme = document.getElementById("meme")
+    window.create.textBoxes = [$("#text-1"), $("#text-2")]
+    window.create.meme = $("#meme")[0];
 
     // get canvas and context for it
-    window.create.canvas = document.getElementById("meme-img") 
+    window.create.canvas =  $("#meme-img")[0]
     window.create.canvas.width = window.create.canvas.parentNode.clientWidth - 20 // TODO: async issues
     window.create.ctx = window.create.canvas.getContext("2d")
 
+    // Add text boxes
+    $("#meme").append(
+        $("<div></div>").attr("class", "meme-text").attr("id", "meme-text-1")
+        .attr("style", "top: 2rem").text(window.create.textBoxes[0].value).hide(),
+        $("<div></div>").attr("class", "meme-text").attr("id", "meme-text-2")
+        .attr("style", "bottom: 2rem").text(window.create.textBoxes[1].value).hide()
+    );
+    $(".meme-text").draggable()
+    $(".meme-text").resizable()
+
     // add event listeners to textboxes
-    for (let tb of window.create.textBoxes) {
-        tb.oninput = function() {
-            document.getElementById("meme-" + tb.id).innerHTML = tb.value
-        }
-    }
+    $(".text-box").on("input", e => $(`#meme-${e.target.id}`).text(e.target.value))
+    $("#fileInput").on("input", () => { upload_base_image($("#fileInput")[0]) })
+
+    // add mor event listeners
+    $("#post-btn").click(post)
+    $("#cancel-btn").click(cancel_post)
+    $("#spacer").click(e => adjust_spacing(e.target))
+    $(".trash-btn").click(e => delete_box(e.target.parentNode.children[0], e.target))
+    $("#new-box-btn").click(e => add_text_box(e.target.parentNode.previousElementSibling))
 })
 
 function upload_base_image(input) {
@@ -51,23 +61,8 @@ function upload_base_image(input) {
             reader.readAsDataURL(base);
             input.remove()
 
-            document.getElementById("fileInputLabel").remove()
-
-            // Add text boxes
-            let d1 = document.createElement("div");
-            d1.classList = ["meme-text"]
-            d1.style.top = "2rem"
-            d1.id = "meme-text-1"
-
-            let d2 = document.createElement("div");
-            d2.classList = ["meme-text"]
-            d2.style.bottom = "2rem"
-            d2.id = "meme-text-2"
-
-            window.create.textBoxes.forEach(box => box.oninput());
-
-            window.create.meme.appendChild(d1)
-            window.create.meme.appendChild(d2)
+            $("#fileInputLabel").remove()
+            $(".meme-text").show()
         } else {
             alert("That image is too large! we only accept files less than ______mb");
         }
@@ -75,16 +70,15 @@ function upload_base_image(input) {
 }
 
 function post() {
-    // post body
     meme = {
-        // textboxes for the meme
         textboxes: [],
-        imgData: document.getElementById("meme-img").src,
-        title: document.getElementById("post-title").value
+        imgData: window.create.canvas.toDataURL(),
+        title: $("#post-title")[0].value
     }
-    for (let textarea of document.getElementsByClassName("text-box")) {
+    for (let textarea of $(".text-box")) {
         meme.textboxes.push(textarea.value)
     }
+    console.log(meme)
     fetch(window.location.href, {
         method: "POST",
         body: JSON.stringify(meme),
@@ -99,8 +93,7 @@ function cancel_post() {
 function adjust_spacing(elem) {
     window.create.canvas.height = window.create.dimensions.height * (1 + Number(elem.value))
     window.create.ctx.drawImage(
-        window.create.baseImg,
-        0,
+        window.create.baseImg, 0,
         window.create.dimensions.height * elem.value,
         window.create.dimensions.width,
         window.create.dimensions.height

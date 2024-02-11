@@ -36,10 +36,9 @@
     left: 0;
     right: 0;
     margin: auto;
-    width: 60%;
+    max-width: 100%;
     text-align: center;
     overflow: hidden;
-    height: 5rem;
 }
 
 /* END MEME DISPLAY */
@@ -96,4 +95,8 @@
 #text-tool-bar button {
     margin: 1rem;
     height: 2rem;
+}
+
+.meme-text {
+    border: solid black 1px;
 }
