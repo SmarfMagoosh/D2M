@@ -35,3 +35,14 @@ function displaySearchResults(results) {
     // Show the dropdown
     searchResultsDropdown.style.display = 'block';
 }
+
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('searchResultsDropdown');
+    const searchInput = document.getElementById('searchInput');
+
+    // Check if the clicked element is outside the dropdown and search input
+    if (event.target !== dropdown && event.target !== searchInput) {
+        // If so, hide the dropdown
+        dropdown.style.display = 'none';
+    }
+});
