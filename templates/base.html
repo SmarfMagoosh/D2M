@@ -13,25 +13,34 @@
     <title>{% block title %}{% endblock %} - D2M</title>
     <link rel="stylesheet" href="../static/css/styling.css">
     <script src = "../static/js/scripting.js"></script>
+    <script src = "../static/js/search.js"></script>
     {% block head %}{% endblock %}
 </head>
 <body>
     <nav class="navbar">
-        <a href="../home"><img src="logo.png" alt="D2M logo" style="width:42px;height:42px;"></a>
-        Search Bar goes here 
-        (Bell)
+        <a href="home.html">Home</a>
+        <div>
+          <input type="text" id="searchInput" placeholder="Search by name">
+          <button onclick="search()">Search</button>
+        </div>
+        <div id="searchResultsDropdown" class="dropdown-content">
+          
+        </div>
         <div class="dropdown">
             <button class="dropbtn">Dropdown</button>
             <div class="dropdown-content">
-              <a href="../profile">Profile</a>
+              <a href="profile.html">Profile</a>
               [bookmarks]
-              <a href="../settings">Settings</a>
-              <a href="../login">Login</a>
+              <a href="settings.html">Settings</a>
+              <a id="loginOrProfile" href="../signin-oidc">Login/Signup</a>
             </div>
           </div>
     </nav>
     <div id = "main-content-div">
         {% block content %}{% endblock %}
     </div>
+
+  <!-- importing app scripts (load order is important) -->
+
 </body>
 </html>
