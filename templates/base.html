@@ -13,13 +13,16 @@
     <title>{% block title %}{% endblock %} - D2M</title>
     <link rel="stylesheet" href="../static/css/styling.css">
     <script src = "../static/js/scripting.js"></script>
+    <script src = "../static/js/search.js"></script>
     {% block head %}{% endblock %}
 </head>
 <body>
     <nav class="navbar">
         <a href="home.html">Home</a>
-        Search Bar goes here 
-        (Bell)
+        <div>
+          <input type="text" id="searchInput" placeholder="Search by name">
+          <button onclick="searchUsers()">Search</button>
+        </div>
         <div class="dropdown">
             <button class="dropbtn">Dropdown</button>
             <div class="dropdown-content">
@@ -31,6 +34,9 @@
           </div>
     </nav>
     <div id = "main-content-div">
+      <div id="searchResultsDropdown" class="dropdown-content">
+          
+      </div>
         {% block content %}{% endblock %}
     </div>
 

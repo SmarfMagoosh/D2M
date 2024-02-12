@@ -299,6 +299,19 @@ def get_recent():
                         .all()
     return [p.to_json() for p in recent]
 
+@app.route('/search')
+def search_users():
+    search_query = request.args.get('username')
+
+    # Perform a search in your database based on the name
+    # Replace this with your actual database query
+    matching_users = User.query.filter(User.username.ilike(f'%{search_query}%')).all()
+
+    # Convert the matching users to a format suitable for JSON response
+    results = [{'username': user.username, 'email': user.email} for user in matching_users]
+
+    return jsonify(results)
+
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
 # def get_post(post_id):
