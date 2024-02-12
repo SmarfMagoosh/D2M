@@ -1,5 +1,5 @@
 import os, sys, hashlib, json
-from flask import Flask, session, render_template, url_for, redirect, request
+from flask import Flask, jsonify, session, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
@@ -8,11 +8,9 @@ import base64
 import atexit
 import time
 
-"""
-set FLASK_APP=app.py
-python -m flask run --host=0.0.0.0 --port=80
-"""
-
+# for easy changing of defaults
+DEFAULT_POSTS_LOADED = 30
+MINUTES_BETWEEN_REFRESH = 1
 
 # add the script directory to the python path
 scriptdir = os.path.abspath(os.path.dirname(__file__))
@@ -26,6 +24,9 @@ app.config['SECRET_KEY'] = 'privatizestamppulverizeunwell' # made using dice war
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{dbfile}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# setup queue for sorting by likes
+update_times = [0.0, 0.0, 0.0]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
