@@ -1,12 +1,13 @@
 import os, sys, hashlib, json
+<<<<<<< HEAD
 from flask import Flask, jsonify, session, render_template, url_for, redirect, request
+=======
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify
+>>>>>>> parent of 09adc04 (update imports)
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
-from apscheduler.schedulers.background import BackgroundScheduler
 import base64
-import atexit
-import time
 
 # for easy changing of defaults
 DEFAULT_POSTS_LOADED = 30
