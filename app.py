@@ -1,5 +1,6 @@
 import os, sys, hashlib, json
-from flask import Flask, session, render_template, url_for, redirect, request
+
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
@@ -8,6 +9,13 @@ import base64
 import atexit
 import time
 import math
+
+import base64
+
+"""
+set FLASK_APP=app.py
+python -m flask run --host=0.0.0.0 --port=80
+"""
 
 # for easy changing of defaults
 DEFAULT_POSTS_LOADED = 30
@@ -48,7 +56,6 @@ class User(db.Model) :
     
     backupEmail = db.Column(db.String, nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
-    
     timesReported = db.Column(db.Integer, default = 0)
     
     # classes that use this class for a foreign key, allows access to list
@@ -72,7 +79,7 @@ class Report(db.Model) :
     username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
-    
+
 class Like(db.Model):
     __tablename__ = 'Likes'
     # using a ID primary key so that we can sort by most recent like
@@ -182,7 +189,7 @@ class Comment(db.Model) :
     __tablename__ = 'Comments'
     commentID = db.Column(db.Integer, primary_key = True)
     content = db.Column(db.String, nullable = False)
-    # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
+    # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
@@ -198,7 +205,7 @@ class Comment(db.Model) :
 
 def update_like_backend():
     with app.app_context():
-        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+        # db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
         db.session.commit()
     global update_times
     update_times.append(math.floor(time.time()))
@@ -216,15 +223,10 @@ with app.app_context():
                  backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
-    u1 = User(username="u1", gccEmail = "u1@gcc.edu")
-    u2 = User(username="u2", gccEmail = "u2@gcc.edu")
-    follow12 = Follow(user1 = "u1", user2 = "u2")
 
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
-    db.session.add_all((u1,u2))
-    db.session.add(follow12)
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -257,9 +259,9 @@ def get_home():
                         .all()
     return render_template("home.html", posts=[p.render_json() for p in recent])
 
-@app.get("/login/")
+@app.get("/signin-oidc/")
 def get_login():
-    return render_template("login.html")
+    return render_template("signin-oidc.html")
 
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
@@ -303,6 +305,22 @@ def post_meme():
 @app.post("/login/")
 def post_login():
     return ""
+
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    data = request.get_json()
+    print(data)
+    new_user = User(
+        username=data['username'],
+        gccEmail=data['gccEmail'],
+        backupPasswordHash=data['backupPasswordHash'],
+        timesReported=0,
+        numReports=0
+        # Add other fields as needed
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'User added successfully'}), 201
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
@@ -404,6 +422,28 @@ def get_liked():
         'timestamp': timestamp,
         'posts': [p.render_json() for p in recent]
     }
+
+@app.route('/search', methods=['GET'])
+def search():
+    search_query = request.args.get('query')
+
+    # Search for users by username
+    matching_users = User.query.filter(User.username.ilike(f'%{search_query}%')).all()
+
+    # Search for posts by title
+    matching_posts = Post.query.filter(Post.title.ilike(f'%{search_query}%')).all()
+
+    # Construct JSON response
+    user_results = [{'username': user.username} for user in matching_users]
+    post_results = [{'title': post.title} for post in matching_posts]
+
+    return jsonify({'users': user_results, 'posts': post_results})
+
+# returns a JSON object containing all of the data necessary to reproduce the post specified
+# @app.get("/API/getpostdata/<int:post_id>/")
+# def get_post(post_id):
+    # return json with image link, text boxes + box settings, filters, extra image links/postitions/etc., number of likes
+    # return
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
