@@ -41,26 +41,15 @@ with app.app_context():
 class User(db.Model) :
     __tablename__ = 'Users'
     username = db.Column(db.String, primary_key = True)
-    gccEmail = db.Column(db.String, nullable = False)
-    
-    bio = db.Column(db.String, nullable = True)
-    
-    backupEmail = db.Column(db.String, nullable = True)
-    backupPasswordHash = db.Column(db.String, nullable = True)
-    
-    timesReported = db.Column(db.Integer, nullable = False)
-    numReports = db.Column(db.Integer, nullable = False)
+    email = db.Column(db.String, nullable = False)
+    passwordHash = db.Column(db.String, nullable = False)
+    reputationID = db.Column(db.Integer)#, db.ForeignKey('UserReputations.reputationID'))
+    userSettingsID = db.Column(db.Integer)#, db.ForeignKey('UserSettings.userSettingsID'))
     
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
     postList = db.relationship('Post', backref='owner')
-    commentList = db.relationship('Comment', backref='owner')
-    reportList = db.relationship('Report', backref='reporter')
-    
-    def postlist_to_json(self):
-        return {
-            "posts": [p.render_json() for p in self.postList]
-		}
+    postList = db.relationship('Comment', backref='owner')
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -68,22 +57,22 @@ class Report(db.Model) :
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
-    
 
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     spacing = db.Column(db.Integer, nullable = False)
     title = db.Column(db.String, nullable = True)
-    backImage = db.Column(db.String, nullable = False)
+    backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
-    numLikesD1 = db.Column(db.Integer) # [0,10) min ago
-    numLikesD2 = db.Column(db.Integer) # [10,20) min ago
-    numLikesD3 = db.Column(db.Integer) # [20,30) min ago
+    numLikesd1 = db.Column(db.Integer) # [0,10) min ago
+    numLikesd2 = db.Column(db.Integer) # [10,20) min ago
+    numLikesd3 = db.Column(db.Integer) # [20,30) min ago
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
+    extraImages = db.relationship('ExtraPostImage', backref='parentPost')
     comments = db.relationship('Comment', backref='parentPost')
     textBoxes = db.relationship('TextBox', backref='parentPost')
     reportsList = db.relationship('Report', backref='post')
@@ -114,16 +103,35 @@ class Post(db.Model) :
             "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO 
         }
     def to_json(self):
-        return {
-            "id": self.postID,
-            "spacing": self.spacing,
-            "title": self.title,
-            "backImage": self.backImage,
-            "username": self.username,
-            "numLikes": self.numLikes,
+	    return {
+			"id": self.postID,
+			"spacing": self.spacing,
+			"title": self.title,
+			"backImage": self.backImage,
+			"username": self.username,
+            "extraImages": [i.to_json() for i in self.extraImages],
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-        }
+		}
+
+class ExtraPostImage(db.Model) :
+    __tablename__ = 'ExtraPostImages'
+    imageID = db.Column(db.Integer, primary_key = True)
+    url = db.Column(db.String, nullable = False)
+    size = db.Column(db.Float, nullable = False)
+    postition = db.Column(db.String, nullable = False)
+    orientation = db.Column(db.String, nullable = False)
+    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    
+    def to_json(self):
+	    return {
+			"imageID": self.imageID,
+			"url": self.url,
+			"size": self.size,
+			"position": self.postition,
+			"orientation": self.orientation,
+            "parentPost": self.postID,
+		}
 
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
@@ -168,14 +176,6 @@ class Comment(db.Model) :
 			"parentPost": self.postID,
 		}
 
-def update_like_backend():
-    with app.app_context():
-        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-        db.session.commit()
-    global update_times
-    update_times.append(time.time())
-    update_times.pop(0)
-    print(update_times)
 
 with app.app_context():
     db.drop_all()
@@ -183,24 +183,16 @@ with app.app_context():
 
         # Create posts  to be inserted
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", username = "Sean Queary Lanard", numLikes=10)
+                 backImage = "4 rules.png", username = "Sean Queary Lanard")
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
+                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi")
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-                 backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
+                 backImage = "Stop doing databases.png", username = "The Zhangster")
 
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
     db.session.commit()
-
-# for the update to like counts every 10 minutes
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=update_like_backend, trigger="interval", minutes=MINUTES_BETWEEN_REFRESH)
-scheduler.start()
-atexit.register(lambda: scheduler.shutdown())
-# preliminary copy
-update_like_backend()
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
