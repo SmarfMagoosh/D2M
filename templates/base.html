@@ -23,6 +23,9 @@
           <input type="text" id="searchInput" placeholder="Search by name">
           <button onclick="searchUsers()">Search</button>
         </div>
+        <div id="searchResultsDropdown" class="dropdown-content">
+          
+        </div>
         <div class="dropdown">
             <button class="dropbtn">Dropdown</button>
             <div class="dropdown-content">
@@ -34,9 +37,6 @@
           </div>
     </nav>
     <div id = "main-content-div">
-      <div id="searchResultsDropdown" class="dropdown-content">
-          
-      </div>
         {% block content %}{% endblock %}
     </div>
 
