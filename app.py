@@ -37,15 +37,29 @@ with app.app_context():
 class User(db.Model) :
     __tablename__ = 'Users'
     username = db.Column(db.String, primary_key = True)
-    email = db.Column(db.String, nullable = False)
-    passwordHash = db.Column(db.String, nullable = False)
-    reputationID = db.Column(db.Integer)#, db.ForeignKey('UserReputations.reputationID'))
-    userSettingsID = db.Column(db.Integer)#, db.ForeignKey('UserSettings.userSettingsID'))
+    gccEmail = db.Column(db.String, nullable = False)
     
+    bio = db.Column(db.String, nullable = True)
+    
+    backupEmail = db.Column(db.String, nullable = True)
+    backupPasswordHash = db.Column(db.String, nullable = True)
+    
+    timesReported = db.Column(db.Integer, default = 0)
+    numReports = db.Column(db.Integer, default = 0)
+
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
     postList = db.relationship('Post', backref='owner')
-    postList = db.relationship('Comment', backref='owner')
+    commentList = db.relationship('Comment', backref='owner')
+    reportList = db.relationship('Report', backref='reporter')
+    likeList = db.relationship('Like', backref='user')
+    # advanced backref to deal with multiple references to the same table
+    followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
+    
+    def postlist_to_json(self):
+        return {
+            "posts": [p.render_json() for p in self.postList]
+		}
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -53,13 +67,29 @@ class Report(db.Model) :
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
+    
+class Like(db.Model):
+    __tablename__ = 'Likes'
+    # using a ID primary key so that we can sort likes by most recent like
+    likeID = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
+    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    
+class Follow(db.Model):
+    __tablename__ = 'Follows'
+    user1 = db.Column(db.String, db.ForeignKey('Users.username'), primary_key=True)
+    user2 = db.Column(db.String, db.ForeignKey('Users.username'), primary_key=True)
+    # advanced backref because of 2 foreign keys from same table
+    follower = db.relationship('User', back_populates='followList', foreign_keys=[user1])
 
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     spacing = db.Column(db.Integer, nullable = False)
     title = db.Column(db.String, nullable = True)
-    backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
+    backImage = db.Column(db.String, nullable = False)
+    # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
+    timePosted = db.Column(db.String)#, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
     numLikesd1 = db.Column(db.Integer) # [0,10) min ago
@@ -158,7 +188,7 @@ class Comment(db.Model) :
     __tablename__ = 'Comments'
     commentID = db.Column(db.Integer, primary_key = True)
     content = db.Column(db.String, nullable = False)
-    # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
+    # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
@@ -183,11 +213,15 @@ with app.app_context():
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
                  backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi")
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-                 backImage = "Stop doing databases.png", username = "The Zhangster")
-
+                 backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu")
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu")
+    follow12 = Follow(user1 = "u1", user2 = "u2")
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
+    db.session.add_all((u1,u2))
+    db.session.add(follow12)
     db.session.commit()
 
 
