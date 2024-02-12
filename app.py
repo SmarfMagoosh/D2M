@@ -47,17 +47,12 @@ class User(db.Model) :
     postList = db.relationship('Post', backref='owner')
     postList = db.relationship('Comment', backref='owner')
 
-class UserReputation(db.Model) :
-    __tablename__ = 'UserReputations'
-    reputationID = db.Column(db.Integer, primary_key = True)
-    timesReported = db.Column(db.Integer, nullable = False)
-    numReports = db.Column(db.Integer, nullable = False)
-
-class UserSetting(db.Model) :
-    __tablename__ = 'UserSettings'
-    userSettingsID = db.Column(db.Integer, primary_key = True)
-    pfp = db.Column(db.String, nullable = False)
-    banner = db.Column(db.String, nullable = False)
+class Report(db.Model) :
+    __tablename__ = 'Reports'
+    reportID = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
+    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    reason = db.Column(db.String, nullable = False)
 
 class Post(db.Model) :
     __tablename__ = 'Posts'
@@ -66,13 +61,43 @@ class Post(db.Model) :
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
     username = db.Column(db.String, db.ForeignKey('Users.username'))
-    
+    numLikes = db.Column(db.Integer, default=0)
+    numLikesd1 = db.Column(db.Integer) # [0,10) min ago
+    numLikesd2 = db.Column(db.Integer) # [10,20) min ago
+    numLikesd3 = db.Column(db.Integer) # [20,30) min ago
+
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
     extraImages = db.relationship('ExtraPostImage', backref='parentPost')
     comments = db.relationship('Comment', backref='parentPost')
     textBoxes = db.relationship('TextBox', backref='parentPost')
-    
+    reportsList = db.relationship('Report', backref='post')
+
+    def remix_json(self):
+        return {
+            "spacing": self.spacing,
+            "title": "Remix of " + self.title,
+            "backImage": self.backImage,
+            "textBoxes": [t.to_json() for t in self.textBoxes],
+        }
+    def render_json(self):
+        return {
+            "id": self.postID,
+            "title": self.title,
+            "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
+            "username": self.username,
+            "numLikes": self.numLikes,
+        }
+    def page_json(self):
+        return {
+            "id": self.postID,
+            "title": self.title,
+            "username": self.username,
+            "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
+            "numLikes": self.numLikes,
+            "comments": [c.to_json() for c in self.comments],
+            "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO 
+        }
     def to_json(self):
 	    return {
 			"id": self.postID,
