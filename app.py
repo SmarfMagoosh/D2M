@@ -1,6 +1,6 @@
 import os, sys, hashlib, json
 
-from flask import Flask, jsonify, session, render_template, url_for, redirect, request
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
@@ -10,7 +10,6 @@ import base64
 set FLASK_APP=app.py
 python -m flask run --host=0.0.0.0 --port=80
 """
->>>>>>> parent of 09adc04 (update imports)
 
 # for easy changing of defaults
 DEFAULT_POSTS_LOADED = 30
