@@ -1,5 +1,5 @@
 import os, sys, hashlib, json
-from flask import Flask, session, render_template, url_for, redirect, request
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
@@ -174,6 +174,7 @@ with app.app_context():
 # actually seems like the session variable will be necessary
 @app.get("/")
 def index():
+    print("GO HOKME")
     return redirect(url_for("get_home"))
 
 @app.get("/create/")
@@ -188,9 +189,9 @@ def get_home():
                         .all()
     return render_template("home.html", posts=[p.to_json() for p in recent])
 
-@app.get("/login/")
+@app.get("/signin-oidc/")
 def get_login():
-    return render_template("login.html")
+    return render_template("signin-oidc.html")
 
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
@@ -235,6 +236,19 @@ def post_meme():
 @app.post("/login/")
 def post_login():
     return ""
+
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    data = request.get_json()
+    new_user = User(
+        username=data['username'],
+        email=data['email'],
+        passwordHash=data['passwordHash'],
+        # Add other fields as needed
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'User added successfully'}), 201
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)

@@ -36,9 +36,8 @@ function selectAccount () {
     } else if (currentAccounts.length === 1) {
         console.log("3")
         username = currentAccounts[0].username;
-        setUserName()
-        // welcomeUser(username);
-        // updateTable();
+        // sessionStorage.setItem('theThing', currentAccounts)
+        // console.log(sessionStorage)
     }
     else {
         console.log("4")
@@ -48,7 +47,6 @@ function selectAccount () {
 }
 
 function handleResponse(response) {
-
     /**
      * To see the full list of response object properties, visit:
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#response
@@ -58,9 +56,9 @@ function handleResponse(response) {
         console.log("response != null")
         console.log(response)
         username = response.account.username;
-        setUserName()
-        // welcomeUser(username);
-        // updateTable();
+        // sessionStorage.setItem('theThing', JSON.stringify(response))
+        // sessionStorage.setItem('uggggg', 'whyyyyy')
+        // console.log(sessionStorage)
     } else {
         console.log("response == null")
         selectAccount();
@@ -84,6 +82,48 @@ function handleResponse(response) {
         //         }
         //     });
     }
+
+    if(response !== null) {
+        // Make a fetch request to the root URL of your Flask application
+        fetch('/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Optionally handle the response if needed
+            console.log('Fetch request successful');
+            fetch('/add_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: 'example@example.com',
+                    passwordHash: 'example_password_hash'
+                    // Add other fields as needed
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to add user');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data.message); // Should output 'User added successfully'
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            window.location.href = response.url;
+        })
+        .catch(error => {
+            console.error('There was a problem with your fetch operation:', error);
+        });
+    }
+
+
     console.log("END: handleResponse")
 }
 
