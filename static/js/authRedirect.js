@@ -39,8 +39,6 @@ function handleResponse(response) {
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#response
      */
     if (response !== null) {
-        console.log("response")
-        console.log(response)
         username = response.account.username;
 
         // Make a fetch request to the root URL of your Flask application
@@ -53,9 +51,7 @@ function handleResponse(response) {
             console.log('Fetch request successful');
             fetch('/add_user', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     username: username,
                     gccEmail: username,
@@ -64,22 +60,14 @@ function handleResponse(response) {
                 })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to add user');
-                }
+                if (!response.ok) { throw new Error('Failed to add user'); }
                 return response.json();
             })
-            .then(data => {
-                console.log(data.message); // Should output 'User added successfully'
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            .then(data => console.log(data.message))
+            .catch(error => console.error('Error:', error));
             window.location.href = response.url;
         })
-        .catch(error => {
-            console.error('There was a problem with your fetch operation:', error);
-        });
+        .catch(error => {  console.error('There was a problem with your fetch operation:', error);  });
 
     } else {
         selectAccount();
