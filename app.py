@@ -7,10 +7,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import base64
 import atexit
 import time
+import math
 
 # for easy changing of defaults
 DEFAULT_POSTS_LOADED = 30
-MINUTES_BETWEEN_REFRESH = 1
+MINUTES_BETWEEN_REFRESH = 10
 
 # add the script directory to the python path
 scriptdir = os.path.abspath(os.path.dirname(__file__))
@@ -26,7 +27,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # setup queue for sorting by likes
-update_times = [0.0, 0.0, 0.0]
+update_times = [0, 0, 0]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -40,8 +41,8 @@ with app.app_context():
 
 class User(db.Model) :
     __tablename__ = 'Users'
-    username = db.Column(db.String, primary_key = True)
-    gccEmail = db.Column(db.String, nullable = False)
+    username = db.Column(db.String, unique = True)
+    gccEmail = db.Column(db.String, primary_key = True)
     
     bio = db.Column(db.String, nullable = True)
     
@@ -57,6 +58,7 @@ class User(db.Model) :
     commentList = db.relationship('Comment', backref='owner')
     reportList = db.relationship('Report', backref='reporter')
     likeList = db.relationship('Like', backref='user')
+    bookmarkList = db.relationship('Bookmark', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
     
@@ -68,21 +70,28 @@ class User(db.Model) :
 class Report(db.Model) :
     __tablename__ = 'Reports'
     reportID = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String, db.ForeignKey('Users.username'))
+    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
     
 class Like(db.Model):
     __tablename__ = 'Likes'
-    # using a ID primary key so that we can sort likes by most recent like
+    # using a ID primary key so that we can sort by most recent like
     likeID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    username = db.Column(db.String, db.ForeignKey('Users.username'))
+    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    
+class Bookmark(db.Model):
+    __tablename__ = 'Bookmarks'
+    # using a ID primary key so that we can sort by most recent bookmark
+    bookmarkID = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
 class Follow(db.Model):
     __tablename__ = 'Follows'
-    user1 = db.Column(db.String, db.ForeignKey('Users.username'), primary_key=True)
-    user2 = db.Column(db.String, db.ForeignKey('Users.username'), primary_key=True)
+    user1 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
+    user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     # advanced backref because of 2 foreign keys from same table
     follower = db.relationship('User', back_populates='followList', foreign_keys=[user1])
 
@@ -94,7 +103,7 @@ class Post(db.Model) :
     backImage = db.Column(db.String, nullable = False)
     # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String)#, nullable = False)
-    username = db.Column(db.String, db.ForeignKey('Users.username'))
+    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     numLikes = db.Column(db.Integer, default=0)
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
@@ -174,7 +183,7 @@ class Comment(db.Model) :
     content = db.Column(db.String, nullable = False)
     # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
-    username = db.Column(db.String, db.ForeignKey('Users.username'))
+    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
     def to_json(self):
@@ -191,7 +200,7 @@ def update_like_backend():
         db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
         db.session.commit()
     global update_times
-    update_times.append(time.time())
+    update_times.append(math.floor(time.time()))
     update_times.pop(0)
     print(update_times)
 
@@ -322,7 +331,6 @@ def get_recent():
     
     return [p.render_json() for p in recent]
 
-# returns a JSON object containing the post ids of the most recent DEFAULT_POSTS_LOADED posts
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
 # count is an optional field (after question mark), specifies how many posts to load (default: DEFAULT_POSTS_LOADED)
@@ -337,16 +345,16 @@ def get_liked():
     #TODO: consider flooring or rounding time.time to prevent floating point errors
     max_likes = int(request.args.get('max_likes', -1))
     count = request.args.get('count', DEFAULT_POSTS_LOADED)
-    timestamp = float(request.args.get('timestamp', time.time()))
+    timestamp = float(request.args.get('timestamp', math.floor(time.time())))
     # username = request.args.get('username', None)
         
     field = None
     #within earliest timeslot?
-    if not update_times[0] == 0.0 and timestamp >= update_times[0] and timestamp < update_times[1]:
+    if not update_times[0] == 0 and timestamp >= update_times[0] and timestamp < update_times[1]:
         # print("slot 0")
         field = Post.numLikesD3
     #within middle timeslot?
-    elif not update_times[1] == 0.0 and timestamp >= update_times[1] and timestamp < update_times[2]:
+    elif not update_times[1] == 0 and timestamp >= update_times[1] and timestamp < update_times[2]:
         # print("slot 1")
         field = Post.numLikesD2
     #later than most recent timeslot
