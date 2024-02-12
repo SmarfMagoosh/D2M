@@ -23,8 +23,29 @@
         <!-- put the meme details here!-->
         <h2> {{ post["title"] }} </h2>
         <h3> {{ post["username"] }} </h3>
-
     </div>
+    <div class="like-dislike">
+        <button id="like-btn">Like</button>  <div id="like-count">0</div>
+        <button id="dislike-btn">Dislike</button> <div id="dislike-count">0</div>    
+    </div>
+
+    <form>
+        <label for="comment">Leave a Comment:</label><br>
+        <input type="text" id="lname" name="lname" value="D2M coolio"><br><br>
+        <input type="submit" value="Submit!">
+    </form>
+</div>
+
+<div id = "comment-content">
+    <h1> Comments:  </h1>> 
+
+
+  {% for comment in Comments %}
+  <a href="../post/{{post['id']}}/">
+    <img src="../../static/images/{{post['backImage']}}" alt="">
+  </a>
+  {% endfor %}
+    
 </div>
 
 
