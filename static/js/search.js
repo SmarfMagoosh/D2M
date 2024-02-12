@@ -1,8 +1,8 @@
-function searchUsers() {
+function search() {
     const searchInput = document.getElementById('searchInput').value;
     
     // Make an AJAX request to your Flask route
-    fetch(`/search?username=${searchInput}`)
+    fetch(`/search?query=${searchInput}`)
         .then(response => response.json())
         .then(data => {
             displaySearchResults(data);
@@ -21,7 +21,9 @@ function displaySearchResults(results) {
         return;
     }
 
-    results.forEach(user => {
+    console.log(results);
+
+    results.users.forEach(user => {
         const userElement = document.createElement('div');
         userElement.textContent = `${user.username}`;
         userElement.classList.add('dropdown-item');
@@ -30,6 +32,17 @@ function displaySearchResults(results) {
             console.log(`Clicked on ${user.username}`);
         });
         searchResultsDropdown.appendChild(userElement);
+    });
+
+    results.posts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.textContent = `${post.title}`;
+        postElement.classList.add('dropdown-item');
+        postElement.addEventListener('click', () => {
+            // Handle click on dropdown item (e.g., navigate to post)
+            console.log(`Clicked on ${post.title}`);
+        });
+        searchResultsDropdown.appendChild(postElement);
     });
 
     // Show the dropdown
