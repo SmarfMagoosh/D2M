@@ -199,7 +199,6 @@ with app.app_context():
 # actually seems like the session variable will be necessary
 @app.get("/")
 def index():
-    print("GO HOKME")
     return redirect(url_for("get_home"))
 
 @app.get("/create/")
