@@ -42,33 +42,7 @@ function handleResponse(response) {
         console.log("response")
         console.log(response)
         username = response.account.username;
-        // sessionStorage.setItem('theThing', JSON.stringify(response))
-        // sessionStorage.setItem('uggggg', 'whyyyyy')
-        // console.log(sessionStorage)
-    } else {
-        selectAccount();
 
-        /**
-         * If you already have a session that exists with the authentication server, you can use the ssoSilent() API
-         * to make request for tokens without interaction, by providing a "login_hint" property. To try this, comment the 
-         * line above and uncomment the section below.
-         */
-
-        // myMSALObj.ssoSilent(silentRequest).
-        //     then(() => {
-        //         const currentAccounts = myMSALObj.getAllAccounts();
-        //         username = currentAccounts[0].username;
-        //         welcomeUser(username);
-        //         updateTable();
-        //     }).catch(error => {
-        //         console.error("Silent Error: " + error);
-        //         if (error instanceof msal.InteractionRequiredAuthError) {
-        //             signIn();
-        //         }
-        //     });
-    }
-
-    if(response !== null) {
         // Make a fetch request to the root URL of your Flask application
         fetch('/')
         .then(response => {
@@ -106,6 +80,28 @@ function handleResponse(response) {
         .catch(error => {
             console.error('There was a problem with your fetch operation:', error);
         });
+
+    } else {
+        selectAccount();
+
+        /**
+         * If you already have a session that exists with the authentication server, you can use the ssoSilent() API
+         * to make request for tokens without interaction, by providing a "login_hint" property. To try this, comment the 
+         * line above and uncomment the section below.
+         */
+
+        // myMSALObj.ssoSilent(silentRequest).
+        //     then(() => {
+        //         const currentAccounts = myMSALObj.getAllAccounts();
+        //         username = currentAccounts[0].username;
+        //         welcomeUser(username);
+        //         updateTable();
+        //     }).catch(error => {
+        //         console.error("Silent Error: " + error);
+        //         if (error instanceof msal.InteractionRequiredAuthError) {
+        //             signIn();
+        //         }
+        //     });
     }
 }
 
