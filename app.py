@@ -4,6 +4,11 @@ from flask import Flask, session, render_template, url_for, redirect, request, j
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
+from apscheduler.schedulers.background import BackgroundScheduler
+import base64
+import atexit
+import time
+
 import base64
 
 """
@@ -44,15 +49,26 @@ with app.app_context():
 class User(db.Model) :
     __tablename__ = 'Users'
     username = db.Column(db.String, primary_key = True)
-    email = db.Column(db.String, nullable = False)
-    passwordHash = db.Column(db.String, nullable = False)
-    reputationID = db.Column(db.Integer)#, db.ForeignKey('UserReputations.reputationID'))
-    userSettingsID = db.Column(db.Integer)#, db.ForeignKey('UserSettings.userSettingsID'))
+    gccEmail = db.Column(db.String, nullable = False)
+    
+    bio = db.Column(db.String, nullable = True)
+    
+    backupEmail = db.Column(db.String, nullable = True)
+    backupPasswordHash = db.Column(db.String, nullable = True)
+    
+    timesReported = db.Column(db.Integer, nullable = False)
+    numReports = db.Column(db.Integer, nullable = False)
     
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
     postList = db.relationship('Post', backref='owner')
-    postList = db.relationship('Comment', backref='owner')
+    commentList = db.relationship('Comment', backref='owner')
+    reportList = db.relationship('Report', backref='reporter')
+    
+    def postlist_to_json(self):
+        return {
+            "posts": [p.render_json() for p in self.postList]
+		}
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -66,16 +82,15 @@ class Post(db.Model) :
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     spacing = db.Column(db.Integer, nullable = False)
     title = db.Column(db.String, nullable = True)
-    backImage = db.Column(db.String, nullable = False) # TODO check if we don't need this perhaps
+    backImage = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
-    numLikesd1 = db.Column(db.Integer) # [0,10) min ago
-    numLikesd2 = db.Column(db.Integer) # [10,20) min ago
-    numLikesd3 = db.Column(db.Integer) # [20,30) min ago
+    numLikesD1 = db.Column(db.Integer) # [0,10) min ago
+    numLikesD2 = db.Column(db.Integer) # [10,20) min ago
+    numLikesD3 = db.Column(db.Integer) # [20,30) min ago
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
-    extraImages = db.relationship('ExtraPostImage', backref='parentPost')
     comments = db.relationship('Comment', backref='parentPost')
     textBoxes = db.relationship('TextBox', backref='parentPost')
     reportsList = db.relationship('Report', backref='post')
@@ -106,35 +121,16 @@ class Post(db.Model) :
             "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO 
         }
     def to_json(self):
-	    return {
-			"id": self.postID,
-			"spacing": self.spacing,
-			"title": self.title,
-			"backImage": self.backImage,
-			"username": self.username,
-            "extraImages": [i.to_json() for i in self.extraImages],
+        return {
+            "id": self.postID,
+            "spacing": self.spacing,
+            "title": self.title,
+            "backImage": self.backImage,
+            "username": self.username,
+            "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-		}
-
-class ExtraPostImage(db.Model) :
-    __tablename__ = 'ExtraPostImages'
-    imageID = db.Column(db.Integer, primary_key = True)
-    url = db.Column(db.String, nullable = False)
-    size = db.Column(db.Float, nullable = False)
-    postition = db.Column(db.String, nullable = False)
-    orientation = db.Column(db.String, nullable = False)
-    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
-    
-    def to_json(self):
-	    return {
-			"imageID": self.imageID,
-			"url": self.url,
-			"size": self.size,
-			"position": self.postition,
-			"orientation": self.orientation,
-            "parentPost": self.postID,
-		}
+        }
 
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
@@ -179,6 +175,14 @@ class Comment(db.Model) :
 			"parentPost": self.postID,
 		}
 
+def update_like_backend():
+    with app.app_context():
+        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+        db.session.commit()
+    global update_times
+    update_times.append(time.time())
+    update_times.pop(0)
+    print(update_times)
 
 with app.app_context():
     db.drop_all()
@@ -186,17 +190,24 @@ with app.app_context():
 
         # Create posts  to be inserted
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", username = "Sean Queary Lanard")
+                 backImage = "4 rules.png", username = "Sean Queary Lanard", numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi")
+                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-                 backImage = "Stop doing databases.png", username = "The Zhangster")
+                 backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
 
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
     db.session.commit()
 
+# for the update to like counts every 10 minutes
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=update_like_backend, trigger="interval", minutes=MINUTES_BETWEEN_REFRESH)
+scheduler.start()
+atexit.register(lambda: scheduler.shutdown())
+# preliminary copy
+update_like_backend()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GET ROUTES (return an html document)
@@ -214,11 +225,11 @@ def get_create():
 
 @app.get("/home/")
 def get_home():
-    # gets the most recent 30 posts hopefully and sends them to the frontend
+    # gets the most recent posts and sends them to the frontend
     recent = Post.query.order_by(Post.postID.desc()) \
-                        .limit(30) \
+                        .limit(DEFAULT_POSTS_LOADED) \
                         .all()
-    return render_template("home.html", posts=[p.to_json() for p in recent])
+    return render_template("home.html", posts=[p.render_json() for p in recent])
 
 @app.get("/signin-oidc/")
 def get_login():
@@ -250,18 +261,17 @@ def get_settings():
 @app.post("/create/")
 def post_meme():
     body = request.json
-    print(body)
-    # data = body['imgData'][23:]
-    # id = len(Post.query.all()) + 1
-    # # TODO save under unique name somehow (based on post ID I would guess)
-    # with open(f"./static/images/{id}.jpeg", "wb") as file:
-    #      file.write(base64.b64decode(data))
-    # post_inst = Post(
-    #     spacing = 0, # TODO on sprint 1
-    #     title = data['title'],
-    #     backImage = f"./static/images/{id}.jpeg",
-    #     username = "Carnge Melon Baller"
-    # )
+    data = body['imgData'][23:]
+    id = len(Post.query.all()) + 1
+    # TODO save under unique name somehow (based on post ID I would guess)
+    with open(f"./static/images/{id}.jpeg", "wb") as file:
+         file.write(base64.b64decode(data))
+    post_inst = Post(
+        spacing = 0, # TODO on sprint 1
+        title = data['title'],
+        backImage = f"./static/images/{id}.jpeg",
+        username = "Carnge Melon Baller"
+    )
     return "hello world"
 
 @app.post("/login/")
@@ -285,26 +295,85 @@ def add_user():
 # QUERY/API ROUTES (return a json object)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# returns a JSON object containing the post ids of the most recent (TODO:number) posts
+# returns a JSON object containing the post ids of the most recent DEFAULT_POSTS_LOADED posts
 # start_id is an optional field (after question mark), specifies the post id to start from
-#       this is used if the user approaches the end of the pre-loaded content on the page to get posts below the final one
-# count is an optional field (after question mark), specifies how many posts to load, defaults to 30
-@app.get("/API/recent/")
+#       the purpose of this is to allow loading posts once the page runs out
+# count is an optional field (after question mark), specifies how many posts to load, defaults to DEFAULT_POSTS_LOADED
+# example: /API/get_by_recent?start_id=10&count=30 will load up to 30 memes made before id 10
+@app.get("/API/get_by_recent/")
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
-    count = request.args.get('count', 30)
-    recent = ''
-    print(str(start_id) + " " + str(count))
-    if start_id == -1:
-        recent = Post.query.order_by(Post.postID.desc()) \
+    count = request.args.get('count', DEFAULT_POSTS_LOADED)
+    # username = request.args.get('username', None)
+    recent = Post.query
+    # print(str(start_id) + " " + str(count))
+    
+    if start_id != -1:
+        recent = recent.filter(Post.postID<start_id)
+    # if username != None:
+    #     recent = recent.filter(Post.username==username)
+    
+    recent = recent.order_by(Post.postID.desc()) \
                         .limit(count) \
                         .all()
+    
+    return [p.render_json() for p in recent]
+
+# returns a JSON object containing the post ids of the most recent DEFAULT_POSTS_LOADED posts
+# max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
+# timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
+# count is an optional field (after question mark), specifies how many posts to load (default: DEFAULT_POSTS_LOADED)
+# example: /API/get_by_likes?max_likes=10&count=30 
+#   will load up to 30 memes
+#   memes chosen from those with 10 or less likes
+#   using the default timeslot (most recent)
+
+@app.get("/API/get_by_likes/")
+def get_liked():
+    #TODO: accept the list of other posts with an equal amount of likes that already rendered
+    #TODO: consider flooring or rounding time.time to prevent floating point errors
+    max_likes = int(request.args.get('max_likes', -1))
+    count = request.args.get('count', DEFAULT_POSTS_LOADED)
+    timestamp = float(request.args.get('timestamp', time.time()))
+    # username = request.args.get('username', None)
+        
+    field = None
+    #within earliest timeslot?
+    if not update_times[0] == 0.0 and timestamp >= update_times[0] and timestamp < update_times[1]:
+        # print("slot 0")
+        field = Post.numLikesD3
+    #within middle timeslot?
+    elif not update_times[1] == 0.0 and timestamp >= update_times[1] and timestamp < update_times[2]:
+        # print("slot 1")
+        field = Post.numLikesD2
+    #later than most recent timeslot
+    elif timestamp >= update_times[2]:
+        # print("slot 2")
+        field = Post.numLikesD1
+    #it's not within any current timeslot, say it's outdated
     else:
-        recent = Post.query.filter(Post.postID<start_id) \
-                        .order_by(Post.postID.desc()) \
+        return {
+            'outdated': True,
+            'timestamp': timestamp,
+            'posts': []
+        }
+        
+    
+    recent = Post.query
+    if max_likes != -1:
+        recent = recent.filter(field<=max_likes)
+    # if username != None:
+    #     recent = recent.filter(Post.username==username)
+    
+    recent = recent.order_by(field.desc()) \
                         .limit(count) \
                         .all()
-    return [p.to_json() for p in recent]
+    
+    return {
+        'outdated': False,
+        'timestamp': timestamp,
+        'posts': [p.render_json() for p in recent]
+    }
 
 @app.route('/search', methods=['GET'])
 def search():
