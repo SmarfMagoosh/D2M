@@ -286,7 +286,7 @@ def get_recent():
     count = request.args.get('count', DEFAULT_POSTS_LOADED)
     # username = request.args.get('username', None)
     recent = Post.query
-    print(str(start_id) + " " + str(count))
+    # print(str(start_id) + " " + str(count))
     
     if start_id != -1:
         recent = recent.filter(Post.postID<start_id)
