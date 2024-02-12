@@ -10,6 +10,7 @@ import time
 
 # for easy changing of defaults
 DEFAULT_POSTS_LOADED = 30
+MINUTES_BETWEEN_REFRESH = 1
 
 # add the script directory to the python path
 scriptdir = os.path.abspath(os.path.dirname(__file__))
@@ -174,6 +175,7 @@ def update_like_backend():
     global update_times
     update_times.append(time.time())
     update_times.pop(0)
+    print(update_times)
 
 with app.app_context():
     db.drop_all()
@@ -181,22 +183,24 @@ with app.app_context():
 
         # Create posts  to be inserted
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", username = "Sean Queary Lanard")
+                 backImage = "4 rules.png", username = "Sean Queary Lanard", numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi")
+                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-                 backImage = "Stop doing databases.png", username = "The Zhangster")
+                 backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
 
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
     db.session.commit()
 
-# for the update to like backups every 10 minutes
+# for the update to like counts every 10 minutes
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=update_like_backend, trigger="interval", seconds=10)
+scheduler.add_job(func=update_like_backend, trigger="interval", minutes=MINUTES_BETWEEN_REFRESH)
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
+# preliminary copy
+update_like_backend()
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GET ROUTES (return an html document)
@@ -275,7 +279,7 @@ def post_login():
 # start_id is an optional field (after question mark), specifies the post id to start from
 #       the purpose of this is to allow loading posts once the page runs out
 # count is an optional field (after question mark), specifies how many posts to load, defaults to DEFAULT_POSTS_LOADED
-# example: /API/recent?start_id=10&count=30 will load up to 30 memes made before id 10
+# example: /API/get_by_recent?start_id=10&count=30 will load up to 30 memes made before id 10
 @app.get("/API/get_by_recent/")
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
@@ -296,35 +300,43 @@ def get_recent():
     return [p.render_json() for p in recent]
 
 # returns a JSON object containing the post ids of the most recent DEFAULT_POSTS_LOADED posts
-# start_id is an optional field (after question mark), specifies the post id to start from
-#       the purpose of this is to allow loading posts once the page runs out
-# count is an optional field (after question mark), specifies how many posts to load, defaults to DEFAULT_POSTS_LOADED
-# example: /API/recent?start_id=10&count=30 will load up to 30 memes made before id 10
+# max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
+# timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
+# count is an optional field (after question mark), specifies how many posts to load (default: DEFAULT_POSTS_LOADED)
+# example: /API/get_by_likes?max_likes=10&count=30 
+#   will load up to 30 memes
+#   memes chosen from those with 10 or less likes
+#   using the default timeslot (most recent)
 
 @app.get("/API/get_by_likes/")
 def get_liked():
     #TODO: accept the list of other posts with an equal amount of likes that already rendered
+    #TODO: consider flooring or rounding time.time to prevent floating point errors
     max_likes = int(request.args.get('max_likes', -1))
     count = request.args.get('count', DEFAULT_POSTS_LOADED)
-    timestamp = request.args.get('timestamp', None)
+    timestamp = float(request.args.get('timestamp', time.time()))
     # username = request.args.get('username', None)
-    
-    if timestamp == None or timestamp < update_times[0]:
-        return {
-            'outdated': True,
-            'posts': []
-        }
         
     field = None
-    #later than earliest, but earlier than mid
-    if timestamp < update_times[1]:
+    #within earliest timeslot?
+    if not update_times[0] == 0.0 and timestamp >= update_times[0] and timestamp < update_times[1]:
+        # print("slot 0")
         field = Post.numLikesD3
-    #later than mid, but earlier than most recent
-    elif timestamp < update_times[2]:
+    #within middle timeslot?
+    elif not update_times[1] == 0.0 and timestamp >= update_times[1] and timestamp < update_times[2]:
+        # print("slot 1")
         field = Post.numLikesD2
-    #later than most recent
-    else:
+    #later than most recent timeslot
+    elif timestamp >= update_times[2]:
+        # print("slot 2")
         field = Post.numLikesD1
+    #it's not within any current timeslot, say it's outdated
+    else:
+        return {
+            'outdated': True,
+            'timestamp': timestamp,
+            'posts': []
+        }
         
     
     recent = Post.query
@@ -339,6 +351,7 @@ def get_liked():
     
     return {
         'outdated': False,
+        'timestamp': timestamp,
         'posts': [p.render_json() for p in recent]
     }
 
