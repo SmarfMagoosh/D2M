@@ -235,22 +235,6 @@ def get_home():
 def get_login():
     return render_template("signin-oidc.html")
 
-@app.route('/signin-oidc/', methods=['POST'])
-def add_user():
-    data = request.get_json()
-    print(data)
-    new_user = User(
-        username=data['username'],
-        gccEmail=data['gccEmail'],
-        backupPasswordHash=data['backupPasswordHash'],
-        timesReported=0,
-        numReports=0
-        # Add other fields as needed
-    )
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({'message': 'User added successfully'}), 201
-
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
@@ -294,8 +278,20 @@ def post_meme():
 def post_login():
     return ""
 
-@app.route('/add_user/<int:username>', methods=['GET'])
-def checkGet(username):
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    data = request.get_json()
+    print(data)
+    new_user = User(
+        username=data['username'],
+        gccEmail=data['gccEmail'],
+        backupPasswordHash=data['backupPasswordHash'],
+        timesReported=0,
+        numReports=0
+        # Add other fields as needed
+    )
+    db.session.add(new_user)
+    db.session.commit()
     return jsonify({'message': 'User added successfully'}), 201
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -397,6 +393,17 @@ def search():
     post_results = [{'title': post.title} for post in matching_posts]
 
     return jsonify({'users': user_results, 'posts': post_results})
+    
+@app.route('/check_user', methods=['GET'])
+def check_user():
+    username = request.args.get('username')
+
+    user = User.query.filter_by(username=username).first()
+
+    if user:
+        return jsonify({'exists': True})
+    else:
+        return jsonify({'exists': False})
 
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")

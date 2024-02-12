@@ -41,6 +41,21 @@ function handleResponse(response) {
     if (response !== null) {
         username = response.account.username;
 
+        fetch(`/check_user?username=${username}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.exists) {
+                console.log(`User with username ${username} exists`);
+            } else {
+                console.log(`User with username ${username} does not exist`);
+                /* TODO: sign them up */
+            }
+        })
+        .catch(error => {
+            console.error('Error checking user:', error);
+        });
+
         // Make a fetch request to the root URL of your Flask application
         fetch('/')
         .then(response => {
