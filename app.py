@@ -50,7 +50,6 @@ class User(db.Model) :
     backupPasswordHash = db.Column(db.String, nullable = True)
     
     timesReported = db.Column(db.Integer, default = 0)
-    numReports = db.Column(db.Integer, default = 0)
     
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
@@ -78,6 +77,7 @@ class Like(db.Model):
     __tablename__ = 'Likes'
     # using a ID primary key so that we can sort by most recent like
     likeID = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    positive = db.Column(db.Boolean, default=True)
     username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
@@ -114,6 +114,7 @@ class Post(db.Model) :
     comments = db.relationship('Comment', backref='parentPost')
     textBoxes = db.relationship('TextBox', backref='parentPost')
     reportsList = db.relationship('Report', backref='post')
+    likeUsers = db.relationship('Like', backref='post')
 
     def remix_json(self):
         return {
@@ -330,6 +331,24 @@ def get_recent():
                         .all()
     
     return [p.render_json() for p in recent]
+
+# @app.get("/API/get_liked/")
+# def get_recent():
+#     start_id = int(request.args.get('start_id', -1))
+#     count = request.args.get('count', DEFAULT_POSTS_LOADED)
+#     gccEmail = request.args.get('gccEmail', None)
+#     likes = User.query.get_or_404(gccEmail).likeList
+#     recent = Post.query
+#     if start_id != -1:
+#         recent = recent.filter(Post.postID<start_id)
+#     # if username != None:
+#     #     recent = recent.filter(Post.username==username)
+    
+#     recent = recent.order_by(Post.postID.desc()) \
+#                         .limit(count) \
+#                         .all()
+    
+#     return [l.post.render_json() for l in likes]
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
