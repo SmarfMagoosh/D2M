@@ -281,10 +281,13 @@ def post_login():
 @app.route('/add_user', methods=['POST'])
 def add_user():
     data = request.get_json()
+    print(data)
     new_user = User(
         username=data['username'],
-        email=data['email'],
-        passwordHash=data['passwordHash'],
+        gccEmail=data['gccEmail'],
+        backupPasswordHash=data['backupPasswordHash'],
+        timesReported=0,
+        numReports=0
         # Add other fields as needed
     )
     db.session.add(new_user)

@@ -84,8 +84,8 @@ function handleResponse(response) {
                 },
                 body: JSON.stringify({
                     username: username,
-                    email: 'example@example.com',
-                    passwordHash: 'example_password_hash'
+                    gccEmail: username,
+                    backupPasswordHash: 'example_password_hash'
                     // Add other fields as needed
                 })
             })
