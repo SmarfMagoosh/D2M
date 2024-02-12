@@ -24,8 +24,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{dbfile}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# setup for sorting by likes
-last_update = time.time()
+# setup queue for sorting by likes
+update_times = [0.0, 0.0, 0.0]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -171,8 +171,9 @@ def update_like_backend():
     with app.app_context():
         db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
         db.session.commit()
-    last_update = time.time()
-    print(last_update)
+    global update_times
+    update_times.append(time.time())
+    update_times.pop(0)
 
 with app.app_context():
     db.drop_all()
@@ -193,7 +194,7 @@ with app.app_context():
 
 # for the update to like backups every 10 minutes
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=update_like_backend, trigger="interval", minutes=10)
+scheduler.add_job(func=update_like_backend, trigger="interval", seconds=10)
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
@@ -275,7 +276,7 @@ def post_login():
 #       the purpose of this is to allow loading posts once the page runs out
 # count is an optional field (after question mark), specifies how many posts to load, defaults to DEFAULT_POSTS_LOADED
 # example: /API/recent?start_id=10&count=30 will load up to 30 memes made before id 10
-@app.get("/API/get_recent/")
+@app.get("/API/get_by_recent/")
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
     count = request.args.get('count', DEFAULT_POSTS_LOADED)
@@ -294,11 +295,52 @@ def get_recent():
     
     return [p.render_json() for p in recent]
 
-# returns a JSON object containing all of the data necessary to reproduce the post specified
-# @app.get("/API/getpostdata/<int:post_id>/")
-# def get_post(post_id):
-    # return json with image link, text boxes + box settings, filters, number of likes
-    # return
+# returns a JSON object containing the post ids of the most recent DEFAULT_POSTS_LOADED posts
+# start_id is an optional field (after question mark), specifies the post id to start from
+#       the purpose of this is to allow loading posts once the page runs out
+# count is an optional field (after question mark), specifies how many posts to load, defaults to DEFAULT_POSTS_LOADED
+# example: /API/recent?start_id=10&count=30 will load up to 30 memes made before id 10
+
+@app.get("/API/get_by_likes/")
+def get_liked():
+    #TODO: accept the list of other posts with an equal amount of likes that already rendered
+    max_likes = int(request.args.get('max_likes', -1))
+    count = request.args.get('count', DEFAULT_POSTS_LOADED)
+    timestamp = request.args.get('timestamp', None)
+    # username = request.args.get('username', None)
+    
+    if timestamp == None or timestamp < update_times[0]:
+        return {
+            'outdated': True,
+            'posts': []
+        }
+        
+    field = None
+    #later than earliest, but earlier than mid
+    if timestamp < update_times[1]:
+        field = Post.numLikesD3
+    #later than mid, but earlier than most recent
+    elif timestamp < update_times[2]:
+        field = Post.numLikesD2
+    #later than most recent
+    else:
+        field = Post.numLikesD1
+        
+    
+    recent = Post.query
+    if max_likes != -1:
+        recent = recent.filter(field<=max_likes)
+    # if username != None:
+    #     recent = recent.filter(Post.username==username)
+    
+    recent = recent.order_by(field.desc()) \
+                        .limit(count) \
+                        .all()
+    
+    return {
+        'outdated': False,
+        'posts': [p.render_json() for p in recent]
+    }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
