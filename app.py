@@ -39,8 +39,8 @@ class User(db.Model) :
     username = db.Column(db.String, primary_key = True)
     email = db.Column(db.String, nullable = False)
     passwordHash = db.Column(db.String, nullable = False)
-    reputationID = db.Column(db.Integer, db.ForeignKey('UserReputations.reputationID'))
-    userSettingsID = db.Column(db.Integer, db.ForeignKey('UserSettings.userSettingsID'))
+    reputationID = db.Column(db.Integer)#, db.ForeignKey('UserReputations.reputationID'))
+    userSettingsID = db.Column(db.Integer)#, db.ForeignKey('UserSettings.userSettingsID'))
     
     # classes that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.owner
