@@ -230,15 +230,16 @@ with app.app_context():
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
-    like11 = Bookmark(user=u1, postID=10)
-    like12 = Bookmark(user=u1, postID=30)
-    like13 = Bookmark(user=u1, postID=20)
+    bm11 = Bookmark(user=u1, postID=10)
+    bm12 = Bookmark(user=u1, postID=30)
+    bm13 = Bookmark(user=u1, postID=20)
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
     db.session.add_all((u1,u2))
     db.session.add(follow12)
     db.session.add_all((like11,like12,like13))
+    db.session.add_all((bm11,bm12,bm13))
     db.session.commit()
 
 # for the update to like counts every 10 minutes
