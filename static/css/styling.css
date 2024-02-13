@@ -65,6 +65,26 @@
     color: black; /* Black text on hover */
 }
 
+#searchResultsDropdown {
+  display: none; /* Initially hide the dropdown */
+  position: absolute; /* Position the dropdown absolutely */
+  top: calc(100%); /* Place the dropdown below the search bar with some spacing */
+  left: 50%; /* Align the dropdown with the center of the search bar */
+  transform: translateX(-50%); /* Adjust to center the dropdown horizontally */
+  z-index: 1; /* Ensure the dropdown is above other content */
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+}
+
+#searchResultsDropdown .dropdown-item {
+  cursor: pointer;
+}
+
+#searchResultsDropdown .dropdown-item:hover {
+  background-color: #ddd;
+}
 /* Styles for the circular button */
 .circular-button {
   width: 6rem; /* Set the width of the button */

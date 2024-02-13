@@ -13,6 +13,7 @@
     <title>{% block title %}{% endblock %} - D2M</title>
     <link rel="stylesheet" href="../static/css/styling.css">
     <script src = "../static/js/scripting.js"></script>
+<<<<<<< HEAD
     <link rel="icon" type="image/x-icon" href="../../static/images/logo.png">
     {% block head %} {% endblock %}
 </head>
@@ -28,6 +29,28 @@
               [bookmarks]
               <a href="{{ url_for('get_settings') }}">Settings</a>
               <a href="{{ url_for('get_login') }}">Login</a>
+=======
+    <script src = "../static/js/search.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <a href="home.html">Home</a>
+        <div>
+          <input type="text" id="searchInput" placeholder="Search by name">
+          <button onclick="search()">Search</button>
+        </div>
+        <div id="searchResultsDropdown" class="dropdown-content">
+          
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Dropdown</button>
+            <div class="dropdown-content">
+              <a href="profile.html">Profile</a>
+              [bookmarks]
+              <a href="settings.html">Settings</a>
+              <a id="loginOrProfile" href="../signin-oidc">Login/Signup</a>
+>>>>>>> 5820aee87e413f1ed07abfb4d01d8f7b40aa587d
             </div>
           </div>
     </nav>
@@ -37,6 +60,12 @@
     <div id = "main-content-div">
         {% block content %}{% endblock %}
     </div>
+<<<<<<< HEAD
     
+=======
+
+  <!-- importing app scripts (load order is important) -->
+
+>>>>>>> 5820aee87e413f1ed07abfb4d01d8f7b40aa587d
 </body>
 </html>

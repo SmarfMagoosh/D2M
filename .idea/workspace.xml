@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4347e131-2d2f-43ce-b6fa-5a9530a16306" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.vs/D2M/FileContentIndex/d5a2c3c3-f24e-4e82-bc0c-dfff48005720.vsidx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/D2M/v17/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/D2M/v17/.suo" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/slnx.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/slnx.sqlite" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/database.sqlite3" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +25,7 @@
     <option name="version" value="2" />
   </component>
   <component name="ProjectId" id="2bTTHq99XcZUyxPGpzrp6k16QLl" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -35,7 +34,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Users/BEHRBN22/Senior Project/D2M"
+    "last_opened_file_path": "C:/Users/BEHRBN22/OneDrive - Grove City College/Desktop/COMP 424/In-class Exercises/OOP"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
