@@ -76,7 +76,7 @@ class User(db.Model) :
 class Report(db.Model) :
     __tablename__ = 'Reports'
     reportID = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
 
@@ -92,7 +92,7 @@ class Bookmark(db.Model):
     __tablename__ = 'Bookmarks'
     # using a ID primary key so that we can sort by most recent bookmark
     bookmarkID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
 class Follow(db.Model):
@@ -110,7 +110,7 @@ class Post(db.Model) :
     backImage = db.Column(db.String, nullable = False)
     # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String)#, nullable = False)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     numLikes = db.Column(db.Integer, default=0)
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
@@ -136,14 +136,14 @@ class Post(db.Model) :
             "id": self.postID,
             "title": self.title,
             "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
-            "username": self.username,
+            "userEmail": self.userEmail,
             "numLikes": self.numLikes,
         }
     def page_json(self):
         return {
             "id": self.postID,
             "title": self.title,
-            "username": self.username,
+            "userEmail": self.userEmail,
             "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
@@ -155,7 +155,7 @@ class Post(db.Model) :
             "spacing": self.spacing,
             "title": self.title,
             "backImage": self.backImage,
-            "username": self.username,
+            "userEmail": self.userEmail,
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
@@ -192,7 +192,7 @@ class Comment(db.Model) :
     content = db.Column(db.String, nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
     def to_json(self):
@@ -200,7 +200,7 @@ class Comment(db.Model) :
 			"id": self.commentID,
 			"content": self.content,
 			"timePosted": self.timePosted,
-			"owner": self.username,
+			"owner": self.owner.username,
 			"parentPost": self.postID,
 		}
 
@@ -223,15 +223,17 @@ with app.app_context():
     db.create_all()
 
         # Create posts  to be inserted
-    post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", username = "Sean Queary Lanard", numLikes=10)
-    post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
-    post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-                 backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
     u1 = User(username="u1", gccEmail = "u1@gcc.edu")
     u2 = User(username="u2", gccEmail = "u2@gcc.edu")
-    # follow12 = Follow(user1 = "u1", user2 = "u2")
+    u3 = User(username="u3", gccEmail = "u3@gcc.edu")
+    post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
+                 backImage = "4 rules.png", owner = u2, numLikes=10)
+    post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
+                 backImage = "Gimbal_Lock_Plane.gif", userEmail = "Locke Gimbaldi", numLikes=1)
+    post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
+                 backImage = "Stop doing databases.png", owner = u3, numLikes=100)
+    follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
+    follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
@@ -316,7 +318,7 @@ def post_meme():
         spacing = 0, # TODO on sprint 1
         title = data['title'],
         backImage = f"./static/images/{id}.jpeg",
-        username = "Carnge Melon Baller"
+        userEmail = "Carnge Melon Baller"
     )
     return "hello world"
 
@@ -366,6 +368,24 @@ def get_recent():
         recent = recent.filter(Post.postID<=start_id)
     # if username != None:
     #     recent = recent.filter(Post.username==username)
+    
+    recent = recent.order_by(Post.postID.desc()) \
+                        .limit(count) \
+                        .all()
+    
+    return [p.render_json() for p in recent]
+
+@app.get("/API/get_followed_posts/<string:gccEmail>")
+def get_followed_posts(gccEmail):
+    start_id = int(request.args.get('start_id', -1))
+    count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
+    follows = User.query.get_or_404(gccEmail).followList
+    follows = [f.user2 for f in follows]
+    recent = Post.query
+    #after this
+    if start_id != -1:
+        recent = recent.filter(Post.postID<=start_id)
+    recent = recent.filter(Post.userEmail.in_(follows))
     
     recent = recent.order_by(Post.postID.desc()) \
                         .limit(count) \
