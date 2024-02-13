@@ -29,30 +29,29 @@
         <button id="dislike-btn">Dislike</button>   
         <button id="bookmark-btn">Bookmark</button>
         <button id="report-btn">Report</button>
-
-        <div id="report-popup" class="popup">
-            <div class="popup-content">
-                <span class="close-btn" onclick="closePopup()">&times;</span>
-                <h2>Reason for Report:</h2>
-                <textarea id="report-text" placeholder="Enter your report"></textarea>
-                <button onclick="submitReport()">Submit</button>
-                <button onclick="closePopup()">Cancel</button>
-            </div>
-        </div>
-
         <button id="copy-link-btn">Copy Link</button>
         <button id="remix-btn">Remix</button>
+    </div>
+    
+    <div id="report-popup" class="popup">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closePopup()">&times;</span>
+            <label for="comment">Reason for Report:</label>
+            <textarea id="report-text" placeholder="Enter your report"></textarea>
+            <button onclick="submitReport()">Submit</button>
+            <button onclick="closePopup()">Cancel</button>
+        </div>
     </div>
 
     <form>
         <label for="comment">Leave a Comment:</label><br>
-        <input type="text" id="lname" name="lname" value="D2M coolio"><br><br>
+        <textarea id="comment-box" placeholder="Enter your comment"></textarea><br>
         <input type="submit" value="Submit!">
     </form>
 </div>
 
 <div id = "comment-content">
-    <h1> Comments:  </h1>
+    <h1> Comments:</h1>
 
 
   {% for comment in Comments %}

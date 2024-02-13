@@ -15,13 +15,14 @@
   <a href="{{ url_for('get_post', post_id=post.id) }}">
     <img src="../../static/images/{{post['backImage']}}" alt="">
   </a>
+  {% endfor %}
   
   <div class="row" data-masonry="{&quot;percentPosition&quot;: true }" style="position: relative; height: 1064.66px;">
     
     
   </div>
   
-  {% endfor %}
+
 
 {% endblock %}
 
