@@ -1,19 +1,17 @@
-// Create the main myMSALObj instance
-// configuration parameters are located at authConfig.js
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
-
 let username = "";
 
 /**
- * A promise handler needs to be registered for handling the
- * response returned from redirect flow. For more information, visit:
- * 
- */
+     * A promise handler needs to be registered for handling the
+     * response returned from redirect flow. For more information, visit:
+     * 
+     */
 myMSALObj.handleRedirectPromise()
-    .then(handleResponse)
-    .catch((error) => {
-        console.error(error);
-    });
+.then(handleResponse)
+.catch((error) => {
+    console.error(error);
+});
+
 
 function selectAccount () {
     /**
@@ -31,6 +29,8 @@ function selectAccount () {
     } else if (currentAccounts.length === 1) {
         username = currentAccounts[0].username;
     }
+
+    console.log(sessionStorage)
 }
 
 function handleResponse(response) {
@@ -41,48 +41,42 @@ function handleResponse(response) {
     if (response !== null) {
         username = response.account.username;
 
-        fetch(`/check_user?username=${username}`)
+        fetch(`/check_user?gccEmail=${username}`)
         .then(response => response.json())
         .then(data => {
             console.log(data);
-            if (data.exists) {
+            if (data.exists && data.username !== null) {
+                // this account already exists so this will just log them in
                 console.log(`User with username ${username} exists`);
+                console.log("GO HOME NOW")
+                window.location.href = "../home";
             } else {
+                // this doesn't exist yet so now we want to add the user to the database and have them set a username/password
                 console.log(`User with username ${username} does not exist`);
-                /* TODO: sign them up */
                 // Make a fetch request to the root URL of your Flask application
                 fetch('/')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
-                    // Optionally handle the response if needed
-                    console.log('Fetch request successful');
-                    fetch('/add_user', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            username: username,
-                            gccEmail: username,
-                            backupPasswordHash: 'example_password_hash'
-                            // Add other fields as needed
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) { throw new Error('Failed to add user'); }
-                        return response.json();
-                    })
-                    .then(data => console.log(data.message))
-                    .catch(error => console.error('Error:', error));
-                    window.location.href = response.url;
+                    // // Optionally handle the response if needed
+                    // console.log('Fetch request successful');
+                    // let form = /*new HTMLFormElement(*/document.getElementById("registerForm")/*)*/
+                    // console.log(form)
                 })
                 .catch(error => {  console.error('There was a problem with your fetch operation:', error);  });
+
+                //this is where add user used to be
+
+                formMode = document.getElementById("formMode");
+                formMode.classList.toggle("show-register");
             }
         })
         .catch(error => {
             console.error('Error checking user:', error);
         });
     } else {
+        console.log("selectaccounts")
         selectAccount();
 
         /**
@@ -129,4 +123,42 @@ function signOut() {
     };
 
     myMSALObj.logoutRedirect(logoutRequest);
+}
+
+function addUser() {
+    usernameField = document.getElementById("newUsernameField")
+    passwordField = document.getElementById("newPasswordField")
+
+    fetch('/add_user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            username: usernameField.value,
+            gccEmail: username,
+            backupPasswordHash: passwordField.value
+            // Add other fields as needed
+        })
+    })
+    .then(response => {
+        if (!response.ok) { throw new Error('Failed to add user'); }
+        return response.json();
+    })
+    .then(data => {
+        window.location.href = "../home";
+    })
+    .catch(error => console.error('Error:', error));
+
+    console.log("IT SHOULD BE GOING HOME");
+}
+
+function loginExisting() {
+    usernameField = document.getElementById("existingUsername")
+    passwordField = document.getElementById("existingPassword")
+
+    fetch(`/loginExisting?username=${usernameField.value}&password=${passwordField.value}`)
+    .then(response => {
+        console.log(response);
+        window.location.href = "../home";
+    })
+    .catch(error => console.error('Error:', error));
 }

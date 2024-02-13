@@ -204,9 +204,9 @@ class Comment(db.Model) :
 		}
 
 def update_like_backend():
-    with app.app_context():
-        # db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-        db.session.commit()
+    # with app.app_context():
+    #     # db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+    #     # db.session.commit()
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
@@ -223,10 +223,12 @@ with app.app_context():
                  backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
+    
+    # testUser = User(username="bryce", gccEmail="behrbn22@gcc.edu", backupPasswordHash="pass")
 
 
     # Add all of these records to the session and commit changes
-    db.session.add_all((post1, post2, post3))
+    db.session.add_all((post1, post2, post3))#, testUser))
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -263,6 +265,7 @@ def get_home():
 def get_login():
     return render_template("signin-oidc.html")
 
+
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
@@ -280,7 +283,6 @@ def get_profile(user_id = -1):
 @app.get("/settings/")
 def get_settings():
     return render_template("settings.html")
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -306,7 +308,7 @@ def post_meme():
 def post_login():
     return ""
 
-@app.route('/add_user', methods=['POST'])
+@app.post('/add_user')#, methods=['POST'])
 def add_user():
     data = request.get_json()
     print(data)
@@ -319,7 +321,8 @@ def add_user():
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({'message': 'User added successfully'}), 201
+    return [url_for("get_home")]
+    # return jsonify({'message': 'User added successfully'}), 201
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
@@ -440,14 +443,31 @@ def search():
     
 @app.route('/check_user', methods=['GET'])
 def check_user():
-    username = request.args.get('username')
+    gccEmail = request.args.get('gccEmail')
 
-    user = User.query.filter_by(username=username).first()
-
+    # user = User.query.get_or_404(gccEmail);
+    user = User.query.filter_by(gccEmail=gccEmail).first()
+    
     if user:
-        return jsonify({'exists': True})
+        return jsonify({'exists': True, 'username': user.username})
     else:
-        return jsonify({'exists': False})
+        return jsonify({'exists': False, 'username': ""})
+    
+@app.get('/loginExisting')
+def loginExisting():
+    username = request.args.get('username')
+    password = request.args.get('password')
+
+    print("username: " + username)
+    print("password: " + password)
+    # user = User.query.get_or_404(gccEmail);
+    user = User.query.filter_by(username=username).first()
+    print(user)
+
+    print(user.backupPasswordHash)
+    
+    # return jsonify({'exists': False, 'username': ""})
+    return [url_for("get_home")]
 
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")

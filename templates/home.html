@@ -19,8 +19,8 @@ crossorigin="anonymous"></script>
 
   {% for post in posts %}
 
-  <a href="../post/{{post['postID']}}/">
-    <img src="../../static/images/{{post['backImage']}}" alt="">
+  <a href="../post/{{post['id']}}/">
+    <img src="../../static/images/{{post['thumbnail']}}" alt="">
   </a>
 
   {% endfor %}
