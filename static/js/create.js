@@ -1,4 +1,3 @@
-
 $("document").ready(() => {
     // create namespace for window
     window.create = {}
@@ -13,24 +12,54 @@ $("document").ready(() => {
     window.create.ctx = window.create.canvas.getContext("2d")
 
     // Add text boxes
-    $("#meme").append(
-        $("<div></div>").attr("class", "meme-text").attr("id", "meme-text-1")
-        .attr("style", "top: 2rem").text(window.create.textBoxes[0].value).hide(),
-        $("<div></div>").attr("class", "meme-text").attr("id", "meme-text-2")
-        .attr("style", "bottom: 2rem").text(window.create.textBoxes[1].value).hide()
-    );
-    $(".meme-text").draggable()
-    $(".meme-text").resizable()
-
+    $(".meme-text").hide()
+    $(".meme-text").mouseenter(e => {
+        let x = $(e.target).parents(".text-box-container")
+        let meme = x.parent()
+        x.detach()
+        meme.append(x)
+    })
+        
     // add event listeners to textboxes
-    $(".text-box").on("input", e => $(`#meme-${e.target.id}`).text(e.target.value))
+    $(".text-box").on("input", e => {
+        $(`#meme-${e.target.id}`).resizable("destroy")
+        $(`#meme-${e.target.id}`).text(e.target.value)
+        $(`#meme-${e.target.id}`).resizable({containment: "parent"})
+    })
     $("#fileInput").on("input", () => { upload_base_image($("#fileInput")[0]) })
+    $(".template-card").click(e => {
+        window.create.baseImg = new Image()
+        window.create.baseImg.src = e.target.src.replace("/thumbnails", "/meme-templates")
+        let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
+        window.create.dimensions = {
+            width: window.create.canvas.width, 
+            height: aspectRatio * window.create.canvas.width
+        }
 
+        // adjust width and height of img to fit meme and draw it 
+        window.create.canvas.height = window.create.dimensions.height // TODO: async issues
+        window.create.ctx.drawImage(
+            e.target, 0, 0, 
+            window.create.canvas.width, 
+            window.create.canvas.height
+        )
+
+        $("#fileInputLabel").remove()
+        $(".meme-text").show()
+        $(".text-box-container")
+            .width(window.create.canvas.width)
+            .height(window.create.canvas.height)
+            .attr("style", "top: 0")
+        $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent"})
+        $("#new-box-btn").attr("disabled", false)
+        $("#list-opener").remove()
+        window.numboxes = 2
+    })
     // add mor event listeners
     $("#post-btn").click(post)
     $("#cancel-btn").click(cancel_post)
     $("#spacer").click(e => adjust_spacing(e.target))
-    $(".trash-btn").click(e => delete_box(e.target.parentNode.children[0], e.target))
+    $(".trash-btn").click(e => delete_box(e.target))
     $("#new-box-btn").click(e => add_text_box(e.target.parentNode.previousElementSibling))
 })
 
@@ -59,10 +88,17 @@ function upload_base_image(input) {
                 )
             }
             reader.readAsDataURL(base);
-            input.remove()
 
             $("#fileInputLabel").remove()
             $(".meme-text").show()
+            $(".text-box-container")
+                .width(window.create.canvas.width)
+                .height(window.create.canvas.height)
+                .attr("style", "top: 0")
+            $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent"})
+            $("#new-box-btn").attr("disabled", false)
+            $("#list-opener").remove()
+            window.numboxes = 2
         } else {
             alert("That image is too large! we only accept files less than ______mb");
         }
@@ -78,7 +114,6 @@ function post() {
     for (let textarea of $(".text-box")) {
         meme.textboxes.push(textarea.value)
     }
-    console.log(meme)
     fetch(window.location.href, {
         method: "POST",
         body: JSON.stringify(meme),
@@ -101,43 +136,43 @@ function adjust_spacing(elem) {
 }
 
 function add_text_box(elem) {
-    // create container
-    let cont = document.createElement("div")
-    
-    //create and style textbox
-    let box = document.createElement("textarea")
-    box.placeholder = `Text #${elem.children.length + 1}`
-    box.id = `text-${elem.children.length + 1}`
-    box.classList = ['text-box']
-    box.oninput = function() {
-        document.getElementById("meme-" + box.id).innerHTML = box.value
-    }
+    window.numboxes += 1;
+    let cont = $("<div></div>")
 
-    // create and style div of text to be displayed on the meme
-    let meme_text = document.createElement("div");
-    meme_text.classList = ["meme-text"]
-    meme_text.style.top = "50%"
-    meme_text.id = `meme-text-${elem.children.length + 1}`
-    
-    // create and style the delete button
-    let btn = document.createElement("button")
-    btn.classList = ['btn']
-    btn.innerHTML = "<i class = 'fa fa-trash'></i>"
-    btn.onclick = function(ev) {
-        delete_box(ev.target.parentNode.children[0].id, ev.target)
-    }
+    let box = $("<textarea></textarea>")
+        .attr("placeholder", `Text #${window.numboxes}`)
+        .attr("id", `text-${window.numboxes}`)
+        .attr("class", "text-box")
+
+    let meme_text = $("<div></div>")
+        .attr("class", "meme-text")
+        .attr("style", "top: 50%")
+        .attr("id", `meme-text-${window.numboxes}`)
+
+    let btn = $("<button></button>")
+        .attr("class", "btn")
+        .html("<i class = 'fa fa-trash'></i>")
+        .on("click", e => delete_box(e.target.parentNode.children[0].id, e.target))
 
     window.create.textBoxes.push(box);
 
-    // append everything to respective elements
-    cont.appendChild(box)
-    cont.appendChild(btn)
-    elem.append(cont)
-    window.create.meme.appendChild(meme_text)
+    cont.append(box, btn)
+    elem.append(cont[0])
+    $("#meme").append(
+        $("<div class = 'text-box-container' style = 'top: 0'></div>")
+            .html(`<div class = 'meme-text' id = 'meme-text-${window.numboxes}'></div>`)
+    )
+    $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent"})
+    $(".text-box").on("input", e => {
+        $(`#meme-${e.target.id}`).resizable("destroy")
+        $(`#meme-${e.target.id}`).text(e.target.value)
+        $(`#meme-${e.target.id}`).resizable({containment: "parent"})
+    })
 }
 
-function delete_box(id, btn) {
-    btn.remove();
-    document.getElementById(id).remove();
-    document.getElementById(`meme-${id}`).remove();
+function delete_box(btn) {
+    while (btn.tagName != "DIV") { btn = btn.parentNode }
+    let id = btn.children[0].id
+    btn.remove()
+    $(`#meme-${id}`).remove()
 }
