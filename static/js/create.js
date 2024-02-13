@@ -147,7 +147,7 @@ function add_text_box(elem) {
     let cont = $("<div></div>")
 
     let box = $("<textarea></textarea>")
-        .attr("placeholder", `Text #${window.numboxes}`)
+        .attr("placeholder", `Enter Text`)
         .attr("id", `text-${window.numboxes}`)
         .attr("class", "text-box")
 
@@ -164,7 +164,7 @@ function add_text_box(elem) {
     let btn2 = $("<button></button>")
         .attr("class", "btn")
         .html("<i class = 'fa fa-trash'></i>")
-        .on("click", e => delete_box(e.target.parentNode.children[0].id, e.target))
+        .click(e => delete_box(e.target))
 
     window.create.textBoxes.push(box);
 
@@ -180,7 +180,6 @@ function add_text_box(elem) {
         $(`#meme-${e.target.id}`).text(e.target.value)
         $(`#meme-${e.target.id}`).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
     })
-    $(".trash-btn").click(e => delete_box(e.target))
 }
 
 function delete_box(btn) {
@@ -188,4 +187,5 @@ function delete_box(btn) {
     let id = btn.children[0].id
     btn.remove()
     $(`#meme-${id}`).remove()
+    window.numboxes -= 1
 }
