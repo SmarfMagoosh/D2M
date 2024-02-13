@@ -2,6 +2,8 @@ $("document").ready(() => {
     // create namespace for window
     window.create = {}
 
+    $("#new-box-btn").attr("disabled", true)
+
     // locate important elems
     window.create.textBoxes = [$("#text-1"), $("#text-2")]
     window.create.meme = $("#meme")[0];
@@ -60,6 +62,7 @@ $("document").ready(() => {
     $("#cancel-btn").click(cancel_post)
     $("#spacer").click(e => adjust_spacing(e.target))
     $(".trash-btn").click(e => delete_box(e.target))
+    $(".settings-btn").click(e => function() { /* TODO: open modal */ })
     $("#new-box-btn").click(e => add_text_box(e.target.parentNode.previousElementSibling))
 })
 
@@ -123,7 +126,7 @@ function post() {
     });
 }
 
-function cancelPost() {
+function cancel_post() {
     window.location.replace(`${window.location.origin}/home`)
 }
 
@@ -152,14 +155,19 @@ function add_text_box(elem) {
         .attr("style", "top: 50%")
         .attr("id", `meme-text-${window.numboxes}`)
 
-    let btn = $("<button></button>")
+    let btn1 = $("<button></button>")
+        .attr("class", "btn")
+        .html("<i class = 'fa fa-gear'></i>")
+        .on("click", e => function() { /* TODO: show modal for settings */})
+
+    let btn2 = $("<button></button>")
         .attr("class", "btn")
         .html("<i class = 'fa fa-trash'></i>")
         .on("click", e => delete_box(e.target.parentNode.children[0].id, e.target))
 
     window.create.textBoxes.push(box);
 
-    cont.append(box, btn)
+    cont.append(box, btn1, btn2)
     elem.append(cont[0])
     $("#meme").append(
         $("<div class = 'text-box-container' style = 'top: 0'></div>")
