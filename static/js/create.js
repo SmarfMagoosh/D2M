@@ -16,6 +16,7 @@ $("document").ready(() => {
     // Add text boxes
     $(".meme-text").hide()
     $(".meme-text").mouseover(e => {
+        console.log(e)
         let x = $(e.target).parents(".text-box-container")
         let meme = x.parent()
         x.detach()
@@ -157,12 +158,12 @@ function add_text_box(elem) {
         .attr("id", `meme-text-${window.numboxes}`)
 
     let btn1 = $("<button></button>")
-        .attr("class", "btn")
+        .attr("class", "btn settings-btn")
         .html("<i class = 'fa fa-gear'></i>")
         .on("click", e => function() { /* TODO: show modal for settings */})
 
     let btn2 = $("<button></button>")
-        .attr("class", "btn")
+        .attr("class", "btn trash-btn")
         .html("<i class = 'fa fa-trash'></i>")
         .click(e => delete_box(e.target))
 
@@ -174,7 +175,16 @@ function add_text_box(elem) {
         $("<div class = 'text-box-container' style = 'top: 0'></div>")
             .html(`<div class = 'meme-text' id = 'meme-text-${window.numboxes}'></div>`)
     )
-    $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
+    $(".meme-text")
+        .draggable({containment: "parent"})
+        .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
+        .mouseover(e => {
+            console.log(e)
+            let x = $(e.target).parents(".text-box-container")
+            let meme = x.parent()
+            x.detach()
+            meme.append(x)
+        })
     $(".text-box").on("input", e => {
         $(`#meme-${e.target.id}`).resizable("destroy")
         $(`#meme-${e.target.id}`).text(e.target.value)

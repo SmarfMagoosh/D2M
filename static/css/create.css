@@ -34,12 +34,46 @@
     -webkit-text-stroke: white 2px;
     text-align: center;
     overflow: hidden;
-    width: 50%;
-    height: 2rem;
+    width: 40%;
+    height: 3rem;
     border: dashed black 2px;
-    position: absolute;
+}
+
+.ui-resizable-s, .ui-resizable-n {
+    height: 15px;
+    width: calc(100% - 20px);
+    margin: auto;
     left: 0;
     right: 0;
+}
+
+.ui-resizable-e, .ui-resizable-w {
+    width: 15px;
+    height: calc(100% - 10px);
+    top: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+.ui-resizable-s {
+    bottom: -7px;
+}
+
+.ui-resizable-n {
+    top: -7px;
+}
+
+.ui-resizable-w {
+    left: -7px;
+}
+
+.ui-resizable-e {
+    right: -7px;
+}
+
+.ui-resizable-ne, .ui-resizable-nw, .ui-resizable-se, .ui-resizable-sw {
+    width:15px;
+    height: 15px;
 }
 
 .text-box-container {
