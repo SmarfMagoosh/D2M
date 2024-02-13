@@ -136,14 +136,14 @@ class Post(db.Model) :
             "id": self.postID,
             "title": self.title,
             "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
-            "userEmail": self.userEmail,
+            "username": self.owner.username,
             "numLikes": self.numLikes,
         }
     def page_json(self):
         return {
             "id": self.postID,
             "title": self.title,
-            "userEmail": self.userEmail,
+            "username": self.owner.username,
             "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
@@ -155,7 +155,7 @@ class Post(db.Model) :
             "spacing": self.spacing,
             "title": self.title,
             "backImage": self.backImage,
-            "userEmail": self.userEmail,
+            "username": self.owner.username,
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
@@ -192,7 +192,7 @@ class Comment(db.Model) :
     content = db.Column(db.String, nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
-    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
     def to_json(self):
@@ -200,7 +200,7 @@ class Comment(db.Model) :
 			"id": self.commentID,
 			"content": self.content,
 			"timePosted": self.timePosted,
-			"owner": self.owner.username,
+			"username": self.username,
 			"parentPost": self.postID,
 		}
 
@@ -229,7 +229,7 @@ with app.app_context():
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
                  backImage = "4 rules.png", owner = u2, numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-                 backImage = "Gimbal_Lock_Plane.gif", userEmail = "Locke Gimbaldi", numLikes=1)
+                 backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", owner = u3, numLikes=100)
     follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
