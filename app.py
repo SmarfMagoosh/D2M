@@ -470,7 +470,7 @@ def search():
 
 def create_comment(commentData, u2Email):
     with app.app_context():
-        follow = Follow(user1 = u1Email, user2 = u2Email)
+       
         db.session.add(follow)
         db.session.commit()
 # returns a JSON object containing all of the data necessary to reproduce the post specified
