@@ -122,6 +122,7 @@ class Post(db.Model) :
     textBoxes = db.relationship('TextBox', backref='parentPost')
     reportsList = db.relationship('Report', backref='post')
     likeUsers = db.relationship('Like', backref='post')
+    bookmarkUsers = db.relationship('Bookmark', backref='post')
 
     def remix_json(self):
         return {
@@ -229,6 +230,9 @@ with app.app_context():
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
+    like11 = Bookmark(user=u1, postID=10)
+    like12 = Bookmark(user=u1, postID=30)
+    like13 = Bookmark(user=u1, postID=20)
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
@@ -369,6 +373,17 @@ def get_liked(gccEmail):
     likes.sort(key=lambda l: l.likeID, reverse=True)
     likes =  likes[0:count] #reduce to count or less elements
     return [l.post.render_json() for l in likes]
+
+@app.get("/API/get_bookmarked/<string:gccEmail>")
+def get_bookmarked(gccEmail):
+    start_id = int(request.args.get('start_id', -1))
+    count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
+    bookmarks = User.query.get_or_404(gccEmail).bookmarkList
+    if start_id != -1:
+        bookmarks = list(filter(lambda b: b.bookmarkID <= start_id, bookmarks))
+    bookmarks.sort(key=lambda b: b.bookmarkID, reverse=True)
+    bookmarks =  bookmarks[0:count] #reduce to count or less elements
+    return [l.post.render_json() for l in bookmarks]
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
