@@ -32,8 +32,8 @@ $("document").ready(() => {
     $(".template-card").click(e => {
         window.create.baseImg = new Image()
         window.create.baseImg.src = e.target.src.replace("/thumbnails", "/meme-templates")
-        let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth        
         window.create.baseImg.onload = function() {
+            let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
             window.create.dimensions = {
                 width: window.create.canvas.width, 
                 height: aspectRatio * window.create.canvas.width
@@ -180,6 +180,7 @@ function add_text_box(elem) {
         $(`#meme-${e.target.id}`).text(e.target.value)
         $(`#meme-${e.target.id}`).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
     })
+    $(".trash-btn").click(e => delete_box(e.target))
 }
 
 function delete_box(btn) {
