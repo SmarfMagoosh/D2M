@@ -26,7 +26,7 @@
   /* Links inside the dropdown */
   .dropdown-content a {
     color: black;
-    padding: 12px 16px;
+    padding: 1vh 1vh;
     text-decoration: none;
     display: block;
   }
@@ -46,8 +46,8 @@
     justify-content: space-around; /* Equally space the links within the container */
     align-items: center; /* Center items vertically */
     background-color: #532727; /* Dark background for the navbar */
-    position: fixed; /* Fix the navbar to the top of the page */
-    width: 100%; /* Navbar spans the full width */
+    position: sticky; /* Fix the navbar to the top of the page */
+    width: 100vw; /* Navbar spans the full width */
     top: 0; /* Align the navbar at the top of the page */
 }
 
@@ -84,4 +84,29 @@
 
 #searchResultsDropdown .dropdown-item:hover {
   background-color: #ddd;
+}
+/* Styles for the circular button */
+.circular-button {
+  width: 6rem; /* Set the width of the button */
+  height: 6rem; /* Set the height of the button */
+  border-radius: 50%; /* Make the button circular by setting border-radius to 50% */
+  background-color: #ff0000; /* Set background color for the button */
+  color: white; /* Set text color */
+  border: none; /* Remove border */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  position: fixed; /* Position the button relative to the viewport */
+  bottom: 20px; /* Distance from the bottom of the viewport */
+  right: 20px; /* Distance from the right of the viewport */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow effect */
+  outline: none; /* Remove default focus outline */
+  font-size: 4rem;
+}
+
+/* Style the button on hover */
+.create-button:hover {
+  background-color: #b30000; /* Darker shade of blue */
+}
+
+body{
+  margin: 0;
 }
