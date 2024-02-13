@@ -30,9 +30,8 @@ $("document").ready(() => {
     })
     $("#fileInput").on("input", () => { upload_base_image($("#fileInput")[0]) })
     $(".template-card").click(e => {
-        // window.create.baseImg = new Image()
-        // window.create.baseImg.src = e.target.src.replace("/thumbnails", "/meme-templates")
-        window.create.baseImg = e.target;
+        window.create.baseImg = new Image()
+        window.create.baseImg.src = e.target.src.replace("/thumbnails", "/meme-templates")
         let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
         window.create.dimensions = {
             width: window.create.canvas.width, 
@@ -41,11 +40,13 @@ $("document").ready(() => {
 
         // adjust width and height of img to fit meme and draw it 
         window.create.canvas.height = window.create.dimensions.height // TODO: async issues
-        window.create.ctx.drawImage(
-            window.create.baseImg, 0, 0, 
-            window.create.canvas.width, 
-            window.create.canvas.height
-        )
+        window.create.baseImg.onload = function() {
+            window.create.ctx.drawImage(
+                window.create.baseImg, 0, 0, 
+                window.create.canvas.width, 
+                window.create.canvas.height
+            )
+        }
 
         $("#fileInputLabel").remove()
         $(".meme-text").show()
