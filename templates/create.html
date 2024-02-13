@@ -5,17 +5,36 @@
 {% endblock %}
 
 {% block head %}
-    <script src = "../static/js/create.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src = "../static/js/create.js" type = "module"></script>
     <link rel = "stylesheet" href = "../static/css/create.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
 {% endblock %}
 
 {% block content %}
+<div id = "template-list" class = "modal">
+    <a href = "#" rel = "modal:close"></a>
+    <input type = "text">
+    {% for template in templates %}
+    <div>
+        <a href = "#" rel = "modal:close">
+            <img src = "{{ template }}" class = "template-card">
+        </a>
+        <p>{{ template[19:] }}</p>
+    </div>
+    {% endfor %}
+</div>
+
 <div id = "left-content">
     <div id = "image-tool-bar" hidden = "true">
         <div>
             <p style = "display: inline;">Spacing</p>
-            <select onchange = "adjustSpacing(this)">
-                <option value = ".0" >0% </option>
+            <select id = "spacer">
+                <option value = ".0" selected>0% </option>
                 <option value = ".1">10%</option>
                 <option value = ".2">20%</option>
                 <option value = ".3">30%</option>
@@ -34,30 +53,47 @@
         </div>
     </div>
     <div id = "meme">
-        <label for = "fileInput" id = "fileInputLabel">
-            <input id = "fileInput" type = "file" accept = "image/*" oninput = "baseMemeUploaded(this)">
-            <p>Begin by Uploading an Image</p>
-        </label>
-        <canvas id = "meme-img" height = "100" width = "100"></canvas>
+        <div style = "margin: auto; width: 80%">
+            <label for = "fileInput" id = "fileInputLabel">
+                <input id = "fileInput" type = "file" accept = "image/*">
+                <p>Uploading an Image</p>
+            </label>
+            <a href = "#template-list" rel = "modal:open" id = "list-opener">Or use a template!</a>
+        </div>
+        <canvas id = "meme-img" height = "100"></canvas>
+        <div class = "text-box-container">
+            <div class = "meme-text" id = "meme-text-1"></div>
+        </div>
+        <div class = "text-box-container">
+            <div class = "meme-text" id = "meme-text-2"></div>
+        </div>
     </div>
 </div>
 <div id = "right-content">
     <div id = "text-tool-bar">
         <div>
-            <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
+            <div>
+                <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
+                <button class = 'btn trash-btn'>
+                    <i class = 'fa fa-trash'></i>
+                </button>
+            </div>
+            <div>
+                <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
+                <button class = 'btn trash-btn'>
+                    <i class = 'fa fa-trash'></i>
+                </button>
+            </div>
         </div>
         <div>
-            <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
-        </div>
-        <div>
-            <button>Add Text Area</button>
+            <button id = "new-box-btn" disabled>Add Text Area</button>
         </div>
         <div>
             <textarea placeholder = "Give your post a title!" id = "post-title"></textarea>
         </div>
         <div>
-            <button onclick = "post()">Post!</button>
-            <button onclick = "cancelPost()">Cancel</button>
+            <button id = "post-btn">Post!</button>
+            <button id = "cancel-btn">Cancel</button>
         </div>
     </div>
 </div>

@@ -267,7 +267,7 @@ def index():
 
 @app.get("/create/")
 def get_create():
-    return render_template("create.html")
+    return render_template("create.html", templates = [url_for('static', filename = f"thumbnails/{file}") for file in os.listdir("./static/thumbnails")])
 
 @app.get("/home/")
 def get_home():
