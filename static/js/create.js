@@ -69,7 +69,7 @@ function upload_base_image(input) {
         let base = input.files[0]
         if (base.size < MAX_FILE_SIZE) {
             let reader = new FileReader();
-            reader.onload = async function() {
+            reader.onload = function() {
                 // get input image as <img>
                 window.create.baseImg = new Image()
                 window.create.baseImg.src = reader.result
@@ -79,10 +79,12 @@ function upload_base_image(input) {
                     height: aspectRatio * window.create.canvas.width
                 }
 
-                // adjust width and height of img to fit meme and draw it 
-                window.create.canvas.height = window.create.dimensions.height // TODO: async issues
+                // adjust width and height of img to fit meme and draw it
+                window.create.canvas.height = window.create.dimensions.height
                 window.create.ctx.drawImage(
-                    window.create.baseImg, 0, 0, 
+                    window.create.baseImg, 
+                    0, 
+                    0, 
                     window.create.canvas.width, 
                     window.create.canvas.height
                 )
@@ -121,12 +123,13 @@ function post() {
     });
 }
 
-function cancel_post() {
+function cancelPost() {
     window.location.replace(`${window.location.origin}/home`)
 }
 
-function adjust_spacing(elem) {
-    window.create.canvas.height = window.create.dimensions.height * (1 + Number(elem.value))
+function adjustSpacing(elem) {
+    console.log(window.create.baseImg)
+    window.create.canvas.height = window.create.dimensions.height * (1 + elem.value)
     window.create.ctx.drawImage(
         window.create.baseImg, 0,
         window.create.dimensions.height * elem.value,

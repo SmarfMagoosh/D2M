@@ -1,0 +1,112 @@
+/* Dropdown Button */
+.dropbtn {
+    background-color: #a81414;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+  }
+  
+  /* The container <div> - needed to position the dropdown content */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Dropdown Content (Hidden by Default) */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  /* Links inside the dropdown */
+  .dropdown-content a {
+    color: black;
+    padding: 1vh 1vh;
+    text-decoration: none;
+    display: block;
+  }
+  
+  /* Change color of dropdown links on hover */
+  .dropdown-content a:hover {background-color: #ddd;}
+  
+  /* Show the dropdown menu on hover */
+  .dropdown:hover .dropdown-content {display: block;}
+  
+  /* Change the background color of the dropdown button when the dropdown content is shown */
+  .dropdown:hover .dropbtn {background-color: #895454;}
+
+  /* Style for the navigation bar */
+.navbar {
+    display: flex; /* Use Flexbox */
+    justify-content: space-around; /* Equally space the links within the container */
+    align-items: center; /* Center items vertically */
+    background-color: #532727; /* Dark background for the navbar */
+    position: sticky; /* Fix the navbar to the top of the page */
+    width: 100vw; /* Navbar spans the full width */
+    top: 0; /* Align the navbar at the top of the page */
+}
+
+/* Style for the links in the navbar */
+.navbar a {
+    color: white; /* White text for the links */
+    padding: 14px 20px; /* Padding around the links */
+    text-decoration: none; /* Remove underline from links */
+    font-size: 17px; /* Increase font size */
+}
+
+/* Change the color of links on hover */
+.navbar a:hover {
+    background-color: #ddd; /* Light gray background on hover */
+    color: black; /* Black text on hover */
+}
+
+#searchResultsDropdown {
+  display: none; /* Initially hide the dropdown */
+  position: absolute; /* Position the dropdown absolutely */
+  top: calc(100%); /* Place the dropdown below the search bar with some spacing */
+  left: 50%; /* Align the dropdown with the center of the search bar */
+  transform: translateX(-50%); /* Adjust to center the dropdown horizontally */
+  z-index: 1; /* Ensure the dropdown is above other content */
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+}
+
+#searchResultsDropdown .dropdown-item {
+  cursor: pointer;
+}
+
+#searchResultsDropdown .dropdown-item:hover {
+  background-color: #ddd;
+}
+/* Styles for the circular button */
+.circular-button {
+  width: 6rem; /* Set the width of the button */
+  height: 6rem; /* Set the height of the button */
+  border-radius: 50%; /* Make the button circular by setting border-radius to 50% */
+  background-color: #ff0000; /* Set background color for the button */
+  color: white; /* Set text color */
+  border: none; /* Remove border */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  position: fixed; /* Position the button relative to the viewport */
+  bottom: 20px; /* Distance from the bottom of the viewport */
+  right: 20px; /* Distance from the right of the viewport */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow effect */
+  outline: none; /* Remove default focus outline */
+  font-size: 4rem;
+}
+
+/* Style the button on hover */
+.create-button:hover {
+  background-color: #b30000; /* Darker shade of blue */
+}
+
+body{
+  margin: 0;
+}

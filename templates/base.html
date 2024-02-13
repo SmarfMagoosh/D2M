@@ -13,14 +13,38 @@
     <title>{% block title %}{% endblock %} - D2M</title>
     <link rel="stylesheet" href="../static/css/styling.css">
     <script src = "../static/js/scripting.js"></script>
-    {% block head %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="../../static/images/logo.png">
+    {% block head %} {% endblock %}
 </head>
 <body>
-    <nav>
-        <!--TODO navbar-->
-    </nav>
+    <nav class="navbar">
+        <a href="{{ url_for('get_home') }}"><img src="../../static/images/logo.png" alt="D2M logo" style="width:7vh;height:7vh;"></a>
+        <script src = "../static/js/search.js"></script>
+    <div>
+        <input type="text" id="searchInput" placeholder="Search by name">
+        <button onclick="search()">Search</button>
+      </div>
+      <div id="searchResultsDropdown" class="dropdown-content">
+        
+      </div>
+    </div>
+        <h1>(Bell)</h1>
+        <div class="dropdown">
+            <button class="dropbtn">Dropdown</button>
+            <div class="dropdown-content">
+              <a href="{{ url_for('get_profile') }}">Profile</a>
+              [bookmarks]
+              <a href="{{ url_for('get_settings') }}">Settings</a>
+              <a href="{{ url_for('get_login') }}">Login</a>
+            </div>
+    
+    <a href="{{ url_for('get_create') }}" class="circular-button-link">
+        <button class="circular-button">+</button>
+    </a>
+</nav>
     <div id = "main-content-div">
         {% block content %}{% endblock %}
     </div>
+    
 </body>
 </html>
