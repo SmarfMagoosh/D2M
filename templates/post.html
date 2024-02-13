@@ -24,9 +24,24 @@
         <h2> {{ post["title"] }} </h2>
         <h3> {{ post["username"] }} </h3>
     </div>
-    <div class="like-dislike">
-        <button id="like-btn">Like</button>  <div id="like-count">0</div>
-        <button id="dislike-btn">Dislike</button> <div id="dislike-count">0</div>    
+    <div class="post-buttons">
+        <button id="like-btn">Like</button>  
+        <button id="dislike-btn">Dislike</button>   
+        <button id="bookmark-btn">Bookmark</button>
+        <button id="report-btn">Report</button>
+
+        <div id="report-popup" class="popup">
+            <div class="popup-content">
+                <span class="close-btn" onclick="closePopup()">&times;</span>
+                <h2>Reason for Report:</h2>
+                <textarea id="report-text" placeholder="Enter your report"></textarea>
+                <button onclick="submitReport()">Submit</button>
+                <button onclick="closePopup()">Cancel</button>
+            </div>
+        </div>
+
+        <button id="copy-link-btn">Copy Link</button>
+        <button id="remix-btn">Remix</button>
     </div>
 
     <form>
@@ -37,7 +52,7 @@
 </div>
 
 <div id = "comment-content">
-    <h1> Comments:  </h1>> 
+    <h1> Comments:  </h1>
 
 
   {% for comment in Comments %}
