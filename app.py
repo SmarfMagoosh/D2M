@@ -254,6 +254,12 @@ def get_recent():
                         .all()
     return [p.to_json() for p in recent]
 
+
+def create_comment(commentData, u2Email):
+    with app.app_context():
+        follow = Follow(user1 = u1Email, user2 = u2Email)
+        db.session.add(follow)
+        db.session.commit()
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
 # def get_post(post_id):

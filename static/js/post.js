@@ -62,7 +62,8 @@ commentForm.addEventListener('submit', function(event) {
     // Get the value of the comment input field
     const commentInput = document.getElementById('comment-box');
     const commentValue = commentInput.value;
-
+    
+    
     
 
     // Perform any action you want with the comment value
