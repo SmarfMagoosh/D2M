@@ -18,12 +18,18 @@ crossorigin="anonymous"></script>
 {% block content %}
 
   {% for post in posts %}
-
-  <a href="../post/{{post['id']}}/">
+  <a href="{{ url_for('get_post', post_id=post.id) }}">
     <img src="../../static/images/{{post['thumbnail']}}" alt="">
   </a>
 
   {% endfor %}
+  
+  <div class="row" data-masonry="{&quot;percentPosition&quot;: true }" style="position: relative; height: 1064.66px;">
+    
+    
+  </div>
+  
+
 
 {% endblock %}
 
