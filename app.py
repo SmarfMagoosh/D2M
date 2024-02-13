@@ -315,7 +315,6 @@ def add_user():
         gccEmail=data['gccEmail'],
         backupPasswordHash=data['backupPasswordHash'],
         timesReported=0,
-        numReports=0
         # Add other fields as needed
     )
     db.session.add(new_user)

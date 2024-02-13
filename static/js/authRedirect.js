@@ -50,40 +50,38 @@ function handleResponse(response) {
             } else {
                 console.log(`User with username ${username} does not exist`);
                 /* TODO: sign them up */
+                // Make a fetch request to the root URL of your Flask application
+                fetch('/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    // Optionally handle the response if needed
+                    console.log('Fetch request successful');
+                    fetch('/add_user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            username: username,
+                            gccEmail: username,
+                            backupPasswordHash: 'example_password_hash'
+                            // Add other fields as needed
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) { throw new Error('Failed to add user'); }
+                        return response.json();
+                    })
+                    .then(data => console.log(data.message))
+                    .catch(error => console.error('Error:', error));
+                    window.location.href = response.url;
+                })
+                .catch(error => {  console.error('There was a problem with your fetch operation:', error);  });
             }
         })
         .catch(error => {
             console.error('Error checking user:', error);
         });
-
-        // Make a fetch request to the root URL of your Flask application
-        fetch('/')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            // Optionally handle the response if needed
-            console.log('Fetch request successful');
-            fetch('/add_user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    username: username,
-                    gccEmail: username,
-                    backupPasswordHash: 'example_password_hash'
-                    // Add other fields as needed
-                })
-            })
-            .then(response => {
-                if (!response.ok) { throw new Error('Failed to add user'); }
-                return response.json();
-            })
-            .then(data => console.log(data.message))
-            .catch(error => console.error('Error:', error));
-            window.location.href = response.url;
-        })
-        .catch(error => {  console.error('There was a problem with your fetch operation:', error);  });
-
     } else {
         selectAccount();
 
