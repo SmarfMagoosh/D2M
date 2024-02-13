@@ -205,9 +205,9 @@ class Comment(db.Model) :
 		}
 
 def update_like_backend():
-    with app.app_context():
-        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-        db.session.commit()
+    #with app.app_context():
+        #db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+        #db.session.commit()
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
