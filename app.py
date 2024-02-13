@@ -206,12 +206,17 @@ class Comment(db.Model) :
 
 def update_like_backend():
     with app.app_context():
-        # db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
         db.session.commit()
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
     print(update_times)
+def create_follow(u1Email, u2Email):
+    with app.app_context():
+        follow = Follow(user1 = u1Email, user2 = u2Email)
+        db.session.add(follow)
+        db.session.commit()
 
 with app.app_context():
     db.drop_all()
@@ -226,7 +231,7 @@ with app.app_context():
                  backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
     u1 = User(username="u1", gccEmail = "u1@gcc.edu")
     u2 = User(username="u2", gccEmail = "u2@gcc.edu")
-    follow12 = Follow(user1 = "u1", user2 = "u2")
+    # follow12 = Follow(user1 = "u1", user2 = "u2")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
@@ -237,7 +242,7 @@ with app.app_context():
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
     db.session.add_all((u1,u2))
-    db.session.add(follow12)
+    # db.session.add(follow12)
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
     db.session.commit()
@@ -334,6 +339,11 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User added successfully'}), 201
+
+@app.get("/follow/<string:u1Email>/<string:u2Email>")
+def follow(u1Email, u2Email):
+    create_follow(u1Email, u2Email)
+    return "success"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
