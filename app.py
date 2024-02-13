@@ -85,7 +85,7 @@ class Like(db.Model):
     # using a ID primary key so that we can sort by most recent like
     likeID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     positive = db.Column(db.Boolean, default=True)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
 class Bookmark(db.Model):
@@ -122,6 +122,7 @@ class Post(db.Model) :
     textBoxes = db.relationship('TextBox', backref='parentPost')
     reportsList = db.relationship('Report', backref='post')
     likeUsers = db.relationship('Like', backref='post')
+    bookmarkUsers = db.relationship('Bookmark', backref='post')
 
     def remix_json(self):
         return {
@@ -223,10 +224,22 @@ with app.app_context():
                  backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
-
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu")
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu")
+    follow12 = Follow(user1 = "u1", user2 = "u2")
+    like11 = Like(user=u1, postID=10)
+    like12 = Like(user=u1, postID=30)
+    like13 = Like(user=u1, postID=20, positive=False)
+    bm11 = Bookmark(user=u1, postID=10)
+    bm12 = Bookmark(user=u1, postID=30)
+    bm13 = Bookmark(user=u1, postID=20)
 
     # Add all of these records to the session and commit changes
     db.session.add_all((post1, post2, post3))
+    db.session.add_all((u1,u2))
+    db.session.add(follow12)
+    db.session.add_all((like11,like12,like13))
+    db.session.add_all((bm11,bm12,bm13))
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -334,13 +347,13 @@ def add_user():
 @app.get("/API/get_by_recent/")
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
-    count = request.args.get('count', DEFAULT_POSTS_LOADED)
+    count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
     # username = request.args.get('username', None)
     recent = Post.query
     # print(str(start_id) + " " + str(count))
     
     if start_id != -1:
-        recent = recent.filter(Post.postID<start_id)
+        recent = recent.filter(Post.postID<=start_id)
     # if username != None:
     #     recent = recent.filter(Post.username==username)
     
@@ -350,23 +363,28 @@ def get_recent():
     
     return [p.render_json() for p in recent]
 
-# @app.get("/API/get_liked/")
-# def get_recent():
-#     start_id = int(request.args.get('start_id', -1))
-#     count = request.args.get('count', DEFAULT_POSTS_LOADED)
-#     gccEmail = request.args.get('gccEmail', None)
-#     likes = User.query.get_or_404(gccEmail).likeList
-#     recent = Post.query
-#     if start_id != -1:
-#         recent = recent.filter(Post.postID<start_id)
-#     # if username != None:
-#     #     recent = recent.filter(Post.username==username)
-    
-#     recent = recent.order_by(Post.postID.desc()) \
-#                         .limit(count) \
-#                         .all()
-    
-#     return [l.post.render_json() for l in likes]
+@app.get("/API/get_liked/<string:gccEmail>")
+def get_liked(gccEmail):
+    start_id = int(request.args.get('start_id', -1))
+    count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
+    likes = User.query.get_or_404(gccEmail).likeList
+    if start_id != -1:
+        likes = list(filter(lambda l: l.likeID <= start_id, likes))
+    likes = list(filter(lambda l: l.positive == True, likes))
+    likes.sort(key=lambda l: l.likeID, reverse=True)
+    likes =  likes[0:count] #reduce to count or less elements
+    return [l.post.render_json() for l in likes]
+
+@app.get("/API/get_bookmarked/<string:gccEmail>")
+def get_bookmarked(gccEmail):
+    start_id = int(request.args.get('start_id', -1))
+    count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
+    bookmarks = User.query.get_or_404(gccEmail).bookmarkList
+    if start_id != -1:
+        bookmarks = list(filter(lambda b: b.bookmarkID <= start_id, bookmarks))
+    bookmarks.sort(key=lambda b: b.bookmarkID, reverse=True)
+    bookmarks =  bookmarks[0:count] #reduce to count or less elements
+    return [l.post.render_json() for l in bookmarks]
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
@@ -377,7 +395,7 @@ def get_recent():
 #   using the default timeslot (most recent)
 
 @app.get("/API/get_by_likes/")
-def get_liked():
+def get_likes():
     #TODO: accept the list of other posts with an equal amount of likes that already rendered
     #TODO: consider flooring or rounding time.time to prevent floating point errors
     max_likes = int(request.args.get('max_likes', -1))
