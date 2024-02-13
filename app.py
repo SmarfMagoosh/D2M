@@ -242,9 +242,8 @@ with app.app_context():
     bm13 = Bookmark(user=u1, postID=20)
 
     # Add all of these records to the session and commit changes
+    db.session.add_all((u1,u2,u3))
     db.session.add_all((post1, post2, post3))
-    db.session.add_all((u1,u2))
-    # db.session.add(follow12)
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
     db.session.commit()
