@@ -205,9 +205,9 @@ class Comment(db.Model) :
 		}
 
 def update_like_backend():
-    with app.app_context():
-        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-        db.session.commit()
+    # with app.app_context():
+        #db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+        #db.session.commit()
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
@@ -268,7 +268,7 @@ def index():
 
 @app.get("/create/")
 def get_create():
-    return render_template("create.html")
+    return render_template("create.html", templates = [url_for('static', filename = f"thumbnails/{file}") for file in os.listdir("./static/thumbnails")])
 
 @app.get("/home/")
 def get_home():
@@ -486,6 +486,12 @@ def search():
 
     return jsonify({'users': user_results, 'posts': post_results})
 
+
+def create_comment(commentData, u2Email):
+    with app.app_context():
+       
+        db.session.add(follow)
+        db.session.commit()
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
 # def get_post(post_id):
