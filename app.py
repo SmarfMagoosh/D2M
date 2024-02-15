@@ -206,12 +206,14 @@ class Comment(db.Model) :
 
 def update_like_backend():
     # with app.app_context():
-        #db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-        #db.session.commit()
+    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+    #     db.session.commit()
+        
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
     print(update_times)
+
 def create_follow(u1Email, u2Email):
     with app.app_context():
         follow = Follow(user1 = u1Email, user2 = u2Email)
@@ -337,8 +339,7 @@ def add_user():
     )
     db.session.add(new_user)
     db.session.commit()
-    return [url_for("get_home")]
-    # return jsonify({'message': 'User added successfully'}), 201
+    return jsonify({'message': 'User added successfully'}), 201
 
 @app.get("/follow/<string:u1Email>/<string:u2Email>")
 def follow(u1Email, u2Email):
