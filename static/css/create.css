@@ -18,7 +18,7 @@
 #meme-img {
     display: block;
     margin: auto;
-    border: solid black 2px;
+    border: solid black 1px;
 }
 
 #meme {
@@ -34,12 +34,46 @@
     -webkit-text-stroke: white 2px;
     text-align: center;
     overflow: hidden;
-    width: 50%;
-    height: 2rem;
+    width: 40%;
+    height: 3rem;
     border: dashed black 2px;
-    position: absolute;
+}
+
+.ui-resizable-s, .ui-resizable-n {
+    height: 15px;
+    width: calc(100% - 20px);
+    margin: auto;
     left: 0;
     right: 0;
+}
+
+.ui-resizable-e, .ui-resizable-w {
+    width: 15px;
+    height: calc(100% - 10px);
+    top: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+.ui-resizable-s {
+    bottom: -7px;
+}
+
+.ui-resizable-n {
+    top: -7px;
+}
+
+.ui-resizable-w {
+    left: -7px;
+}
+
+.ui-resizable-e {
+    right: -7px;
+}
+
+.ui-resizable-ne, .ui-resizable-nw, .ui-resizable-se, .ui-resizable-sw {
+    width:15px;
+    height: 15px;
 }
 
 .text-box-container {
@@ -63,7 +97,7 @@
 #fileInputLabel, #list-opener {
     display: inline-block;
     margin: auto;
-    width: 45%;
+    /* width: 45%; */
     text-align: center;
     cursor: pointer;
     border: solid #666666 4px;
@@ -100,15 +134,19 @@
 /* right tools */
 
 .text-box, #post-title {
-    margin: 1rem;
-    height: 2rem;
+    /* margin: 1rem; */
+    height: 1rem;
     width: 70%;
     resize: none;
 }
 
-#text-tool-bar button {
+.text-box, .trash-btn {
+    margin: 0;
+    padding: 0;
+}
+
+#right-content div {
     margin: 1rem;
-    height: 2rem;
 }
 
 span img {

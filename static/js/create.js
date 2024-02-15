@@ -2,6 +2,8 @@ $("document").ready(() => {
     // create namespace for window
     window.create = {}
 
+    $("#new-box-btn").attr("disabled", true)
+
     // locate important elems
     window.create.textBoxes = [$("#text-1"), $("#text-2")]
     window.create.meme = $("#meme")[0];
@@ -13,7 +15,8 @@ $("document").ready(() => {
 
     // Add text boxes
     $(".meme-text").hide()
-    $(".meme-text").mouseenter(e => {
+    $(".meme-text").mouseover(e => {
+        console.log(e)
         let x = $(e.target).parents(".text-box-container")
         let meme = x.parent()
         x.detach()
@@ -24,33 +27,34 @@ $("document").ready(() => {
     $(".text-box").on("input", e => {
         $(`#meme-${e.target.id}`).resizable("destroy")
         $(`#meme-${e.target.id}`).text(e.target.value)
-        $(`#meme-${e.target.id}`).resizable({containment: "parent"})
+        $(`#meme-${e.target.id}`).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
     })
     $("#fileInput").on("input", () => { upload_base_image($("#fileInput")[0]) })
     $(".template-card").click(e => {
         window.create.baseImg = new Image()
         window.create.baseImg.src = e.target.src.replace("/thumbnails", "/meme-templates")
-        let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
-        window.create.dimensions = {
-            width: window.create.canvas.width, 
-            height: aspectRatio * window.create.canvas.width
+        window.create.baseImg.onload = function() {
+            let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
+            window.create.dimensions = {
+                width: window.create.canvas.width, 
+                height: aspectRatio * window.create.canvas.width
+            }
+            // adjust width and height of img to fit meme and draw it
+            window.create.canvas.height = window.create.dimensions.height
+            window.create.ctx.drawImage(
+                window.create.baseImg, 0, 0, 
+                window.create.canvas.width, 
+                window.create.canvas.height
+            )
+            $(".text-box-container")
+                .width(window.create.canvas.width)
+                .height(window.create.canvas.height)
+                .attr("style", "top: 0")
         }
-
-        // adjust width and height of img to fit meme and draw it 
-        window.create.canvas.height = window.create.dimensions.height // TODO: async issues
-        window.create.ctx.drawImage(
-            e.target, 0, 0, 
-            window.create.canvas.width, 
-            window.create.canvas.height
-        )
 
         $("#fileInputLabel").remove()
         $(".meme-text").show()
-        $(".text-box-container")
-            .width(window.create.canvas.width)
-            .height(window.create.canvas.height)
-            .attr("style", "top: 0")
-        $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent"})
+        $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
         $("#new-box-btn").attr("disabled", false)
         $("#list-opener").remove()
         window.numboxes = 2
@@ -60,6 +64,7 @@ $("document").ready(() => {
     $("#cancel-btn").click(cancel_post)
     $("#spacer").click(e => adjust_spacing(e.target))
     $(".trash-btn").click(e => delete_box(e.target))
+    $(".settings-btn").click(e => function() { /* TODO: open modal */ })
     $("#new-box-btn").click(e => add_text_box(e.target.parentNode.previousElementSibling))
 })
 
@@ -73,31 +78,32 @@ function upload_base_image(input) {
                 // get input image as <img>
                 window.create.baseImg = new Image()
                 window.create.baseImg.src = reader.result
-                let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
-                window.create.dimensions = {
-                    width: window.create.canvas.width, 
-                    height: aspectRatio * window.create.canvas.width
-                }
+                window.create.baseImg.onload = function() {
+                    let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
+                    window.create.dimensions = {
+                        width: window.create.canvas.width, 
+                        height: aspectRatio * window.create.canvas.width
+                    }
 
-                // adjust width and height of img to fit meme and draw it
-                window.create.canvas.height = window.create.dimensions.height
-                window.create.ctx.drawImage(
-                    window.create.baseImg, 
-                    0, 
-                    0, 
-                    window.create.canvas.width, 
-                    window.create.canvas.height
-                )
+                    // adjust width and height of img to fit meme and draw it
+                    window.create.canvas.height = window.create.dimensions.height
+                    window.create.ctx.drawImage(
+                        window.create.baseImg, 0, 0, 
+                        window.create.canvas.width, 
+                        window.create.canvas.height
+                    )
+                    $(".text-box-container")
+                        .width(window.create.canvas.width)
+                        .height(window.create.canvas.height)
+                        .attr("style", "top: 0")
+                }
+                
             }
             reader.readAsDataURL(base);
 
             $("#fileInputLabel").remove()
             $(".meme-text").show()
-            $(".text-box-container")
-                .width(window.create.canvas.width)
-                .height(window.create.canvas.height)
-                .attr("style", "top: 0")
-            $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent"})
+            $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
             $("#new-box-btn").attr("disabled", false)
             $("#list-opener").remove()
             window.numboxes = 2
@@ -127,8 +133,7 @@ function cancel_post() {
     window.location.replace(`${window.location.origin}/home`)
 }
 
-function adjustSpacing(elem) {
-    console.log(window.create.baseImg)
+function adjust_spacing(elem) {
     window.create.canvas.height = window.create.dimensions.height * (1 + elem.value)
     window.create.ctx.drawImage(
         window.create.baseImg, 0,
@@ -143,7 +148,7 @@ function add_text_box(elem) {
     let cont = $("<div></div>")
 
     let box = $("<textarea></textarea>")
-        .attr("placeholder", `Text #${window.numboxes}`)
+        .attr("placeholder", `Enter Text`)
         .attr("id", `text-${window.numboxes}`)
         .attr("class", "text-box")
 
@@ -152,24 +157,38 @@ function add_text_box(elem) {
         .attr("style", "top: 50%")
         .attr("id", `meme-text-${window.numboxes}`)
 
-    let btn = $("<button></button>")
-        .attr("class", "btn")
+    let btn1 = $("<button></button>")
+        .attr("class", "btn settings-btn")
+        .html("<i class = 'fa fa-gear'></i>")
+        .on("click", e => function() { /* TODO: show modal for settings */})
+
+    let btn2 = $("<button></button>")
+        .attr("class", "btn trash-btn")
         .html("<i class = 'fa fa-trash'></i>")
-        .on("click", e => delete_box(e.target.parentNode.children[0].id, e.target))
+        .click(e => delete_box(e.target))
 
     window.create.textBoxes.push(box);
 
-    cont.append(box, btn)
+    cont.append(box, btn1, btn2)
     elem.append(cont[0])
     $("#meme").append(
         $("<div class = 'text-box-container' style = 'top: 0'></div>")
             .html(`<div class = 'meme-text' id = 'meme-text-${window.numboxes}'></div>`)
     )
-    $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent"})
+    $(".meme-text")
+        .draggable({containment: "parent"})
+        .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
+        .mouseover(e => {
+            console.log(e)
+            let x = $(e.target).parents(".text-box-container")
+            let meme = x.parent()
+            x.detach()
+            meme.append(x)
+        })
     $(".text-box").on("input", e => {
         $(`#meme-${e.target.id}`).resizable("destroy")
         $(`#meme-${e.target.id}`).text(e.target.value)
-        $(`#meme-${e.target.id}`).resizable({containment: "parent"})
+        $(`#meme-${e.target.id}`).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
     })
 }
 
@@ -178,4 +197,5 @@ function delete_box(btn) {
     let id = btn.children[0].id
     btn.remove()
     $(`#meme-${id}`).remove()
+    window.numboxes -= 1
 }
