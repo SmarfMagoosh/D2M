@@ -20,17 +20,17 @@
                         
     </head>
     <body>
-        <section class="container forms">
+        <section id="formMode" class="container forms">
             <div class="form login">
                 <div class="form-content">
                     <header>Login</header>
                     <form action="#">
                         <div class="field input-field">
-                            <input type="email" placeholder="Email" class="input">
+                            <input id="existingUsername" type="username" placeholder="Username" class="input">
                         </div>
 
                         <div class="field input-field">
-                            <input type="password" placeholder="Password" class="password">
+                            <input id="existingPassword" type="password" placeholder="Password" class="password">
                             <i class='bx bx-hide eye-icon'></i>
                         </div>
 
@@ -39,7 +39,7 @@
                         </div>
 
                         <div class="field button-field">
-                            <button>Login</button>
+                            <button onclick="loginExisting()">Login</button>
                         </div>
                     </form>
 
@@ -65,7 +65,7 @@
                 <div class="form-content">
                     <header>Signup</header>
                     <form action="#">
-                        <div class="field input-field">
+                        <!-- <div class="field input-field">
                             <input type="email" placeholder="GCC Email" class="input">
                         </div>
 
@@ -76,10 +76,41 @@
                         <div class="field input-field">
                             <input type="password" placeholder="Password" class="password">
                             <i class='bx bx-hide eye-icon'></i>
-                        </div>
+                        </div> -->
 
                         <div class="field button-field">
                             <button onclick="signIn()">Signup</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Show registration -->
+
+            <div class="form register">
+                <div class="form-content">
+                    <header>Register</header>
+                    <form action="#" id = "registerForm">
+                        <!-- <div class="field input-field">
+                            <input type="email" placeholder="GCC Email" class="input">
+                        </div> -->
+
+                        <div class="field input-field">
+                            <input id="newUsernameField" type="text" placeholder="Username" class="input">
+                        </div>
+
+                        <div class="field input-field">
+                            <input id="newPasswordField" type="password" placeholder="Password" class="password">
+                            <i class='bx bx-hide eye-icon'></i>
+                        </div>
+
+                        <div class="field button-field">
+                            <!-- <button onclick="signIn()">Register</button> -->
+                            <button onclick="addUser()">Register</button>
                         </div>
                     </form>
 

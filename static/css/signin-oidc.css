@@ -28,11 +28,23 @@
     opacity: 0;
     pointer-events: none;
 }
+.form.register{
+    opacity: 0;
+    pointer-events: none;
+}
 .forms.show-signup .form.signup{
     opacity: 1;
     pointer-events: auto;
 }
+.forms.show-register .form.register{
+    opacity: 1;
+    pointer-events: auto;
+}
 .forms.show-signup .form.login{
+    opacity: 0;
+    pointer-events: none;
+}
+.forms.show-register .form.login{
     opacity: 0;
     pointer-events: none;
 }

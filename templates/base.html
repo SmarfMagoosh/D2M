@@ -28,7 +28,7 @@
         
       </div>
     </div>
-        <h1>(Bell)</h1>
+        <!-- <h1>(Bell)</h1> -->
         <div class="dropdown">
             <button class="dropbtn">Dropdown</button>
             <div class="dropdown-content">
@@ -36,6 +36,7 @@
               [bookmarks]
               <a href="{{ url_for('get_settings') }}">Settings</a>
               <a href="{{ url_for('get_login') }}">Login</a>
+              <a onclick="signOut()">Logout</a>
             </div>
     
     <a href="{{ url_for('get_create') }}" class="circular-button-link">

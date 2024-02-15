@@ -206,12 +206,14 @@ class Comment(db.Model) :
 
 def update_like_backend():
     # with app.app_context():
-        #db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-        #db.session.commit()
+    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+    #     db.session.commit()
+        
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
     print(update_times)
+
 def create_follow(u1Email, u2Email):
     with app.app_context():
         follow = Follow(user1 = u1Email, user2 = u2Email)
@@ -282,6 +284,7 @@ def get_home():
 def get_login():
     return render_template("signin-oidc.html")
 
+
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
@@ -299,7 +302,6 @@ def get_profile(user_id = -1):
 @app.get("/settings/")
 def get_settings():
     return render_template("settings.html")
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -325,7 +327,7 @@ def post_meme():
 def post_login():
     return ""
 
-@app.route('/add_user', methods=['POST'])
+@app.post('/add_user')#, methods=['POST'])
 def add_user():
     data = request.get_json()
     print(data)
@@ -334,7 +336,6 @@ def add_user():
         gccEmail=data['gccEmail'],
         backupPasswordHash=data['backupPasswordHash'],
         timesReported=0,
-        numReports=0
         # Add other fields as needed
     )
     db.session.add(new_user)
@@ -485,6 +486,34 @@ def search():
     post_results = [{'title': post.title} for post in matching_posts]
 
     return jsonify({'users': user_results, 'posts': post_results})
+    
+@app.route('/check_user', methods=['GET'])
+def check_user():
+    gccEmail = request.args.get('gccEmail')
+
+    # user = User.query.get_or_404(gccEmail);
+    user = User.query.filter_by(gccEmail=gccEmail).first()
+    
+    if user:
+        return jsonify({'exists': True, 'username': user.username})
+    else:
+        return jsonify({'exists': False, 'username': ""})
+    
+@app.get('/loginExisting')
+def loginExisting():
+    username = request.args.get('username')
+    password = request.args.get('password')
+
+    print("username: " + username)
+    print("password: " + password)
+    # user = User.query.get_or_404(gccEmail);
+    user = User.query.filter_by(username=username).first()
+    print(user)
+
+    print(user.backupPasswordHash)
+    
+    # return jsonify({'exists': False, 'username': ""})
+    return [url_for("get_home")]
 
 
 def create_comment(commentData, u2Email):

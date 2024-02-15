@@ -123,7 +123,7 @@ function post() {
     });
 }
 
-function cancelPost() {
+function cancel_post() {
     window.location.replace(`${window.location.origin}/home`)
 }
 
