@@ -1,3 +1,5 @@
+console.log(window.location.href)
+
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
 const currentAccounts = myMSALObj.getAllAccounts();
 if (!currentAccounts) {
@@ -31,6 +33,9 @@ function signOut() {
         account: myMSALObj.getAllAccounts()[0]//getAccountByUsername(username),
         // postLogoutRedirectUri: 'http://localhost', // Simply remove this line if you would like navigate to index page after logout.
     };
+
+    console.log("signing out");
+    sessionStorage.removeItem("customIdToken");
 
     myMSALObj.logoutRedirect(logoutRequest);
 }

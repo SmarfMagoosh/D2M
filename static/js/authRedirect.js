@@ -2,13 +2,22 @@ console.log("script start")
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
 let username = "";
+console.log(sessionStorage)
 
-myMSALObj.handleRedirectPromise()
-    .then(handleResponse)
-    .catch((error) => {
-        console.log("error")
-        console.error(error);
-    });
+if(window.location.href != "http://localhost/home/") {
+    if(!sessionStorage.getItem("customIdToken")) {
+        myMSALObj.handleRedirectPromise()
+        .then(handleResponse)
+        .catch((error) => {
+            console.log("error")
+            console.error(error);
+        });
+    }
+    else {
+        console.log("going home baby")
+        window.location.href = "../home";
+    }
+}
 
 console.log("script end")
 
@@ -65,12 +74,22 @@ function handleResponse(response) {
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#response
      */
     console.log("handleResponse start")
+    console.log(response)
+    console.log(username)
 
-    if (response !== null)  username = response.account.username;
-    else    selectAccount();
+    // if (response !== null)  username = response.account.username;
+    // else    selectAccount();
 
-    sessionStorage.setItem("customIdToken", username)
-    if(username != null && username != "") {
+    // if(response === "YES")   {
+    //     username = "Bryce"
+    //     sessionStorage.setItem("customIdToken", username)
+    //     window.location.href = "../home";
+    // }
+
+    if(username != null && response != null) {// && username != "") {
+        username = response.account.username
+        console.log("hello??????")
+        console.log(username)
         fetch(`/check_user?gccEmail=${username}`)
         .then(response => response.json())
         .then(data => {
@@ -78,12 +97,14 @@ function handleResponse(response) {
             if (data.exists) {// && data.username !== null) {
                 // this account already exists so this will just log them in
                 // myMSALObj.loginRedirect(loginRequest);
+                sessionStorage.setItem("customIdToken", username)
                 window.location.href = "../home";
             } else {
                 // this doesn't exist yet so now we want to add the user to the database and have them set a username/password
                 console.log(`User with username ${username} does not exist yet`);
                 // Make a fetch request to the root URL of your Flask application
                 //this is where add user used to be
+                sessionStorage.setItem("customIdToken", username)
                 formMode = document.getElementById("formMode");
                 formMode.classList.toggle("show-register");
             }
@@ -210,7 +231,7 @@ function addUser() {
     usernameField = document.getElementById("newUsernameField")
     passwordField = document.getElementById("newPasswordField")
 
-    fetch('/add_user', {
+    return fetch('/add_user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -222,8 +243,12 @@ function addUser() {
     })
     .then(response => {
         if (!response.ok) { throw new Error('Failed to add user'); }
-        else    window.location.href = "../home";
-        return response.json();
+        else    {
+            sessionStorage.setItem("customIdToken", username)
+            console.log("update session storage from addUser")
+            // window.location.href = "../home";
+        }
+        // return response.json();
     })
     .catch(error => console.error('Error:', error));
 
@@ -234,6 +259,8 @@ function loginExisting() {
     tempUsername = document.getElementById("existingUsername").value
     tempPassword = document.getElementById("existingPassword").value
 
+
+    // handleResponse("YES")
     // fetch(`/loginExisting?username=${tempUsername}&password=${tempPassword}`)
     // .then(response => {
     //     console.log(response);
@@ -244,6 +271,7 @@ function loginExisting() {
 
     // IF LOGIN IS SUCCESSFUL
     sessionStorage.setItem("customIdToken", tempUsername)
+    // console.log(sessionStorage)
     username = tempUsername
     console.log(username)
 }
