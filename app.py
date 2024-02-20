@@ -501,20 +501,15 @@ def check_user():
     
 @app.get('/loginExisting')
 def loginExisting():
-    username = request.args.get('username')
+    name = request.args.get('username')
     password = request.args.get('password')
 
-    print("username: " + username)
-    print("password: " + password)
-    # user = User.query.get_or_404(gccEmail);
-    user = User.query.filter_by(username=username).first()
-    print(user)
+    user = User.query.filter_by(username=name, backupPasswordHash=password).first()
 
-    print(user.backupPasswordHash)
-    
-    # return jsonify({'exists': False, 'username': ""})
-    return [url_for("get_home")]
-
+    if user:
+        return jsonify({'exists': True, 'email': user.gccEmail})
+    else:
+        return jsonify({'exists': False, 'email': ""})
 
 def create_comment(commentData, u2Email):
     with app.app_context():

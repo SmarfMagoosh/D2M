@@ -6,13 +6,13 @@
 
 {% block head %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
     <script src = "../static/js/create.js" type = "module"></script>
     <link rel = "stylesheet" href = "../static/css/create.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
 {% endblock %}
 
 {% block content %}
@@ -40,6 +40,10 @@
                 <option value = ".3">30%</option>
                 <option value = ".4">40%</option>
                 <option value = ".5">50%</option>
+                <option value = ".6">60%</option>
+                <option value = ".7">70%</option>
+                <option value = ".8">80%</option>
+                <option value = ".9">90%</option>
             </select>
         </div>
         <div>
@@ -53,14 +57,14 @@
         </div>
     </div>
     <div id = "meme">
-        <div style = "margin: auto; width: 80%">
+        <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;">
             <label for = "fileInput" id = "fileInputLabel">
                 <input id = "fileInput" type = "file" accept = "image/*">
                 <p>Uploading an Image</p>
             </label>
             <a href = "#template-list" rel = "modal:open" id = "list-opener">Or use a template!</a>
         </div>
-        <canvas id = "meme-img" height = "100"></canvas>
+        <canvas id = "meme-img" height = "0"></canvas>
         <div class = "text-box-container">
             <div class = "meme-text" id = "meme-text-1"></div>
         </div>
@@ -72,29 +76,34 @@
 <div id = "right-content">
     <div id = "text-tool-bar">
         <div>
-            <div>
-                <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
-                <button class = 'btn trash-btn'>
-                    <i class = 'fa fa-trash'></i>
-                </button>
-            </div>
-            <div>
-                <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
-                <button class = 'btn trash-btn'>
-                    <i class = 'fa fa-trash'></i>
-                </button>
-            </div>
+            <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
+            <button class = 'btn settings-btn'>
+                <i class = 'fa fa-gear'></i>
+            </button>
+            <button class = 'btn trash-btn'>
+                <i class = 'fa fa-trash'></i>
+            </button>
         </div>
         <div>
-            <button id = "new-box-btn" disabled>Add Text Area</button>
-        </div>
-        <div>
-            <textarea placeholder = "Give your post a title!" id = "post-title"></textarea>
-        </div>
-        <div>
-            <button id = "post-btn">Post!</button>
-            <button id = "cancel-btn">Cancel</button>
+            <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
+            <button class = 'btn settings-btn'>
+                <i class = 'fa fa-gear'></i>
+            </button>
+            <button class = 'btn trash-btn'>
+                <i class = 'fa fa-trash'></i>
+            </button>
         </div>
     </div>
+    <div>
+        <button id = "new-box-btn">Add Text Area</button>
+    </div>
+    <div>
+        <textarea placeholder = "Give your post a title!" id = "post-title"></textarea>
+    </div>
+    <div>
+        <button id = "post-btn">Post!</button>
+        <button id = "cancel-btn">Cancel</button>
+    </div>
+</div>
 </div>
 {% endblock %}
