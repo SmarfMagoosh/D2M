@@ -18,6 +18,7 @@
 console.log(sessionStorage.getItem("customIdToken"))
 
 account = sessionStorage.getItem("customIdToken")
+dynamicLogin()
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
 // const currentAccounts = myMSALObj.getAllAccounts();
@@ -55,5 +56,21 @@ function signOut() {
         };
 
         myMSALObj.logoutRedirect(logoutRequest);
+    }
+
+    location.reload();
+}
+
+function dynamicLogin() {
+    var loginButton = document.getElementById("loginButton");
+    var logoutButton = document.getElementById("logoutButton");
+
+    console.log(account !== null)
+    if (account !== null) {
+        loginButton.style.display = "none";
+        logoutButton.style.display = "block";
+    } else {
+        loginButton.style.display = "block";
+        logoutButton.style.display = "none";
     }
 }
