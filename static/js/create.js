@@ -64,7 +64,11 @@ $("document").ready(() => {
     $("#cancel-btn").click(cancel_post)
     $("#spacer").click(e => adjust_spacing(e.target))
     $(".trash-btn").click(e => delete_box(e.target))
-    $(".settings-btn").click(e => function() { /* TODO: open modal */ })
+    $(".settings-btn").click(e => {
+        let elem = e.target.tagName == "I" ? e.target.parentNode : e.target;
+        console.log(elem.nextElementSibling);
+        $(elem.nextElementSibling).show();
+    })
     $("#new-box-btn").click(e => add_text_box(e.target.parentNode.previousElementSibling))
 })
 
