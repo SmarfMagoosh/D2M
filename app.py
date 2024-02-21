@@ -516,6 +516,7 @@ def create_comment(commentData, u2Email):
        
         db.session.add(follow)
         db.session.commit()
+        
 # returns a JSON object containing all of the data necessary to reproduce the post specified
 # @app.get("/API/getpostdata/<int:post_id>/")
 # def get_post(post_id):

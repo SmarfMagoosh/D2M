@@ -1,43 +1,9 @@
-// const btn = document.getElementById('loginOrProfile');
-
-// function setUserName() {
-//     const currentAccounts = myMSALObj.getAllAccounts();
-
-//     if (currentAccounts.length === 1) {
-//         btn.innerText = currentAccounts[0].idTokenClaims.name
-//         btn.href = "profile.html"
-//     }
-//     else {
-//         btn.innerText = "Login"
-//         btn.onclick = signIn
-//     }
-// }
-
-// setUserName()
-
 console.log(sessionStorage.getItem("customIdToken"))
 
 account = sessionStorage.getItem("customIdToken")
 dynamicLogin()
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
-// const currentAccounts = myMSALObj.getAllAccounts();
-// if (!currentAccounts) {
-//     console.log("!currentAccounts")
-// } else if (currentAccounts.length > 1) {
-//     // Add your account choosing logic here
-//     console.log("Multiple accounts detected.");
-// } else if (currentAccounts.length == 1) {
-//     myMSALObj.acquireTokenSilent({
-//         account: currentAccounts[0],
-//         scopes: ["openid"]
-//     }).then(response => {
-//         console.log(response.account.idTokenClaims.name + " is logged in")
-//     });
-// }
-// else {
-//     console.log("no one is logged in")
-// }    
 
 function signOut() {
     /**

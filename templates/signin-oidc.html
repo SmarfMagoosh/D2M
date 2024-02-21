@@ -35,7 +35,7 @@
                         </div>
 
                         <div class="form-link">
-                            <a href="#" class="forgot-pass">Forgot password?</a>
+                            <a id="resetLink" href="#" class="reseter forgot-pass">Forgot password?</a>
                         </div>
 
                         <div class="field button-field">
@@ -116,6 +116,27 @@
 
                     <div class="form-link">
                         <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password reset -->
+
+            <div class="form reset">
+                <div class="form-content">
+                    <header>Reset Password</header>
+                    <form action="#" id = "resetForm">
+                        <div class="field input-field">
+                            <input type="email" placeholder="Email" class="input">
+                        </div>
+
+                        <div class="field button-field">
+                            <button type="button" onclick="sendEmail()">Send Email</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <a id="resetLink" href="#" class="reseter reset-link">Login/Signin</a>
                     </div>
                 </div>
             </div>

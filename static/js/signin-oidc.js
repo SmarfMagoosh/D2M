@@ -21,17 +21,19 @@ pwShowHide.forEach(eyeIcon => {
 
 links.forEach(link => {
     link.addEventListener("click", e => {
-    //    e.preventDefault(); //preventing form submit
        forms.classList.toggle("show-signup");
     })
 })
 
-// const currentAccounts = myMSALObj.getAllAccounts();
+resetLinks = document.querySelectorAll(".reseter")
 
-// if (currentAccounts.length === 1) {
-//     fetch("/home");
-// }
-// else {
-//     // btn.innerText = "Login"
-//     // btn.onclick = signIn
-// }
+resetLinks.forEach(resetLink => {
+    resetLink.addEventListener("click", e => {
+    forms.classList.toggle("show-reset");
+    })
+})
+
+function sendEmail() {
+    console.log("Go to password thing")
+    // window.location.href = "../resetPassword"
+}
