@@ -11,7 +11,6 @@ let email = "";
  */
 myMSALObj.handleRedirectPromise()
 .then(response => {
-    console.log(response);
     if(response !== null) handleMSALLogin(response);
 })
 .catch((error) => {
@@ -60,7 +59,6 @@ function loginExisting() {
             passwordField.value = ""
         }
     })
-    console.log("logging in existing")
 }
 
 function signIn() {

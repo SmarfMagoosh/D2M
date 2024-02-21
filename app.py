@@ -9,6 +9,7 @@ import base64
 import atexit
 import time
 import math
+import bcrypt
 
 import base64
 
@@ -330,11 +331,10 @@ def post_login():
 @app.post('/add_user')#, methods=['POST'])
 def add_user():
     data = request.get_json()
-    print(data)
     new_user = User(
         username=data['username'],
         gccEmail=data['gccEmail'],
-        backupPasswordHash=data['backupPasswordHash'],
+        backupPasswordHash=bcrypt.hashpw(data['backupPasswordHash'].encode('utf-8'), bcrypt.gensalt()),
         timesReported=0,
         # Add other fields as needed
     )
@@ -504,10 +504,12 @@ def loginExisting():
     name = request.args.get('username')
     password = request.args.get('password')
 
-    user = User.query.filter_by(username=name, backupPasswordHash=password).first()
+    user = User.query.filter_by(username=name).first()#, backupPasswordHash=password
+
+    # if bcrypt.checkpw(password, user.backupPasswordHash):
 
     if user:
-        return jsonify({'exists': True, 'email': user.gccEmail})
+        return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
 
