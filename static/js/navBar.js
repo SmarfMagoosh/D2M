@@ -1,5 +1,3 @@
-console.log(sessionStorage.getItem("customIdToken"))
-
 account = sessionStorage.getItem("customIdToken")
 dynamicLogin()
 
@@ -31,7 +29,6 @@ function dynamicLogin() {
     var loginButton = document.getElementById("loginButton");
     var logoutButton = document.getElementById("logoutButton");
 
-    console.log(account !== null)
     if (account !== null) {
         loginButton.style.display = "none";
         logoutButton.style.display = "block";
