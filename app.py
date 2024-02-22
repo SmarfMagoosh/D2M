@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
 from apscheduler.schedulers.background import BackgroundScheduler
+from PIL import Image
 import base64
 import atexit
 import time
@@ -36,6 +37,33 @@ db = SQLAlchemy(app)
 
 # setup queue for sorting by likes
 update_times = [0, 0, 0]
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NON-ROUTE FUNCTIONS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def update_like_backend():
+    # with app.app_context():
+    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
+    #     db.session.commit()
+        
+    global update_times
+    update_times.append(math.floor(time.time()))
+    update_times.pop(0)
+    print(update_times)
+
+def create_follow(u1Email, u2Email):
+    with app.app_context():
+        follow = Follow(user1 = u1Email, user2 = u2Email)
+        db.session.add(follow)
+        db.session.commit()
+        
+# takes in an Image object and returns the thumbnail version
+def create_thumbnail(image):
+    img = image.copy()
+    img.thumbnail((400, 400))
+    return img
+    
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -203,22 +231,6 @@ class Comment(db.Model) :
 			"username": self.username,
 			"parentPost": self.postID,
 		}
-
-def update_like_backend():
-    # with app.app_context():
-    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-    #     db.session.commit()
-        
-    global update_times
-    update_times.append(math.floor(time.time()))
-    update_times.pop(0)
-    print(update_times)
-
-def create_follow(u1Email, u2Email):
-    with app.app_context():
-        follow = Follow(user1 = u1Email, user2 = u2Email)
-        db.session.add(follow)
-        db.session.commit()
 
 with app.app_context():
     db.drop_all()
