@@ -6,7 +6,7 @@ from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
-from io import StringIO, BytesIO
+from io import BytesIO
 import base64
 import atexit
 import time
@@ -44,9 +44,11 @@ update_times = [0, 0, 0]
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def update_like_backend():
-    # with app.app_context():
-    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-    #     db.session.commit()
+    with app.app_context():
+        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
+        db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
+        db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
+        db.session.commit()
         
     global update_times
     update_times.append(math.floor(time.time()))
@@ -59,19 +61,24 @@ def create_follow(u1Email, u2Email):
         db.session.add(follow)
         db.session.commit()
         
-# takes in an Image object and returns the thumbnail version
-# https://pillow.readthedocs.io/en/stable/reference/Image.html
+# takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
     img.thumbnail(dimensions)
     return img
+
+# TODO: call this directly after creating a post
+def save_thumbnail(post):
+    create_thumbnail(f"static/images/{post.backImage}")     \
+        .save(f"static/images/thumbnails/{post.postID}.png")
     
 #from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
-def serve_pil_image(pil_img):
-    img_io = BytesIO()
-    pil_img.save(img_io, 'PNG', quality=70)
-    img_io.seek(0)
-    return send_file(img_io, mimetype='image/jpeg')
+#potentially necessary in future, but not at the moment
+# def serve_pil_image(pil_img):
+#     img_io = BytesIO()
+#     pil_img.save(img_io, 'PNG', quality=70)
+#     img_io.seek(0)
+#     return send_file(img_io, mimetype='image/jpeg')
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -144,7 +151,6 @@ class Post(db.Model) :
     spacing = db.Column(db.Integer, nullable = False)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
-    # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String)#, nullable = False)
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     numLikes = db.Column(db.Integer, default=0)
@@ -171,7 +177,7 @@ class Post(db.Model) :
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
+            "thumbnail": f"thumbnails/{self.postID}.png",
             "username": self.owner.username,
             "numLikes": self.numLikes,
         }
@@ -539,11 +545,12 @@ def create_comment(commentData, u2Email):
         
 # from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
 # with minor adjustments to make it work here
-@app.get('/API/thumbnail/<int:postID>')
-def get_thumbnail(postID):
-    post = Post.query.get_or_404(postID)
-    img = create_thumbnail(f"static/images/{post.backImage}")
-    return serve_pil_image(img)
+# no longer necessary, but the code is helpful to have around
+# @app.get('/API/thumbnail/<int:postID>')
+# def get_thumbnail(postID):
+#     post = Post.query.get_or_404(postID)
+#     img = create_thumbnail(f"static/images/{post.backImage}")
+#     return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
