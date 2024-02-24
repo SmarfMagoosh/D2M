@@ -1,11 +1,12 @@
 import os, sys, hashlib, json
 
-from flask import Flask, session, render_template, url_for, redirect, request, jsonify
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
+from io import StringIO, BytesIO
 import base64
 import atexit
 import time
@@ -59,11 +60,18 @@ def create_follow(u1Email, u2Email):
         db.session.commit()
         
 # takes in an Image object and returns the thumbnail version
-def create_thumbnail(image):
-    img = image.copy()
-    img.thumbnail((400, 400))
+# https://pillow.readthedocs.io/en/stable/reference/Image.html
+def create_thumbnail(image_path, dimensions = (400, 400)):
+    img = Image.open(image_path)
+    img.thumbnail(dimensions)
     return img
     
+#from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+def serve_pil_image(pil_img):
+    img_io = BytesIO()
+    pil_img.save(img_io, 'PNG', quality=70)
+    img_io.seek(0)
+    return send_file(img_io, mimetype='image/jpeg')
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -528,11 +536,14 @@ def create_comment(commentData, u2Email):
        
         db.session.add(follow)
         db.session.commit()
-# returns a JSON object containing all of the data necessary to reproduce the post specified
-# @app.get("/API/getpostdata/<int:post_id>/")
-# def get_post(post_id):
-    # return json with image link, text boxes + box settings, filters, extra image links/postitions/etc., number of likes
-    # return
+        
+# from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+# with minor adjustments to make it work here
+@app.get('/API/thumbnail/<int:postID>')
+def get_thumbnail(postID):
+    post = Post.query.get_or_404(postID)
+    img = create_thumbnail(f"static/images/{post.backImage}")
+    return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
