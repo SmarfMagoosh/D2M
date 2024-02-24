@@ -153,7 +153,7 @@ class Post(db.Model) :
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
     timePosted = db.Column(db.String)#, nullable = False)
-    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
@@ -179,14 +179,14 @@ class Post(db.Model) :
             "id": self.postID,
             "title": self.title,
             "thumbnail": f"thumbnails/{self.postID}.png",
-            "username": self.owner.username,
+            "username": self.username,
             "numLikes": self.numLikes,
         }
     def page_json(self):
         return {
             "id": self.postID,
             "title": self.title,
-            "username": self.owner.username,
+            "username": self.username,
             "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
@@ -198,7 +198,7 @@ class Post(db.Model) :
             "spacing": self.spacing,
             "title": self.title,
             "backImage": self.backImage,
-            "username": self.owner.username,
+            "username": self.username,
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
@@ -386,14 +386,14 @@ def follow(u1Email, u2Email):
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
     count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
-    # username = request.args.get('username', None)
+    username = request.args.get('username', None)
     recent = Post.query
     # print(str(start_id) + " " + str(count))
     
     if start_id != -1:
         recent = recent.filter(Post.postID<=start_id)
-    # if username != None:
-    #     recent = recent.filter(Post.username==username)
+    if username != None:
+        recent = recent.filter(Post.username==username)
     
     recent = recent.order_by(Post.postID.desc()) \
                         .limit(count) \
