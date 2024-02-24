@@ -178,7 +178,7 @@ class Post(db.Model) :
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
+            "thumbnail": f"thumbnails/{self.postID}.png",
             "username": self.username,
             "numLikes": self.numLikes,
         }
