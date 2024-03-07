@@ -123,6 +123,16 @@ class Report(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
+    
+class Notification(db.Model) :
+    __tablename__ = 'Notifications'
+    NotificationID = db.Column(db.Integer, primary_key = True)
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    title = db.Column(db.String)
+    text = db.Column(db.String)
+    # format: mm/dd/yy hh:mm AM/PM
+    # ex: 3/7/24 5:30 AM
+    time = db.Column(db.String)
 
 class Like(db.Model):
     __tablename__ = 'Likes'
