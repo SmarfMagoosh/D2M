@@ -20,8 +20,8 @@
 </head>
 <body>
     <nav class="navbar">
-            <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:2rem;height:2rem;"></a>
-            <script src = "../static/js/search.js"></script>
+        <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:2rem;height:2rem;"></a>
+        <script src = "../static/js/search.js"></script>
         <div>
             <input type="text" id="searchInput" placeholder="Search by name">
             <button onclick="search()">Search</button>
@@ -29,28 +29,33 @@
         <div id="searchResultsDropdown" class="dropdown-content">
             
         </div>
-        <div>
-            <span>
+        <div class="dropdown">
+            <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <img src="{{url_for('static', filename='images/bell.png')}}" alt="Notification Bell" style="width:2rem;height:2rem;">
-                <span class="badge text-bg-dark rounded-pill translate-middle visually-hidden">
+            </a>
+            <span class="badge text-bg-dark rounded-pill translate-middle"><!--visually-hidden-->
                 1
-              </span>
             </span>
-            <div class="dropdown">
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item text-bg-light" href="#">Action</a></li>
+                <li><a class="dropdown-item text-bg-light" href="#">Another action</a></li>
+                <li><a class="dropdown-item text-bg-light" href="#">Something else here</a></li>
+            </ul>
+        </div>
+        <div class="dropdown">
             <button class="dropbtn">Dropdown</button>
             <div class="dropdown-content">
-              <a href="{{ url_for('get_profile') }}">Profile</a>
-              [bookmarks]
-              <a href="{{ url_for('get_settings') }}">Settings</a>
-              <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
-              <a id="logoutButton" onclick="signOut()">Logout</a>
+            <a href="{{ url_for('get_profile') }}" class="highlight">Profile</a>
+            [bookmarks]
+            <a href="{{ url_for('get_settings') }}" class="highlight">Settings</a>
+            <a id="loginButton" href="{{ url_for('get_login') }}" class="highlight">Login</a>
+            <a id="logoutButton" onclick="signOut()" class="highlight">Logout</a>
             </div>
         </div>
-    
-    <a href="{{ url_for('get_create') }}" class="circular-button-link">
-        <button class="circular-button">+</button>
-    </a>
-</nav>
+        <a href="{{ url_for('get_create') }}" class="circular-button-link">
+            <button class="circular-button">+</button>
+        </a>
+    </nav>
     <div id = "main-content-div">
         {% block content %}{% endblock %}
     </div>
