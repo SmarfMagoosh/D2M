@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta
 import os, sys, hashlib, json
+import string
+import secrets
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
@@ -15,41 +18,9 @@ import bcrypt
 
 import base64
 
-# import smtplib
-# from email.mime.text import MIMEText
-# from email.mime.multipart import MIMEMultipart
-
-# # SMTP server configuration
-# smtp_server = 'smtp.office365.com'
-# smtp_port = 587
-# smtp_username = 'BEHRBN22@GCC.EDU'
-# smtp_password = 'Bn190018-'
-
-# # Email details
-# sender_email = 'BEHRBN22@GCC.EDU'
-# receiver_email = 'BEHRBN22@GCC.EDU'
-# subject = 'Test Email'
-
-# # Email content
-# message = MIMEMultipart()
-# message['From'] = sender_email
-# message['To'] = receiver_email
-# message['Subject'] = subject
-
-# body = 'This is a test email from Python.'
-# message.attach(MIMEText(body, 'plain'))
-
-# print(message)
-# # Connect to the SMTP server with a timeout of 10 seconds
-# try:
-#     with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
-#         server.starttls()
-#         server.login(smtp_username, smtp_password)
-#         server.sendmail(sender_email, receiver_email, message.as_string())
-#     print('Email sent successfully.')
-# except Exception as e:
-#     print('An error occurred:', str(e))
-
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 """
 set FLASK_APP=app.py
@@ -81,11 +52,11 @@ update_times = [0, 0, 0]
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def update_like_backend():
-    with app.app_context():
-        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
-        db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
-        db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
-        db.session.commit()
+    # with app.app_context():
+    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
+    #     db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
+    #     db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
+    #     db.session.commit()
         
     global update_times
     update_times.append(math.floor(time.time()))
@@ -136,6 +107,7 @@ class User(db.Model) :
     
     backupEmail = db.Column(db.String, nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
+    passwordResetToken = db.Column(db.String, nullable = True)
     timesReported = db.Column(db.Integer, default = 0)
     
     # classes that use this class for a foreign key, allows access to list
@@ -330,6 +302,10 @@ update_like_backend()
 @app.get("/")
 def index():
     return redirect(url_for("get_home"))
+
+@app.get("/resetPassword")
+def get_resetPassword():
+    return render_template("resetPassword.html")
 
 @app.get("/create/")
 def get_create():
@@ -574,6 +550,91 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
+    
+@app.get('/genResetToken')
+def genResetToken():
+    name = request.args.get('username')
+    self = User.query.filter_by(username=name).first()
+    if self:
+        token_length = 32
+        expiration_minutes = 60
+
+        user_info = f"{self.username}{self.gccEmail}{self.backupEmail}"
+        
+        # Use a secure random string for additional randomness
+        random_string = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(token_length))
+
+        # Concatenate user-specific info and random string to create the token
+        token = user_info + random_string
+
+        # Calculate expiration timestamp
+        expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
+        expiration_timestamp = expiration_time.timestamp()
+
+        # Append expiration timestamp to the token
+        token_with_expiration = f"{token}~{expiration_timestamp}"
+
+        return jsonify({'token': token_with_expiration})
+    else:
+        return jsonify({'token': False})
+    
+@app.get('/validate_reset_token')
+def validate_reset_token():
+    token = request.args.get('token')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+    if len(token_parts) != 2:
+        return False
+
+    token, expiration_timestamp = token_parts
+
+    # Convert expiration timestamp to datetime
+    expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
+
+    # Check if token has expired
+    if datetime.utcnow() > expiration_time:
+        return jsonify({'valid': False})
+
+    return jsonify({'valid': True})
+
+@app.get('/sendResetEmail')
+def sendResetEmail():
+    username = request.args.get('username')
+    token = request.args.get('token')
+    user = User.query.filter_by(username=username).first()
+    if user == None:
+        return
+    # Email configuration
+    sender_email = 'svc_CS_D2M@gcc.edu'
+    receiver_email = user.gccEmail#'bnb52spam@gmail.com'
+    password = 'Laq86937'
+
+    # Create message container
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = 'Subject of the email'
+
+    # Email body
+    body = 'Hello, this is the body of the email!\nhttp://localhost/resetPassword?token=' + token
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Connect to SMTP server
+    try:
+        server = smtplib.SMTP('smtp.office365.com', 587)
+        server.starttls()  # Secure the connection
+        server.login(sender_email, password)
+        text = msg.as_string()
+        server.sendmail(sender_email, receiver_email, text)
+        print('Email sent successfully!')
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False})
+        print(f'Error: {e}')
+    finally:
+        server.quit()  # Quit the SMTP server   
 
 def create_comment(commentData, u2Email):
     with app.app_context():
