@@ -559,7 +559,7 @@ def genResetToken():
         token_length = 32
         expiration_minutes = 60
 
-        user_info = f"{self.username}{self.gccEmail}{self.backupEmail}"
+        user_info = f"{self.username}~"
         
         # Use a secure random string for additional randomness
         random_string = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(token_length))
@@ -608,7 +608,7 @@ def sendResetEmail():
         return
     # Email configuration
     sender_email = 'svc_CS_D2M@gcc.edu'
-    receiver_email = user.gccEmail#'bnb52spam@gmail.com'
+    receiver_email = user.gccEmail
     password = 'Laq86937'
 
     # Create message container

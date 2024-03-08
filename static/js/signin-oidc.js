@@ -34,12 +34,14 @@ resetLinks.forEach(resetLink => {
 })
 
 function sendEmail() {
-    fetch(`/genResetToken?username=Bryce`)
+    usernameField = document.getElementById("resetUsername")
+
+    fetch(`/genResetToken?username=${usernameField.value}`)
     .then(response => response.json())
     .then(data => {
         console.log(data.token)
         if(data.token) {
-            fetch(`/sendResetEmail?username=Bryce&token=${data.token}`)
+            fetch(`/sendResetEmail?username=${usernameField.value}&token=${data.token}`)
             // .then(response => response.json())
             // .then(data => {
             //     console.log(data)
@@ -55,16 +57,5 @@ function sendEmail() {
         //         console.log("invalid")
         //     }
         // })
-        // fetch(`/sendResetEmail?token=${response}`)   // <-- keep working here to take a variable as an input
     })
-    // .then(response => response.json())
-    // .then(data => {
-    //     if (data.exists) {
-    //         sessionStorage.setItem("customIdToken", data.email)
-    //         window.location.href = "../home";
-    //     } else {
-    //         usernameField.value = ""
-    //         passwordField.value = ""
-    //     }
-    // })
 }
