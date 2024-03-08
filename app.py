@@ -1,10 +1,12 @@
 import os, sys, hashlib, json
 
-from flask import Flask, session, render_template, url_for, redirect, request, jsonify
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from forms import *
 from sqlalchemy import Integer, String, JSON, Boolean
 from apscheduler.schedulers.background import BackgroundScheduler
+from PIL import Image
+from io import BytesIO
 import base64
 import atexit
 import time
@@ -73,6 +75,47 @@ db = SQLAlchemy(app)
 
 # setup queue for sorting by likes
 update_times = [0, 0, 0]
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NON-ROUTE FUNCTIONS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def update_like_backend():
+    with app.app_context():
+        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
+        db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
+        db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
+        db.session.commit()
+        
+    global update_times
+    update_times.append(math.floor(time.time()))
+    update_times.pop(0)
+    print(update_times)
+
+def create_follow(u1Email, u2Email):
+    with app.app_context():
+        follow = Follow(user1 = u1Email, user2 = u2Email)
+        db.session.add(follow)
+        db.session.commit()
+        
+# takes in a Pillow Image object and returns the thumbnail version
+def create_thumbnail(image_path, dimensions = (400, 400)):
+    img = Image.open(image_path)
+    img.thumbnail(dimensions)
+    return img
+
+# TODO: call this directly after creating a post
+def save_thumbnail(post):
+    create_thumbnail(f"static/images/{post.backImage}")     \
+        .save(f"static/images/thumbnails/{post.postID}.png")
+    
+#from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+#potentially necessary in future, but not at the moment
+# def serve_pil_image(pil_img):
+#     img_io = BytesIO()
+#     pil_img.save(img_io, 'PNG', quality=70)
+#     img_io.seek(0)
+#     return send_file(img_io, mimetype='image/jpeg')
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -145,9 +188,8 @@ class Post(db.Model) :
     spacing = db.Column(db.Integer, nullable = False)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
-    # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String)#, nullable = False)
-    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
@@ -172,15 +214,15 @@ class Post(db.Model) :
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
-            "username": self.owner.username,
+            "thumbnail": f"thumbnails/{self.postID}.png",
+            "username": self.username,
             "numLikes": self.numLikes,
         }
     def page_json(self):
         return {
             "id": self.postID,
             "title": self.title,
-            "username": self.owner.username,
+            "username": self.username,
             "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
@@ -192,7 +234,7 @@ class Post(db.Model) :
             "spacing": self.spacing,
             "title": self.title,
             "backImage": self.backImage,
-            "username": self.owner.username,
+            "username": self.username,
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
@@ -240,22 +282,6 @@ class Comment(db.Model) :
 			"username": self.username,
 			"parentPost": self.postID,
 		}
-
-def update_like_backend():
-    # with app.app_context():
-    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-    #     db.session.commit()
-        
-    global update_times
-    update_times.append(math.floor(time.time()))
-    update_times.pop(0)
-    print(update_times)
-
-def create_follow(u1Email, u2Email):
-    with app.app_context():
-        follow = Follow(user1 = u1Email, user2 = u2Email)
-        db.session.add(follow)
-        db.session.commit()
 
 with app.app_context():
     db.drop_all()
@@ -396,14 +422,14 @@ def follow(u1Email, u2Email):
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
     count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
-    # username = request.args.get('username', None)
+    username = request.args.get('username', None)
     recent = Post.query
     # print(str(start_id) + " " + str(count))
     
     if start_id != -1:
         recent = recent.filter(Post.postID<=start_id)
-    # if username != None:
-    #     recent = recent.filter(Post.username==username)
+    if username != None:
+        recent = recent.filter(Post.username==username)
     
     recent = recent.order_by(Post.postID.desc()) \
                         .limit(count) \
@@ -554,12 +580,15 @@ def create_comment(commentData, u2Email):
        
         db.session.add(follow)
         db.session.commit()
-        
-# returns a JSON object containing all of the data necessary to reproduce the post specified
-# @app.get("/API/getpostdata/<int:post_id>/")
-# def get_post(post_id):
-    # return json with image link, text boxes + box settings, filters, extra image links/postitions/etc., number of likes
-    # return
+
+# from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+# with minor adjustments to make it work here
+# no longer necessary, but the code is helpful to have around
+# @app.get('/API/thumbnail/<int:postID>')
+# def get_thumbnail(postID):
+#     post = Post.query.get_or_404(postID)
+#     img = create_thumbnail(f"static/images/{post.backImage}")
+#     return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
