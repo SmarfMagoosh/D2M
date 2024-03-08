@@ -13,6 +13,42 @@ import bcrypt
 
 import base64
 
+# import smtplib
+# from email.mime.text import MIMEText
+# from email.mime.multipart import MIMEMultipart
+
+# # SMTP server configuration
+# smtp_server = 'smtp.office365.com'
+# smtp_port = 587
+# smtp_username = 'BEHRBN22@GCC.EDU'
+# smtp_password = 'Bn190018-'
+
+# # Email details
+# sender_email = 'BEHRBN22@GCC.EDU'
+# receiver_email = 'BEHRBN22@GCC.EDU'
+# subject = 'Test Email'
+
+# # Email content
+# message = MIMEMultipart()
+# message['From'] = sender_email
+# message['To'] = receiver_email
+# message['Subject'] = subject
+
+# body = 'This is a test email from Python.'
+# message.attach(MIMEText(body, 'plain'))
+
+# print(message)
+# # Connect to the SMTP server with a timeout of 10 seconds
+# try:
+#     with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
+#         server.starttls()
+#         server.login(smtp_username, smtp_password)
+#         server.sendmail(sender_email, receiver_email, message.as_string())
+#     print('Email sent successfully.')
+# except Exception as e:
+#     print('An error occurred:', str(e))
+
+
 """
 set FLASK_APP=app.py
 python -m flask run --host=0.0.0.0 --port=80
