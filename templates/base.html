@@ -33,13 +33,16 @@
             <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <img src="{{url_for('static', filename='images/bell.png')}}" alt="Notification Bell" style="width:2rem;height:2rem;">
             </a>
-            <span class="badge text-bg-warning rounded-pill translate-middle">
+            <span class="badge text-bg-warning rounded-pill translate-middle" id="notif_count">
                 1<!-- if 0, instead put nothing -->
             </span>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item text-bg-light" href="#">Action</a></li>
-                <li><a class="dropdown-item text-bg-light" href="#">Another action</a></li>
-                <li><a class="dropdown-item text-bg-light" href="#">Something else here</a></li>
+            <ul class="dropdown-menu dropdown-menu-center" id="notif-list" style="width: 20vw;">
+                <li><a class="dropdown-item text-bg-light" href="#" hidden>
+                    <!-- TODO: differentiate the different components-->
+                    <p style="text-wrap: wrap;">03/07/24 5:30 AM <br>
+                    <strong>title</strong><br>
+                    really long notification text that goes on and on and on and on and on and on for a while</p>
+                </a></li>
             </ul>
         </div>
         <div class="dropdown">

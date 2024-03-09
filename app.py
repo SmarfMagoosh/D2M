@@ -109,6 +109,7 @@ class User(db.Model) :
     reportList = db.relationship('Report', backref='reporter')
     likeList = db.relationship('Like', backref='user')
     bookmarkList = db.relationship('Bookmark', backref='user')
+    notificationList = db.relationship('Notification', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
     
@@ -133,6 +134,12 @@ class Notification(db.Model) :
     # format: mm/dd/yy hh:mm AM/PM
     # ex: 3/7/24 5:30 AM
     time = db.Column(db.String)
+    def to_json(self):
+        return {
+            "title": self.title,
+            "text" : self.text,
+            "time" : self.time
+		}
 
 class Like(db.Model):
     __tablename__ = 'Likes'
@@ -451,6 +458,11 @@ def get_bookmarked(gccEmail):
     bookmarks.sort(key=lambda b: b.bookmarkID, reverse=True)
     bookmarks =  bookmarks[0:count] #reduce to count or less elements
     return [l.post.render_json() for l in bookmarks]
+
+@app.get("/API/get_notifications/<string:gccEmail>")
+def get_notifications(gccEmail):
+    notifications = Notification.query.filter_by(userEmail=gccEmail).all()
+    return [l.post.render_json() for l in notifications]
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
