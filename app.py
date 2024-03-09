@@ -657,10 +657,23 @@ def sendResetEmail():
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = receiver_email
-    msg['Subject'] = 'Subject of the email'
+    msg['Subject'] = 'D2M Password Reset Request'
 
+    resetLink = 'http://localhost/resetPassword?token=' + token
     # Email body
-    body = 'Hello, this is the body of the email!\nhttp://localhost/resetPassword?token=' + token
+    body = f"""
+Dear {user.username},
+
+We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
+
+{resetLink}
+
+If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+
+Thank you,
+The D2M Team
+"""
+
     msg.attach(MIMEText(body, 'plain'))
 
     # Connect to SMTP server
