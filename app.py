@@ -2,7 +2,7 @@ import os, sys, hashlib, json
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
-from forms import *
+from forms import SettingsForm
 from sqlalchemy import Integer, String, JSON, Boolean
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
@@ -327,8 +327,10 @@ def get_profile(user_id = -1):
 
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
+# @login_required
 def get_settings():
-    return render_template("settings.html")
+    form = SettingsForm()
+    return render_template('settings.html', form=form)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
