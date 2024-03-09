@@ -7,6 +7,7 @@ from flask import Flask, session, render_template, url_for, redirect, request, j
 from flask_sqlalchemy import SQLAlchemy
 from forms import SettingsForm
 from sqlalchemy import Integer, String, JSON, Boolean
+from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
 from io import BytesIO
@@ -52,11 +53,11 @@ update_times = [0, 0, 0]
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def update_like_backend():
-    # with app.app_context():
-    #     db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
-    #     db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
-    #     db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
-    #     db.session.commit()
+    with app.app_context():
+        db.session.execute(text('UPDATE Posts SET numLikesD3 = numLikesD2'))
+        db.session.execute(text('UPDATE Posts SET numLikesD2 = numLikesD1'))
+        db.session.execute(text('UPDATE Posts SET numLikesD1 = numLikes'))
+        db.session.commit()
         
     global update_times
     update_times.append(math.floor(time.time()))
