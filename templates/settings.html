@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block head %}
-
+<script src="{{url_for('static', filename='js/settings.js')}}"></script>
 {% endblock %}
 
 {% block content %}
@@ -12,9 +12,11 @@
         <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/backarrow.png')}}" alt="back" style="width:1em;height:1em;"></a>
         User Settings
     </h1>
-<form method="POST" action="/register">
+<form method="POST" action="/profile/settings">
     {{form.hidden_tag()}}
     <div class="container">
+        <h3>Profile</h3>
+        <hr>
         <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
             {{ form.username.label }}
             {{ form.username(class="form-control") }}
@@ -42,7 +44,8 @@
             <br>
             <canvas id="banner_img" src="#" alt="Banner Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
         </div>
-
+        <h3>Account Backup</h3>
+        <hr>
         <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
             {{form.backup_email.label}}
             {{form.backup_email(class="form-control")}}
