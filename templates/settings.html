@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %} 
+    Settings
+{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block content %}
+<h1>Sign Up</h1>
+<form method="POST" action="/register">
+  {{form.hidden_tag()}}
+
+  <div class="mb-2">
+    {{ form.username.label }}
+    {{ form.username(class="form-control") }}
+  </div>
+
+  <div class="mb-2">
+    {{form.bio.label}}
+    {{form.bio(class="form-control")}}
+  </div>
+
+  <div class="mb-2">
+    {{ form.icon.label }}
+    {{ form.icon(class="form-control") }}
+  </div>
+
+  <div class="mb-2">
+    {{form.banner.label}}
+    {{form.banner(class="form-control")}}
+  </div>
+
+  <div class="mb-2">
+    {{form.backup_email.label}}
+    {{form.backup_email(class="form-control")}}
+  </div>
+
+  <div class="mb-2">
+    {{form.change_password.label}}
+    {{form.change_password(class="form-control")}}
+  </div>
+
+  <div class="mb-2">
+    {{form.confirm_password.label}}
+    {{form.confirm_password(class="form-control")}}
+  </div>
+
+  <div class="mb-2">
+    {{form.old_password.label}}
+    {{form.old_password(class="form-control")}}
+  </div>
+
+  <div class="mb-2">
+    {{form.submit(class="btn btn-dark")}}
+  </div>
+</form>
+{% endblock %}
+
+
