@@ -34,6 +34,16 @@
                             <i class='bx bx-hide eye-icon'></i>
                         </div>
 
+                        <style>
+                            #incorrectCredentials {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="incorrectCredentials">*The username/password is incorrect*</b>
+                        </div>
+
                         <div class="form-link">
                             <a id="resetLink" href="#" class="reseter forgot-pass">Forgot password?</a>
                         </div>
@@ -106,6 +116,26 @@
                         <div class="field input-field">
                             <input id="newPasswordField" type="password" placeholder="Password" class="password">
                             <i class='bx bx-hide eye-icon'></i>
+                        </div>
+
+                        <style>
+                            #invalidUsername {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidUsername">*This username has already been taken*</b>
+                        </div>
+
+                        <style>
+                            #invalidPassword {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidPassword">*The password must be more than 7 characters*</b>
                         </div>
 
                         <div class="field button-field">

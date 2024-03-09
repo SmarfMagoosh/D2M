@@ -1,3 +1,6 @@
+// incorrectCredentials = document.getElementById("incorrectCredentials")
+// incorrectCredentials.style.display = "none";
+
 const forms = document.querySelector(".forms"),
       pwShowHide = document.querySelectorAll(".eye-icon"),
       links = document.querySelectorAll(".link");

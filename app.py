@@ -260,9 +260,9 @@ with app.app_context():
     db.create_all()
 
         # Create posts  to be inserted
-    u1 = User(username="u1", gccEmail = "u1@gcc.edu")
-    u2 = User(username="u2", gccEmail = "u2@gcc.edu")
-    u3 = User(username="u3", gccEmail = "u3@gcc.edu")
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1123".encode('utf-8'), bcrypt.gensalt()))
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2123".encode('utf-8'), bcrypt.gensalt()))
+    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3123".encode('utf-8'), bcrypt.gensalt()))
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
                  backImage = "4 rules.png", owner = u2, numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
@@ -368,17 +368,37 @@ def post_login():
 
 @app.post('/add_user')#, methods=['POST'])
 def add_user():
+    returnVal = {}
     data = request.get_json()
+    username=data['username']
+    password=data['backupPasswordHash']
+    checkUser = User.query.filter_by(username=username).first()
+    print(username + " " + password)
+    if checkUser:
+        returnVal['uniqueUsername'] = False
+    else:
+        returnVal['uniqueUsername'] = True
+
+    if len(password) < 8:
+        returnVal['goodPassword'] = False
+    else:
+        returnVal['goodPassword'] = True
+
+    print(returnVal)
+
+    if not returnVal['uniqueUsername'] or not returnVal['goodPassword']:
+        return jsonify(returnVal)
+    
     new_user = User(
         username=data['username'],
         gccEmail=data['gccEmail'],
-        backupPasswordHash=bcrypt.hashpw(data['backupPasswordHash'].encode('utf-8'), bcrypt.gensalt()),
+        backupPasswordHash=bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()),
         timesReported=0,
         # Add other fields as needed
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({'message': 'User added successfully'}), 201
+    return jsonify(returnVal)
 
 @app.get("/follow/<string:u1Email>/<string:u2Email>")
 def follow(u1Email, u2Email):
