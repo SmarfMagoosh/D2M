@@ -160,6 +160,40 @@
                             <input id="resetUsername" type="text" placeholder="Username" class="input">
                         </div>
 
+                        <style>
+                            #usernameDNE {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="usernameDNE">*This username does not exist*</b>
+                        </div>
+
+                        <style>
+                            #emailSuccess {
+                                display: none;
+                                color:green;
+                                font-size: 12px;
+                                text-align: center;
+                                margin-top: 10px;
+                            }
+                        </style>
+
+                        <div>
+                            <b id="emailSuccess">*Email successfully sent. Follow the link in the email to reset your password.*</b>
+                        </div>
+
+                        <style>
+                            #emailError {
+                                display: none;
+                            }
+                        </style>
+        
+                        <div id="emailError" class="alert">
+                            <span>*There was an issue sending the email*</span>
+                        </div>
+
                         <div class="field button-field">
                             <button type="button" onclick="sendEmail()">Send Email</button>
                         </div>

@@ -557,6 +557,24 @@ def check_user():
     else:
         return jsonify({'exists': False, 'username': ""})
     
+@app.get('/checkUsername')
+def checkUsername():
+    username = request.args.get('username')
+
+    user = User.query.filter_by(username=username).first()
+    
+    if user:
+        return jsonify({'exists': True, 'username': user.username})
+    else:
+        return jsonify({'exists': False, 'username': ""})
+    
+@app.get('/getUsername')
+def getUsername():
+    gccEmail = request.args.get('gccEmail')
+    print(User.query.filter_by(gccEmail=gccEmail).first().username)
+    return User.query.filter_by(gccEmail=gccEmail).first().username
+
+    
 @app.get('/loginExisting')
 def loginExisting():
     name = request.args.get('username')
@@ -647,17 +665,23 @@ def sendResetEmail():
 
     # Connect to SMTP server
     try:
-        server = smtplib.SMTP('smtp.office365.com', 587)
-        server.starttls()  # Secure the connection
-        server.login(sender_email, password)
-        text = msg.as_string()
-        server.sendmail(sender_email, receiver_email, text)
-        print('Email sent successfully!')
-        return jsonify({'success': True})
+        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
+            server = smtplib.SMTP('smtp.office365.com', 587)
+            server.starttls()  # Secure the connection
+            server.login(sender_email, password)
+            text = msg.as_string()
+            server.sendmail(sender_email, receiver_email, text)
+            server.quit()  # Quit the SMTP server   
+            return jsonify({'success': True})
+    except smtplib.SMTPException as e:
+        print("SMTP error:", e)
+        return jsonify({'success': False, 'error': str(e)})
+    except TimeoutError:
+        print("SMTP connection timed out")
+        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
     except Exception as e:
-        return jsonify({'success': False})
-    finally:
-        server.quit()  # Quit the SMTP server   
+        print("Other error:", e)
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.get('/setPassword')
 def setPassword():

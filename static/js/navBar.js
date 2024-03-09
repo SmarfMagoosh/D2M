@@ -1,5 +1,21 @@
 account = sessionStorage.getItem("customIdToken")
+username = ""
+console.log(sessionStorage)
 dynamicLogin()
+
+if(account !== null) {
+    fetch(`/getUsername?gccEmail=${account}`)
+    .then(response => {
+        return response.text()
+    })
+    .then(data => {
+        username = data
+        console.log("username: " + username)
+        setUsername(data)
+    })
+}
+
+console.log("username: " + username)
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
 
@@ -36,4 +52,9 @@ function dynamicLogin() {
         loginButton.style.display = "block";
         logoutButton.style.display = "none";
     }
+}
+
+function setUsername(username) {
+    console.log("it did the thing: " + username)
+    document.getElementById("username").textContent = username
 }

@@ -39,16 +39,33 @@ resetLinks.forEach(resetLink => {
 function sendEmail() {
     usernameField = document.getElementById("resetUsername")
 
-    fetch(`/genResetToken?username=${usernameField.value}`)
+    fetch(`/checkUsername?username=${usernameField.value}`)
     .then(response => response.json())
     .then(data => {
-        console.log(data.token)
-        if(data.token) {
-            fetch(`/sendResetEmail?username=${usernameField.value}&token=${data.token}`)
-            // .then(response => response.json())
-            // .then(data => {
-            //     console.log(data)
-            // })
+        if(data.exists){
+            fetch(`/genResetToken?username=${usernameField.value}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.token)
+                if(data.token) {
+                    console.log("show send email next")
+                    console.log(usernameField.value + " +++ " + data.token)
+                    fetch(`/sendResetEmail?username=${usernameField.value}&token=${data.token}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            document.getElementById("emailSuccess").style.display = "inline"
+                        }
+                        else {
+                            document.getElementById("emailError").style.display = "inline"
+                            console.log("ERROR: the email did not send")
+                        }
+                    })
+                }
+            })
+        }
+        else {
+            usernameField = document.getElementById("usernameDNE").style.display = "inline"
         }
     })
 }
