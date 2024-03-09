@@ -3,7 +3,7 @@ from flask_wtf.file import FileField, FileAllowed
 from flask_uploads import UploadSet, IMAGES
 from wtforms import StringField, SubmitField, PasswordField, EmailField
 from wtforms.validators import Length, InputRequired, Optional, EqualTo, Email, ValidationError
-from app import User
+# from app import User
 
 images = UploadSet('images', IMAGES)
 
@@ -21,7 +21,7 @@ class SettingsForm(FlaskForm):
     old_password = PasswordField("Current Password", validators=[Optional(), Length(min=8, max=256)])
     submit = SubmitField("Apply Changes")
     
-def validate_username(self, username):
-    user = User.query.filter_by(username=username.data).first()
-    if user:
-        raise ValidationError('That username is taken. Please choose another.')
+    # def validate_username(self, username):
+    #     user = User.query.filter_by(username=username.data).first()
+    #     if user:
+    #         raise ValidationError('That username is taken. Please choose another.')
