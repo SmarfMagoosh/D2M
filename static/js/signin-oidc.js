@@ -47,15 +47,5 @@ function sendEmail() {
             //     console.log(data)
             // })
         }
-        // fetch(`/validate_reset_token?token=${data.token}`)
-        // .then(response => response.json())
-        // .then(data => {
-        //     if(data.valid) {
-        //         console.log("valid")
-        //     }
-        //     else {
-        //         console.log("invalid")
-        //     }
-        // })
     })
 }

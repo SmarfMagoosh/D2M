@@ -585,10 +585,10 @@ def validate_reset_token():
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
-    if len(token_parts) != 2:
-        return False
+    # if len(token_parts) != 2:
+    #     return False
 
-    token, expiration_timestamp = token_parts
+    username, token, expiration_timestamp = token_parts
 
     # Convert expiration timestamp to datetime
     expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
@@ -604,8 +604,12 @@ def sendResetEmail():
     username = request.args.get('username')
     token = request.args.get('token')
     user = User.query.filter_by(username=username).first()
-    if user == None:
-        return
+    if not user:
+        return jsonify({'success': False})
+    
+    user.passwordResetToken = token
+    db.session.commit()
+
     # Email configuration
     sender_email = 'svc_CS_D2M@gcc.edu'
     receiver_email = user.gccEmail
@@ -632,9 +636,29 @@ def sendResetEmail():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False})
-        print(f'Error: {e}')
     finally:
         server.quit()  # Quit the SMTP server   
+
+@app.get('/setPassword')
+def setPassword():
+    token = request.args.get('token')
+    newPassword = request.args.get('password')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+
+    username, secretString, expiration_timestamp = token_parts
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user or token != user.passwordResetToken:
+        return jsonify({'success': False})
+    
+    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+    db.session.commit()
+
+    return jsonify({'success': True, 'email': user.gccEmail})
 
 def create_comment(commentData, u2Email):
     with app.app_context():
