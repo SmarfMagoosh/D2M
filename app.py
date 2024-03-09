@@ -376,7 +376,7 @@ def add_user():
     username=data['username']
     password=data['backupPasswordHash']
     checkUser = User.query.filter_by(username=username).first()
-    print(username + " " + password)
+
     if checkUser:
         returnVal['uniqueUsername'] = False
     else:
@@ -386,8 +386,6 @@ def add_user():
         returnVal['goodPassword'] = False
     else:
         returnVal['goodPassword'] = True
-
-    print(returnVal)
 
     if not returnVal['uniqueUsername'] or not returnVal['goodPassword']:
         return jsonify(returnVal)
@@ -574,7 +572,6 @@ def checkUsername():
 @app.get('/getUsername')
 def getUsername():
     gccEmail = request.args.get('gccEmail')
-    print(User.query.filter_by(gccEmail=gccEmail).first().username)
     return User.query.filter_by(gccEmail=gccEmail).first().username
 
     

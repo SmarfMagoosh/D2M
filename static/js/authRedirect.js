@@ -110,7 +110,6 @@ function register() {
             window.location.href = "../home";
         }
         else {
-            console.log("something badddd")
             invalidUsername = document.getElementById("invalidUsername")
             invalidPassword = document.getElementById("invalidPassword")
 
