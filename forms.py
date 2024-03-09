@@ -1,18 +1,15 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from flask_uploads import UploadSet, IMAGES
 from wtforms import StringField, SubmitField, PasswordField, EmailField
 from wtforms.validators import Length, InputRequired, Optional, EqualTo, Email, ValidationError
 # from app import User
-
-images = UploadSet('images', IMAGES)
 
 class SettingsForm(FlaskForm):
     username = StringField("Name", validators=[InputRequired()])
     bio = StringField("Biography")
     
-    icon = FileField("Profile Picture", validators=[FileAllowed(images, "Please choose an image file")])
-    banner = FileField("Profile Picture", validators=[FileAllowed(images, "Please choose an image file")])
+    icon = FileField("Profile Picture", validators=[FileAllowed(['jpg', 'png', 'gif'], "Please choose an image file")])
+    banner = FileField("Profile Picture", validators=[FileAllowed(['jpg', 'png', 'gif'], "Please choose an image file")])
     
     backup_email = EmailField("Email", validators=[Email()])
     change_password = PasswordField("New Password", validators=[Optional(), Length(min=8, max=256)])
