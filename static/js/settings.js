@@ -10,8 +10,11 @@ window.addEventListener('DOMContentLoaded', () => {
     banner.addEventListener('change', (event) => loadImg(event, banner_img));
 
     email = sessionStorage.getItem('customIdToken')
+    if(email == null) {
+        window.location.href = "../home";
+    }
+
     alerts = document.getElementsByClassName("bruh")
-    console.log(alerts)
 });
 
 function loadImg(event, img){

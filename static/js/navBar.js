@@ -13,6 +13,10 @@ if(account !== null) {
     })
 }
 
+if(account == null) {
+    document.getElementById('settingsButton').style.display = 'none'
+}
+
 dynamicLogin()
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);

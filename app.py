@@ -359,7 +359,13 @@ def getCurrentSettings():
 # @login_required
 def get_settings():
     form = SettingsForm()
-    user = load_user(request.args.get('email'))
+    email = request.args.get('email')
+
+    if email == None:
+        redirect(url_for("get_home"))
+        return {'loggedout': True}
+
+    user = load_user(email)
     form.username.data = user.username
     form.bio.data = user.bio
     form.backup_email.data = user.backupEmail
