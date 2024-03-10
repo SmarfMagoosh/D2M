@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+from flask import session
 import os, sys, hashlib, json
 import string
 import secrets
+import re
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
@@ -106,7 +108,7 @@ class User(db.Model) :
     
     bio = db.Column(db.String, nullable = True)
     
-    backupEmail = db.Column(db.String, nullable = True)
+    backupEmail = db.Column(db.String, default = "")#nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
     passwordResetToken = db.Column(db.String, nullable = True)
     timesReported = db.Column(db.Integer, default = 0)
@@ -125,6 +127,15 @@ class User(db.Model) :
         return {
             "posts": [p.render_json() for p in self.postList]
 		}
+    
+    def get_settings_info(self):
+        return {
+            "username": self.username,
+            "gccEmail": self.gccEmail,
+            "bio": self.bio,
+            "backupEmail": self.backupEmail,
+            # "backupPasswordHash": self.backupPasswordHash.decode('utf-8')
+        }
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -261,9 +272,9 @@ with app.app_context():
     db.create_all()
 
         # Create posts  to be inserted
-    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1123".encode('utf-8'), bcrypt.gensalt()))
-    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2123".encode('utf-8'), bcrypt.gensalt()))
-    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3123".encode('utf-8'), bcrypt.gensalt()))
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
+    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
                  backImage = "4 rules.png", owner = u2, numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
@@ -338,12 +349,103 @@ def get_profile(user_id = -1):
     # if(user_id > -1) # load a different person's profile
     return render_template("profile.html")
 
+@app.get('/getCurrentSettings')
+def getCurrentSettings():
+    email = request.args.get('email')
+    return redirect(url_for('get_settings')+ "email=" + str(email))
+
+
+    user = User.query.filter_by(gccEmail=email).first()
+    print(user.get_settings_info())
+    return (user.get_settings_info())
+    # return jsonify({'success': True, 'email': user.gccEmail})
+    # returnVal = {}
+    # returnVal['username'] = user.username
+    # returnVal['backupEmail'] = user.backupEmail
+    # return jsonify(returnVal)
+
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
 # @login_required
 def get_settings():
     form = SettingsForm()
+    user = load_user(request.args.get('email'))#request.args.get('email'))
+    form.username.data = user.username
+    form.bio.data = user.bio
+    form.backup_email.data = user.backupEmail
     return render_template('settings.html', form=form)
+
+@app.get("/checkNewSettings/")
+def checkNewSettings():
+    info = json.loads(request.args.get('info'))
+    email = request.args.get('email')
+    user = load_user(email)
+
+    returnVal = {}
+
+    returnVal['usernameUpdate'] = info['username'] != user.username
+    if User.query.filter_by(username=info['username']).first():
+        returnVal['usernameUnique'] = False
+    else:
+        returnVal['usernameUnique'] = True
+
+    backupEmail = info['backup_email']
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+
+    returnVal['emailUpdate'] = str(backupEmail) != str(user.backupEmail)
+    returnVal['validEmail'] = True if re.fullmatch(regex, backupEmail) else False
+
+    returnVal['passwordUpdate'] = info['old_password'] != "" or info['change_password'] != "" or info['confirm_password'] != ""
+    returnVal['oldPasswordMatch'] = bcrypt.checkpw(info['old_password'].encode('utf-8'), user.backupPasswordHash)
+    returnVal['newPasswordValid'] = len(info['change_password']) >= 8
+    returnVal['newPasswordMatch'] = info['change_password'] == info['confirm_password']
+
+    success = True
+
+    if returnVal['usernameUpdate'] and not returnVal['usernameUnique']:
+        success = False
+    if returnVal['emailUpdate'] and not returnVal['validEmail']:
+        success = False
+    if returnVal['passwordUpdate'] and (not returnVal['oldPasswordMatch'] or not returnVal['newPasswordValid'] or not returnVal['newPasswordMatch']):
+        success = False
+
+    returnVal['success'] = success
+    
+    return jsonify(returnVal)
+
+@app.route("/settings/", methods=["POST"])
+def post_settings():
+    print("post settings")
+    form = SettingsForm()
+    # string_data = request.form['string_data']
+    # string_data = request.json.get('string_data')
+    json_data = request.json
+    user = load_user(json_data.get('email'))
+    user.username = json_data.get('username')#form.username.data
+    user.bio = json_data.get('bio')#form.bio.data
+
+    backupEmail = json_data.get('backup_email')#form.backup_email.data
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    if(re.fullmatch(regex, backupEmail)):
+        user.backupEmail = backupEmail
+    else:
+        print("Invalid Email")
+
+    oldPassword = json_data.get('old_password')
+    newPassword = json_data.get('change_password')
+    confirmPassword = json_data.get('confirm_password')
+
+    if bcrypt.checkpw(oldPassword.encode('utf-8'), user.backupPasswordHash) and newPassword == confirmPassword:
+        user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+
+    db.session.commit()
+    return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
+
+def load_user(userEmail):
+    if userEmail != None:
+        return User.query.get(userEmail)
+    else:
+        return None
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -365,11 +467,22 @@ def post_meme():
     )
     return "hello world"
 
-@app.post("/login/")
-def post_login():
-    return ""
+# @app.get("/login")
+# def login():
+#     user = User.query.filter_by(gccEmail=request.args.get('email')).first()#, backupPasswordHash=password
+#     email = user.gccEmail
+#     session['customIdToken'] = email
+#     print("i'm here " + email + "\n" + str(session))
+#     return ""
 
-@app.post('/add_user')#, methods=['POST'])
+# @app.post("/logout/")
+# def logout():
+#     print("logged out")
+#     session.pop('customIdToken', None)
+#     print(str(session))
+#     return redirect(url_for("get_home"))
+
+@app.post('/add_user/')#, methods=['POST'])
 def add_user():
     returnVal = {}
     data = request.get_json()
@@ -405,6 +518,16 @@ def add_user():
 def follow(u1Email, u2Email):
     create_follow(u1Email, u2Email)
     return "success"
+
+# @app.get('/getUser')
+# def getUser():
+#     user = load_user(session.get('customIdToken', None))
+#     if user != None:
+#         temp = user.username
+#     else:
+#         temp = ""
+#     print(temp)
+#     return temp
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
@@ -583,7 +706,6 @@ def loginExisting():
     user = User.query.filter_by(username=name).first()#, backupPasswordHash=password
 
     # if bcrypt.checkpw(password, user.backupPasswordHash):
-
     if user:
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:

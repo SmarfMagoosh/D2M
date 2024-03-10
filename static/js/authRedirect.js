@@ -30,6 +30,7 @@ function handleMSALLogin(response) {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
+            // fetch(`/login?email=${email}`)
             sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         } else {
@@ -52,6 +53,7 @@ function loginExisting() {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
+            // fetch(`/login?email=${data.email}`)
             sessionStorage.setItem("customIdToken", data.email)
             window.location.href = "../home";
         } else {
@@ -106,6 +108,7 @@ function register() {
     .then(response => response.json())
     .then(data => {
         if ((data.uniqueUsername) && (data.goodPassword)) {
+            // fetch(`/login?email=${email}`)
             sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         }

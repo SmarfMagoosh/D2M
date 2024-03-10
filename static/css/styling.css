@@ -108,6 +108,31 @@
   background-color: #b30000; /* Darker shade of blue */
 }
 
+/* Alerts for the settings page */
+.bruh {
+  display: none;
+  /* font-size: 12px;
+  color:#a81414;
+  text-align: center;
+  margin-bottom: 10px; */
+}
+
+.showBruh {
+  display: inline;
+  font-size: 12px;
+  color:#a81414;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.success {
+  display: inline;
+  font-size: 20px;
+  color:green;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
 body{
   margin: 0;
 }
