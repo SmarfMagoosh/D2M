@@ -1,33 +1,4 @@
 account = sessionStorage.getItem("customIdToken")
-// account = ""
-// fetch('/getUser', {
-//     method: 'GET',
-//   })
-//   .then(response => {
-//     if (response.ok) {
-//       return response.text(); // This will return the response body as text
-//     } else {
-//         console.log("error happened")
-//       throw new Error('Failed to fetch data');
-//     }
-//   })
-//   .then(data => {
-//     console.log(data); // Log the response data to the console
-//     account = data
-//     setUsername(account)
-//     dynamicLogin()
-//   })
-//   .catch(error => {
-//     console.error('Error:', error);
-//   });
-
-// fetch(`/getUser`)
-// .then(response => {
-//     account = response.json()[0]
-//     setUsername(account)
-//     console.log(account)
-//     dynamicLogin()
-// })
 
 username = ""
 
@@ -52,12 +23,6 @@ function signOut() {
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#request
      */
 
-    // fetch('/logout/', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json', // Assuming you're sending JSON data
-    //     },
-    //   })
     sessionStorage.removeItem("customIdToken");
 
     const currentAccounts = myMSALObj.getAllAccounts();

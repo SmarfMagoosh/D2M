@@ -51,13 +51,9 @@ function applyChanges() {
 
     formData['email'] = sessionStorage.getItem('customIdToken')
 
-    // Do something with the formData object
-    console.log(formData);
-
     fetch(`/checkNewSettings/?email=${sessionStorage.getItem('customIdToken')}&info=${JSON.stringify(formData)}`)
     .then(response => response.json())
     .then(data => {
-        console.log(data)
 
         if(data.usernameUpdate && !data.usernameUnique) alerts[0].classList.add("showBruh")
         else alerts[0].classList.remove("showBruh")
@@ -77,7 +73,6 @@ function applyChanges() {
         }
     
         if(data.success) {
-            console.log("SUCCESSSSS")
             fetch(`/settings/`, {
                 method: 'POST',
                 headers: {
@@ -88,9 +83,6 @@ function applyChanges() {
             .then(reponse => {
                 alerts[5].classList.add("success")
             })
-        }
-        else {
-
         }
     })
 }

@@ -354,22 +354,12 @@ def getCurrentSettings():
     email = request.args.get('email')
     return redirect(url_for('get_settings')+ "email=" + str(email))
 
-
-    user = User.query.filter_by(gccEmail=email).first()
-    print(user.get_settings_info())
-    return (user.get_settings_info())
-    # return jsonify({'success': True, 'email': user.gccEmail})
-    # returnVal = {}
-    # returnVal['username'] = user.username
-    # returnVal['backupEmail'] = user.backupEmail
-    # return jsonify(returnVal)
-
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
 # @login_required
 def get_settings():
     form = SettingsForm()
-    user = load_user(request.args.get('email'))#request.args.get('email'))
+    user = load_user(request.args.get('email'))
     form.username.data = user.username
     form.bio.data = user.bio
     form.backup_email.data = user.backupEmail
@@ -415,16 +405,12 @@ def checkNewSettings():
 
 @app.route("/settings/", methods=["POST"])
 def post_settings():
-    print("post settings")
-    form = SettingsForm()
-    # string_data = request.form['string_data']
-    # string_data = request.json.get('string_data')
     json_data = request.json
     user = load_user(json_data.get('email'))
-    user.username = json_data.get('username')#form.username.data
-    user.bio = json_data.get('bio')#form.bio.data
+    user.username = json_data.get('username')
+    user.bio = json_data.get('bio')
 
-    backupEmail = json_data.get('backup_email')#form.backup_email.data
+    backupEmail = json_data.get('backup_email')
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     if(re.fullmatch(regex, backupEmail)):
         user.backupEmail = backupEmail
@@ -467,22 +453,7 @@ def post_meme():
     )
     return "hello world"
 
-# @app.get("/login")
-# def login():
-#     user = User.query.filter_by(gccEmail=request.args.get('email')).first()#, backupPasswordHash=password
-#     email = user.gccEmail
-#     session['customIdToken'] = email
-#     print("i'm here " + email + "\n" + str(session))
-#     return ""
-
-# @app.post("/logout/")
-# def logout():
-#     print("logged out")
-#     session.pop('customIdToken', None)
-#     print(str(session))
-#     return redirect(url_for("get_home"))
-
-@app.post('/add_user/')#, methods=['POST'])
+@app.post('/add_user/')
 def add_user():
     returnVal = {}
     data = request.get_json()
@@ -518,16 +489,6 @@ def add_user():
 def follow(u1Email, u2Email):
     create_follow(u1Email, u2Email)
     return "success"
-
-# @app.get('/getUser')
-# def getUser():
-#     user = load_user(session.get('customIdToken', None))
-#     if user != None:
-#         temp = user.username
-#     else:
-#         temp = ""
-#     print(temp)
-#     return temp
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
@@ -673,7 +634,6 @@ def search():
 def check_user():
     gccEmail = request.args.get('gccEmail')
 
-    # user = User.query.get_or_404(gccEmail);
     user = User.query.filter_by(gccEmail=gccEmail).first()
     
     if user:
@@ -703,9 +663,8 @@ def loginExisting():
     name = request.args.get('username')
     password = request.args.get('password')
 
-    user = User.query.filter_by(username=name).first()#, backupPasswordHash=password
+    user = User.query.filter_by(username=name).first()
 
-    # if bcrypt.checkpw(password, user.backupPasswordHash):
     if user:
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
@@ -745,8 +704,6 @@ def validate_reset_token():
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
-    # if len(token_parts) != 2:
-    #     return False
 
     username, token, expiration_timestamp = token_parts
 

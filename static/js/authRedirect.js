@@ -53,7 +53,6 @@ function loginExisting() {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
-            // fetch(`/login?email=${data.email}`)
             sessionStorage.setItem("customIdToken", data.email)
             window.location.href = "../home";
         } else {
@@ -102,13 +101,11 @@ function register() {
             username: usernameField.value,
             gccEmail: email,
             backupPasswordHash: passwordField.value
-            // Add other fields as needed
         })
     })
     .then(response => response.json())
     .then(data => {
         if ((data.uniqueUsername) && (data.goodPassword)) {
-            // fetch(`/login?email=${email}`)
             sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         }
