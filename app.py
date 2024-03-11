@@ -105,7 +105,7 @@ class Follow(db.Model):
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    spacing = db.Column(db.Integer, nullable = False)
+    spacing = db.Column(db.Float, nullable = False)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
     # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
@@ -306,18 +306,33 @@ def get_settings():
 
 @app.post("/create/")
 def post_meme():
-    body = request.json
-    data = body['imgData'][23:]
-    id = len(Post.query.all()) + 1
-    # TODO save under unique name somehow (based on post ID I would guess)
-    with open(f"./static/images/{id}.jpeg", "wb") as file:
-         file.write(base64.b64decode(data))
+    body: dict = request.json
+    imgData = body["imgData"][22:]
     post_inst = Post(
-        spacing = 0, # TODO on sprint 1
-        title = data['title'],
-        backImage = f"./static/images/{id}.jpeg",
-        username = "Carnge Melon Baller"
+        spacing = float(body["spacing"]),
+        title = body['title'],
+        backImage = "",
+        timePosted = 0, # TODO
+        username = "Carnegie Melon Baller",
+        numLikes = 0,
+        numLikesD1 = 0,
+        numLikesD2 = 0,
+        numLikesD3 = 0,
     )
+    db.session.add(post_inst)
+    db.session.commit()
+    for box in body["textboxes"]:
+        tb_inst = TextBox(
+            textBoxId = int(box["id"]),
+            content = box["text"],
+            postID = post_inst.postID
+            # TODO: store position, text settings
+        )
+        db.session.add(tb_inst)
+        db.session.commit()
+    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
+    with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
+         file.write(base64.b64decode(imgData))
     return "hello world"
 
 @app.post("/login/")
