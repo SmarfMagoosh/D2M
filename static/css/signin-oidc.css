@@ -32,6 +32,10 @@
     opacity: 0;
     pointer-events: none;
 }
+.form.reset{
+    opacity: 0;
+    pointer-events: none;
+}
 .forms.show-signup .form.signup{
     opacity: 1;
     pointer-events: auto;
@@ -40,11 +44,19 @@
     opacity: 1;
     pointer-events: auto;
 }
+.forms.show-reset .form.reset{
+    opacity: 1;
+    pointer-events: auto;
+}
 .forms.show-signup .form.login{
     opacity: 0;
     pointer-events: none;
 }
 .forms.show-register .form.login{
+    opacity: 0;
+    pointer-events: none;
+}
+.forms.show-reset .form.login{
     opacity: 0;
     pointer-events: none;
 }
@@ -99,6 +111,12 @@ form{
 }
 .field button:hover{
     background-color: #a81414;
+}
+.alert {
+    font-size: 12px;
+    color:#a81414;
+    text-align: center;
+    margin-top: 10px;
 }
 .form-link{
     text-align: center;

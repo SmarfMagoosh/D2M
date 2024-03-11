@@ -1,4 +1,22 @@
 account = sessionStorage.getItem("customIdToken")
+
+username = ""
+
+if(account !== null) {
+    fetch(`/getUsername?gccEmail=${account}`)
+    .then(response => {
+        return response.text()
+    })
+    .then(data => {
+        username = data
+        setUsername(data)
+    })
+}
+
+if(account == null) {
+    document.getElementById('settingsButton').style.display = 'none'
+}
+
 dynamicLogin()
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
@@ -22,7 +40,7 @@ function signOut() {
         myMSALObj.logoutRedirect(logoutRequest);
     }
 
-    location.reload();
+    window.location.href = "../home";
 }
 
 function dynamicLogin() {
@@ -36,4 +54,12 @@ function dynamicLogin() {
         loginButton.style.display = "block";
         logoutButton.style.display = "none";
     }
+}
+
+function setUsername(username) {
+    document.getElementById("username").textContent = username
+}
+
+function goToSettings() {
+    window.location.href = `/settings?email=${account}`
 }

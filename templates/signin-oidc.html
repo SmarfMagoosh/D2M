@@ -34,8 +34,18 @@
                             <i class='bx bx-hide eye-icon'></i>
                         </div>
 
+                        <style>
+                            #incorrectCredentials {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="incorrectCredentials">*The username/password is incorrect*</b>
+                        </div>
+
                         <div class="form-link">
-                            <a href="#" class="forgot-pass">Forgot password?</a>
+                            <a id="resetLink" href="#" class="reseter forgot-pass">Forgot password?</a>
                         </div>
 
                         <div class="field button-field">
@@ -108,6 +118,26 @@
                             <i class='bx bx-hide eye-icon'></i>
                         </div>
 
+                        <style>
+                            #invalidUsername {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidUsername">*This username has already been taken*</b>
+                        </div>
+
+                        <style>
+                            #invalidPassword {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidPassword">*The password must be at least 8 characters*</b>
+                        </div>
+
                         <div class="field button-field">
                             <!-- <button onclick="signIn()">Register</button> -->
                             <button type = "button" onclick="register()">Register</button>
@@ -116,6 +146,61 @@
 
                     <div class="form-link">
                         <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password reset -->
+
+            <div class="form reset">
+                <div class="form-content">
+                    <header>Reset Password</header>
+                    <form action="#" id = "resetForm">
+                        <div class="field input-field">
+                            <input id="resetUsername" type="text" placeholder="Username" class="input">
+                        </div>
+
+                        <style>
+                            #usernameDNE {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="usernameDNE">*This username does not exist*</b>
+                        </div>
+
+                        <style>
+                            #emailSuccess {
+                                display: none;
+                                color:green;
+                                font-size: 12px;
+                                text-align: center;
+                                margin-top: 10px;
+                            }
+                        </style>
+
+                        <div>
+                            <b id="emailSuccess">*Email successfully sent. Follow the link in the email to reset your password.*</b>
+                        </div>
+
+                        <style>
+                            #emailError {
+                                display: none;
+                            }
+                        </style>
+        
+                        <div id="emailError" class="alert">
+                            <span>*There was an issue sending the email*</span>
+                        </div>
+
+                        <div class="field button-field">
+                            <button type="button" onclick="sendEmail()">Send Email</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <a id="resetLink" href="#" class="reseter reset-link">Login/Signin</a>
                     </div>
                 </div>
             </div>

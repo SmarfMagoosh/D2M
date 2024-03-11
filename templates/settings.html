@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %} 
+    Settings
+{% endblock %}
+
+{% block head %}
+<script src="{{url_for('static', filename='js/settings.js')}}"></script>
+{% endblock %}
+
+{% block content %}
+    <h1>
+        <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/backarrow.png')}}" alt="back" style="width:1em;height:1em;"></a>
+        User Settings
+    </h1>
+<form>
+    {{form.hidden_tag()}}
+    <div class="container">
+        <h3>Profile</h3>
+        <hr>
+
+        <div class="bruh">
+            <b id="invalidUsername">*This username has already been taken*</b>
+        </div>
+
+        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
+            {{ form.username.label }}
+            {{ form.username(class="form-control") }}
+        </div>
+
+        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
+            {{form.bio.label}}
+            {{form.bio(class="form-control")}}
+        </div>
+
+        <div class="mb-2">
+            <div>
+                {{ form.icon.label }}
+                {{ form.icon(accept="image/*") }}
+            </div>
+            <br>
+            <img id="icon_img" src="#" alt="Icon Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
+        </div>
+
+        <div class="mb-2">
+            <div>
+                {{form.banner.label}}
+                {{form.banner(accept="image/*")}}
+            </div>
+            <br>
+            <canvas id="banner_img" src="#" alt="Banner Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
+        </div>
+        <h3>Account Backup</h3>
+        <hr>
+
+        <div class="bruh">
+            <b id="invalidEmail">*Must be in email format*</b>
+        </div>
+
+        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
+            {{form.backup_email.label}}
+            {{form.backup_email(class="form-control")}}
+        </div>
+
+        <div class="bruh">
+            <b id="oldPasswordErro">*Incorrect password*</b>
+        </div>
+        
+        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
+            {{form.old_password.label}}
+            {{form.old_password(class="form-control")}}
+        </div>
+
+        <div class="bruh">
+            <b id="invalidPassword">*The new password must be at least 8 characters*</b>
+        </div>
+
+        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
+            {{form.change_password.label}}
+            {{form.change_password(class="form-control")}}
+        </div>
+
+        <div class="bruh">
+            <b id="passwordMatchError">*The new passwords don't match*</b>
+        </div>
+
+        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
+            {{form.confirm_password.label}}
+            {{form.confirm_password(class="form-control")}}
+        </div>
+
+        <!-- <div class="mb-2">
+            {{form.submit(class="btn btn-danger")}}
+        </div> -->
+
+        <div class="mb-2">
+            <button class="btn btn-danger" type = "button" onclick="applyChanges()">Apply Changes</button>
+            <div class="bruh">
+                <b id="success">*Your information was updated!*</b>
+            </div>
+        </div>
+
+  </div>
+</form>
+{% endblock %}
+
+

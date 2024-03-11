@@ -1,3 +1,4 @@
+
 const forms = document.querySelector(".forms"),
       pwShowHide = document.querySelectorAll(".eye-icon"),
       links = document.querySelectorAll(".link");
@@ -21,17 +22,45 @@ pwShowHide.forEach(eyeIcon => {
 
 links.forEach(link => {
     link.addEventListener("click", e => {
-    //    e.preventDefault(); //preventing form submit
        forms.classList.toggle("show-signup");
     })
 })
 
-// const currentAccounts = myMSALObj.getAllAccounts();
+resetLinks = document.querySelectorAll(".reseter")
 
-// if (currentAccounts.length === 1) {
-//     fetch("/home");
-// }
-// else {
-//     // btn.innerText = "Login"
-//     // btn.onclick = signIn
-// }
+resetLinks.forEach(resetLink => {
+    resetLink.addEventListener("click", e => {
+    forms.classList.toggle("show-reset");
+    })
+})
+
+function sendEmail() {
+    usernameField = document.getElementById("resetUsername")
+
+    fetch(`/checkUsername?username=${usernameField.value}`)
+    .then(response => response.json())
+    .then(data => {
+        if(data.exists){
+            fetch(`/genResetToken?username=${usernameField.value}`)
+            .then(response => response.json())
+            .then(data => {
+                if(data.token) {
+                    fetch(`/sendResetEmail?username=${usernameField.value}&token=${data.token}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            document.getElementById("emailSuccess").style.display = "inline"
+                        }
+                        else {
+                            document.getElementById("emailError").style.display = "inline"
+                            console.log("ERROR: the email did not send")
+                        }
+                    })
+                }
+            })
+        }
+        else {
+            usernameField = document.getElementById("usernameDNE").style.display = "inline"
+        }
+    })
+}

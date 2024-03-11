@@ -1,9 +1,15 @@
+from datetime import datetime, timedelta
+from flask import session
 import os, sys, hashlib, json
+import string
+import secrets
+import re
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
-from forms import *
+from forms import SettingsForm
 from sqlalchemy import Integer, String, JSON, Boolean
+from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
 from io import BytesIO
@@ -14,6 +20,10 @@ import math
 import bcrypt
 
 import base64
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 """
 set FLASK_APP=app.py
@@ -46,9 +56,9 @@ update_times = [0, 0, 0]
 
 def update_like_backend():
     with app.app_context():
-        # db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
-        # db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
-        # db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
+        db.session.execute(text('UPDATE Posts SET numLikesD3 = numLikesD2'))
+        db.session.execute(text('UPDATE Posts SET numLikesD2 = numLikesD1'))
+        db.session.execute(text('UPDATE Posts SET numLikesD1 = numLikes'))
         db.session.commit()
         
     global update_times
@@ -104,8 +114,9 @@ class User(db.Model) :
     
     bio = db.Column(db.String, nullable = True)
     
-    backupEmail = db.Column(db.String, nullable = True)
+    backupEmail = db.Column(db.String, default = "")#nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
+    passwordResetToken = db.Column(db.String, nullable = True)
     timesReported = db.Column(db.Integer, default = 0)
     
     # classes that use this class for a foreign key, allows access to list
@@ -122,6 +133,15 @@ class User(db.Model) :
         return {
             "posts": [p.render_json() for p in self.postList]
 		}
+    
+    def get_settings_info(self):
+        return {
+            "username": self.username,
+            "gccEmail": self.gccEmail,
+            "bio": self.bio,
+            "backupEmail": self.backupEmail,
+            # "backupPasswordHash": self.backupPasswordHash.decode('utf-8')
+        }
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -155,7 +175,7 @@ class Follow(db.Model):
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    spacing = db.Column(db.Integer, nullable = False)
+    spacing = db.Column(db.Float, nullable = False)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
     timePosted = db.Column(db.String)#, nullable = False)
@@ -258,9 +278,9 @@ with app.app_context():
     db.create_all()
 
         # Create posts  to be inserted
-    u1 = User(username="u1", gccEmail = "u1@gcc.edu")
-    u2 = User(username="u2", gccEmail = "u2@gcc.edu")
-    u3 = User(username="u3", gccEmail = "u3@gcc.edu")
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
+    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
                  backImage = "4 rules.png", owner = u2, numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
@@ -301,6 +321,10 @@ update_like_backend()
 def index():
     return redirect(url_for("get_home"))
 
+@app.get("/resetPassword")
+def get_resetPassword():
+    return render_template("resetPassword.html")
+
 @app.get("/create/")
 def get_create():
     return render_template("create.html", templates = [url_for('static', filename = f"thumbnails/{file}") for file in os.listdir("./static/thumbnails")])
@@ -331,10 +355,95 @@ def get_profile(user_id = -1):
     # if(user_id > -1) # load a different person's profile
     return render_template("profile.html")
 
+@app.get('/getCurrentSettings')
+def getCurrentSettings():
+    email = request.args.get('email')
+    return redirect(url_for('get_settings')+ "email=" + str(email))
+
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
+# @login_required
 def get_settings():
-    return render_template("settings.html")
+    form = SettingsForm()
+    email = request.args.get('email')
+
+    if email == None:
+        redirect(url_for("get_home"))
+        return {'loggedout': True}
+
+    user = load_user(email)
+    form.username.data = user.username
+    form.bio.data = user.bio
+    form.backup_email.data = user.backupEmail
+    return render_template('settings.html', form=form)
+
+@app.get("/checkNewSettings/")
+def checkNewSettings():
+    info = json.loads(request.args.get('info'))
+    email = request.args.get('email')
+    user = load_user(email)
+
+    returnVal = {}
+
+    returnVal['usernameUpdate'] = info['username'] != user.username
+    if User.query.filter_by(username=info['username']).first():
+        returnVal['usernameUnique'] = False
+    else:
+        returnVal['usernameUnique'] = True
+
+    backupEmail = info['backup_email']
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+
+    returnVal['emailUpdate'] = str(backupEmail) != str(user.backupEmail)
+    returnVal['validEmail'] = True if re.fullmatch(regex, backupEmail) else False
+
+    returnVal['passwordUpdate'] = info['old_password'] != "" or info['change_password'] != "" or info['confirm_password'] != ""
+    returnVal['oldPasswordMatch'] = bcrypt.checkpw(info['old_password'].encode('utf-8'), user.backupPasswordHash)
+    returnVal['newPasswordValid'] = len(info['change_password']) >= 8
+    returnVal['newPasswordMatch'] = info['change_password'] == info['confirm_password']
+
+    success = True
+
+    if returnVal['usernameUpdate'] and not returnVal['usernameUnique']:
+        success = False
+    if returnVal['emailUpdate'] and not returnVal['validEmail']:
+        success = False
+    if returnVal['passwordUpdate'] and (not returnVal['oldPasswordMatch'] or not returnVal['newPasswordValid'] or not returnVal['newPasswordMatch']):
+        success = False
+
+    returnVal['success'] = success
+    
+    return jsonify(returnVal)
+
+@app.route("/settings/", methods=["POST"])
+def post_settings():
+    json_data = request.json
+    user = load_user(json_data.get('email'))
+    user.username = json_data.get('username')
+    user.bio = json_data.get('bio')
+
+    backupEmail = json_data.get('backup_email')
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    if(re.fullmatch(regex, backupEmail)):
+        user.backupEmail = backupEmail
+    else:
+        print("Invalid Email")
+
+    oldPassword = json_data.get('old_password')
+    newPassword = json_data.get('change_password')
+    confirmPassword = json_data.get('confirm_password')
+
+    if bcrypt.checkpw(oldPassword.encode('utf-8'), user.backupPasswordHash) and newPassword == confirmPassword:
+        user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+
+    db.session.commit()
+    return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
+
+def load_user(userEmail):
+    if userEmail != None:
+        return User.query.get(userEmail)
+    else:
+        return None
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -342,37 +451,66 @@ def get_settings():
 
 @app.post("/create/")
 def post_meme():
-    body = request.json
-    data = body['imgData'][23:]
-    id = len(Post.query.all()) + 1
-    # TODO save under unique name somehow (based on post ID I would guess)
-    with open(f"./static/images/{id}.jpeg", "wb") as file:
-         file.write(base64.b64decode(data))
+    body: dict = request.json
+    imgData = body["imgData"][22:]
     post_inst = Post(
-        spacing = 0, # TODO on sprint 1
-        title = data['title'],
-        backImage = f"./static/images/{id}.jpeg",
-        userEmail = "Carnge Melon Baller"
+        spacing = float(body["spacing"]),
+        title = body['title'],
+        backImage = "",
+        timePosted = 0, # TODO
+        username = "Carnegie Melon Baller",
+        numLikes = 0,
+        numLikesD1 = 0,
+        numLikesD2 = 0,
+        numLikesD3 = 0,
     )
+    db.session.add(post_inst)
+    db.session.commit()
+    for box in body["textboxes"]:
+        tb_inst = TextBox(
+            textBoxId = int(box["id"]),
+            content = box["text"],
+            postID = post_inst.postID
+            # TODO: store position, text settings
+        )
+        db.session.add(tb_inst)
+        db.session.commit()
+    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
+    with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
+         file.write(base64.b64decode(imgData))
     return "hello world"
 
-@app.post("/login/")
-def post_login():
-    return ""
-
-@app.post('/add_user')#, methods=['POST'])
+@app.post('/add_user/')
 def add_user():
+    returnVal = {}
     data = request.get_json()
+    username=data['username']
+    password=data['backupPasswordHash']
+    checkUser = User.query.filter_by(username=username).first()
+
+    if checkUser:
+        returnVal['uniqueUsername'] = False
+    else:
+        returnVal['uniqueUsername'] = True
+
+    if len(password) < 8:
+        returnVal['goodPassword'] = False
+    else:
+        returnVal['goodPassword'] = True
+
+    if not returnVal['uniqueUsername'] or not returnVal['goodPassword']:
+        return jsonify(returnVal)
+    
     new_user = User(
         username=data['username'],
         gccEmail=data['gccEmail'],
-        backupPasswordHash=bcrypt.hashpw(data['backupPasswordHash'].encode('utf-8'), bcrypt.gensalt()),
+        backupPasswordHash=bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()),
         timesReported=0,
         # Add other fields as needed
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({'message': 'User added successfully'}), 201
+    return jsonify(returnVal)
 
 @app.get("/follow/<string:u1Email>/<string:u2Email>")
 def follow(u1Email, u2Email):
@@ -523,7 +661,6 @@ def search():
 def check_user():
     gccEmail = request.args.get('gccEmail')
 
-    # user = User.query.get_or_404(gccEmail);
     user = User.query.filter_by(gccEmail=gccEmail).first()
     
     if user:
@@ -531,14 +668,29 @@ def check_user():
     else:
         return jsonify({'exists': False, 'username': ""})
     
+@app.get('/checkUsername')
+def checkUsername():
+    username = request.args.get('username')
+
+    user = User.query.filter_by(username=username).first()
+    
+    if user:
+        return jsonify({'exists': True, 'username': user.username})
+    else:
+        return jsonify({'exists': False, 'username': ""})
+    
+@app.get('/getUsername')
+def getUsername():
+    gccEmail = request.args.get('gccEmail')
+    return User.query.filter_by(gccEmail=gccEmail).first().username
+
+    
 @app.get('/loginExisting')
 def loginExisting():
     name = request.args.get('username')
     password = request.args.get('password')
 
-    user = User.query.filter_by(username=name).first()#, backupPasswordHash=password
-
-    # if bcrypt.checkpw(password, user.backupPasswordHash):
+    user = User.query.filter_by(username=name).first()
 
     if user:
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
