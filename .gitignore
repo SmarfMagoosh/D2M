@@ -3,3 +3,4 @@ __pycache__/*
 .vs/*
 static/meme-templates/*
 static/thumbnails/*
+database.sqlite3

@@ -1,16 +1,27 @@
+from datetime import datetime, timedelta
 import os, sys, hashlib, json
+import string
+import secrets
 
-from flask import Flask, session, render_template, url_for, redirect, request, jsonify
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
-from forms import *
+from forms import SettingsForm
 from sqlalchemy import Integer, String, JSON, Boolean
+from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
+from PIL import Image
+from io import BytesIO
 import base64
 import atexit
 import time
 import math
+import bcrypt
 
 import base64
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 """
 set FLASK_APP=app.py
@@ -38,6 +49,47 @@ db = SQLAlchemy(app)
 update_times = [0, 0, 0]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# NON-ROUTE FUNCTIONS
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def update_like_backend():
+    with app.app_context():
+        db.session.execute(text('UPDATE Posts SET numLikesD3 = numLikesD2'))
+        db.session.execute(text('UPDATE Posts SET numLikesD2 = numLikesD1'))
+        db.session.execute(text('UPDATE Posts SET numLikesD1 = numLikes'))
+        db.session.commit()
+        
+    global update_times
+    update_times.append(math.floor(time.time()))
+    update_times.pop(0)
+    print(update_times)
+
+def create_follow(u1Email, u2Email):
+    with app.app_context():
+        follow = Follow(user1 = u1Email, user2 = u2Email)
+        db.session.add(follow)
+        db.session.commit()
+        
+# takes in a Pillow Image object and returns the thumbnail version
+def create_thumbnail(image_path, dimensions = (400, 400)):
+    img = Image.open(image_path)
+    img.thumbnail(dimensions)
+    return img
+
+# TODO: call this directly after creating a post
+def save_thumbnail(post):
+    create_thumbnail(f"static/images/{post.backImage}")     \
+        .save(f"static/images/thumbnails/{post.postID}.png")
+    
+#from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+#potentially necessary in future, but not at the moment
+# def serve_pil_image(pil_img):
+#     img_io = BytesIO()
+#     pil_img.save(img_io, 'PNG', quality=70)
+#     img_io.seek(0)
+#     return send_file(img_io, mimetype='image/jpeg')
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -56,6 +108,7 @@ class User(db.Model) :
     
     backupEmail = db.Column(db.String, nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
+    passwordResetToken = db.Column(db.String, nullable = True)
     timesReported = db.Column(db.Integer, default = 0)
     
     # classes that use this class for a foreign key, allows access to list
@@ -76,7 +129,7 @@ class User(db.Model) :
 class Report(db.Model) :
     __tablename__ = 'Reports'
     reportID = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
 
@@ -92,7 +145,7 @@ class Bookmark(db.Model):
     __tablename__ = 'Bookmarks'
     # using a ID primary key so that we can sort by most recent bookmark
     bookmarkID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
 class Follow(db.Model):
@@ -108,9 +161,8 @@ class Post(db.Model) :
     spacing = db.Column(db.Float, nullable = False)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
-    # TODO: highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String)#, nullable = False)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
     numLikes = db.Column(db.Integer, default=0)
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
@@ -135,7 +187,7 @@ class Post(db.Model) :
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": self.backImage, #TODO: reference to the thumbnail somehow similar to f"thumbnails/${self.postID}"
+            "thumbnail": f"thumbnails/{self.postID}.png",
             "username": self.username,
             "numLikes": self.numLikes,
         }
@@ -192,7 +244,7 @@ class Comment(db.Model) :
     content = db.Column(db.String, nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
-    username = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    username = db.Column(db.String, db.ForeignKey('Users.username'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     
     def to_json(self):
@@ -200,38 +252,26 @@ class Comment(db.Model) :
 			"id": self.commentID,
 			"content": self.content,
 			"timePosted": self.timePosted,
-			"owner": self.username,
+			"username": self.username,
 			"parentPost": self.postID,
 		}
-
-def update_like_backend():
-    # with app.app_context():
-        #db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2, numLikesD2 = numLikesD1, numLikesD1 = numLikes')
-        #db.session.commit()
-    global update_times
-    update_times.append(math.floor(time.time()))
-    update_times.pop(0)
-    print(update_times)
-def create_follow(u1Email, u2Email):
-    with app.app_context():
-        follow = Follow(user1 = u1Email, user2 = u2Email)
-        db.session.add(follow)
-        db.session.commit()
 
 with app.app_context():
     db.drop_all()
     db.create_all()
 
         # Create posts  to be inserted
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1123".encode('utf-8'), bcrypt.gensalt()))
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2123".encode('utf-8'), bcrypt.gensalt()))
+    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3123".encode('utf-8'), bcrypt.gensalt()))
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", username = "Sean Queary Lanard", numLikes=10)
+                 backImage = "4 rules.png", owner = u2, numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-                 backImage = "Gimbal_Lock_Plane.gif", username = "Locke Gimbaldi", numLikes=1)
+                 backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-                 backImage = "Stop doing databases.png", username = "The Zhangster", numLikes=100)
-    u1 = User(username="u1", gccEmail = "u1@gcc.edu")
-    u2 = User(username="u2", gccEmail = "u2@gcc.edu")
-    # follow12 = Follow(user1 = "u1", user2 = "u2")
+                 backImage = "Stop doing databases.png", owner = u3, numLikes=100)
+    follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
+    follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
@@ -240,9 +280,8 @@ with app.app_context():
     bm13 = Bookmark(user=u1, postID=20)
 
     # Add all of these records to the session and commit changes
+    db.session.add_all((u1,u2,u3))
     db.session.add_all((post1, post2, post3))
-    db.session.add_all((u1,u2))
-    # db.session.add(follow12)
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
     db.session.commit()
@@ -265,6 +304,10 @@ update_like_backend()
 def index():
     return redirect(url_for("get_home"))
 
+@app.get("/resetPassword")
+def get_resetPassword():
+    return render_template("resetPassword.html")
+
 @app.get("/create/")
 def get_create():
     return render_template("create.html", templates = [url_for('static', filename = f"thumbnails/{file}") for file in os.listdir("./static/thumbnails")])
@@ -281,6 +324,7 @@ def get_home():
 def get_login():
     return render_template("signin-oidc.html")
 
+
 @app.get("/post/<int:post_id>/")
 def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
@@ -296,9 +340,10 @@ def get_profile(user_id = -1):
 
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
+# @login_required
 def get_settings():
-    return render_template("settings.html")
-
+    form = SettingsForm()
+    return render_template('settings.html', form=form)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -339,21 +384,39 @@ def post_meme():
 def post_login():
     return ""
 
-@app.route('/add_user', methods=['POST'])
+@app.post('/add_user')#, methods=['POST'])
 def add_user():
+    returnVal = {}
     data = request.get_json()
-    print(data)
+    username=data['username']
+    password=data['backupPasswordHash']
+    checkUser = User.query.filter_by(username=username).first()
+    print(username + " " + password)
+    if checkUser:
+        returnVal['uniqueUsername'] = False
+    else:
+        returnVal['uniqueUsername'] = True
+
+    if len(password) < 8:
+        returnVal['goodPassword'] = False
+    else:
+        returnVal['goodPassword'] = True
+
+    print(returnVal)
+
+    if not returnVal['uniqueUsername'] or not returnVal['goodPassword']:
+        return jsonify(returnVal)
+    
     new_user = User(
         username=data['username'],
         gccEmail=data['gccEmail'],
-        backupPasswordHash=data['backupPasswordHash'],
+        backupPasswordHash=bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()),
         timesReported=0,
-        numReports=0
         # Add other fields as needed
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({'message': 'User added successfully'}), 201
+    return jsonify(returnVal)
 
 @app.get("/follow/<string:u1Email>/<string:u2Email>")
 def follow(u1Email, u2Email):
@@ -373,14 +436,32 @@ def follow(u1Email, u2Email):
 def get_recent():
     start_id = int(request.args.get('start_id', -1))
     count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
-    # username = request.args.get('username', None)
+    username = request.args.get('username', None)
     recent = Post.query
     # print(str(start_id) + " " + str(count))
     
     if start_id != -1:
         recent = recent.filter(Post.postID<=start_id)
-    # if username != None:
-    #     recent = recent.filter(Post.username==username)
+    if username != None:
+        recent = recent.filter(Post.username==username)
+    
+    recent = recent.order_by(Post.postID.desc()) \
+                        .limit(count) \
+                        .all()
+    
+    return [p.render_json() for p in recent]
+
+@app.get("/API/get_followed_posts/<string:gccEmail>")
+def get_followed_posts(gccEmail):
+    start_id = int(request.args.get('start_id', -1))
+    count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
+    follows = User.query.get_or_404(gccEmail).followList
+    follows = [f.user2 for f in follows]
+    recent = Post.query
+    #after this
+    if start_id != -1:
+        recent = recent.filter(Post.postID<=start_id)
+    recent = recent.filter(Post.userEmail.in_(follows))
     
     recent = recent.order_by(Post.postID.desc()) \
                         .limit(count) \
@@ -481,18 +562,193 @@ def search():
     post_results = [{'title': post.title} for post in matching_posts]
 
     return jsonify({'users': user_results, 'posts': post_results})
+    
+@app.route('/check_user', methods=['GET'])
+def check_user():
+    gccEmail = request.args.get('gccEmail')
 
+    # user = User.query.get_or_404(gccEmail);
+    user = User.query.filter_by(gccEmail=gccEmail).first()
+    
+    if user:
+        return jsonify({'exists': True, 'username': user.username})
+    else:
+        return jsonify({'exists': False, 'username': ""})
+    
+@app.get('/checkUsername')
+def checkUsername():
+    username = request.args.get('username')
+
+    user = User.query.filter_by(username=username).first()
+    
+    if user:
+        return jsonify({'exists': True, 'username': user.username})
+    else:
+        return jsonify({'exists': False, 'username': ""})
+    
+@app.get('/getUsername')
+def getUsername():
+    gccEmail = request.args.get('gccEmail')
+    print(User.query.filter_by(gccEmail=gccEmail).first().username)
+    return User.query.filter_by(gccEmail=gccEmail).first().username
+
+    
+@app.get('/loginExisting')
+def loginExisting():
+    name = request.args.get('username')
+    password = request.args.get('password')
+
+    user = User.query.filter_by(username=name).first()#, backupPasswordHash=password
+
+    # if bcrypt.checkpw(password, user.backupPasswordHash):
+
+    if user:
+        return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
+    else:
+        return jsonify({'exists': False, 'email': ""})
+    
+@app.get('/genResetToken')
+def genResetToken():
+    name = request.args.get('username')
+    self = User.query.filter_by(username=name).first()
+    if self:
+        token_length = 32
+        expiration_minutes = 60
+
+        user_info = f"{self.username}~"
+        
+        # Use a secure random string for additional randomness
+        random_string = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(token_length))
+
+        # Concatenate user-specific info and random string to create the token
+        token = user_info + random_string
+
+        # Calculate expiration timestamp
+        expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
+        expiration_timestamp = expiration_time.timestamp()
+
+        # Append expiration timestamp to the token
+        token_with_expiration = f"{token}~{expiration_timestamp}"
+
+        return jsonify({'token': token_with_expiration})
+    else:
+        return jsonify({'token': False})
+    
+@app.get('/validate_reset_token')
+def validate_reset_token():
+    token = request.args.get('token')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+    # if len(token_parts) != 2:
+    #     return False
+
+    username, token, expiration_timestamp = token_parts
+
+    # Convert expiration timestamp to datetime
+    expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
+
+    # Check if token has expired
+    if datetime.utcnow() > expiration_time:
+        return jsonify({'valid': False})
+
+    return jsonify({'valid': True})
+
+@app.get('/sendResetEmail')
+def sendResetEmail():
+    username = request.args.get('username')
+    token = request.args.get('token')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'success': False})
+    
+    user.passwordResetToken = token
+    db.session.commit()
+
+    # Email configuration
+    sender_email = 'svc_CS_D2M@gcc.edu'
+    receiver_email = user.gccEmail
+    password = 'Laq86937'
+
+    # Create message container
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = 'D2M Password Reset Request'
+
+    resetLink = 'http://localhost/resetPassword?token=' + token
+    # Email body
+    body = f"""
+Dear {user.username},
+
+We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
+
+{resetLink}
+
+If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+
+Thank you,
+The D2M Team
+"""
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Connect to SMTP server
+    try:
+        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
+            server = smtplib.SMTP('smtp.office365.com', 587)
+            server.starttls()  # Secure the connection
+            server.login(sender_email, password)
+            text = msg.as_string()
+            server.sendmail(sender_email, receiver_email, text)
+            server.quit()  # Quit the SMTP server   
+            return jsonify({'success': True})
+    except smtplib.SMTPException as e:
+        print("SMTP error:", e)
+        return jsonify({'success': False, 'error': str(e)})
+    except TimeoutError:
+        print("SMTP connection timed out")
+        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
+    except Exception as e:
+        print("Other error:", e)
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.get('/setPassword')
+def setPassword():
+    token = request.args.get('token')
+    newPassword = request.args.get('password')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+
+    username, secretString, expiration_timestamp = token_parts
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user or token != user.passwordResetToken:
+        return jsonify({'success': False})
+    
+    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+    db.session.commit()
+
+    return jsonify({'success': True, 'email': user.gccEmail})
 
 def create_comment(commentData, u2Email):
     with app.app_context():
        
         db.session.add(follow)
         db.session.commit()
-# returns a JSON object containing all of the data necessary to reproduce the post specified
-# @app.get("/API/getpostdata/<int:post_id>/")
-# def get_post(post_id):
-    # return json with image link, text boxes + box settings, filters, extra image links/postitions/etc., number of likes
-    # return
+
+# from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+# with minor adjustments to make it work here
+# no longer necessary, but the code is helpful to have around
+# @app.get('/API/thumbnail/<int:postID>')
+# def get_thumbnail(postID):
+#     post = Post.query.get_or_404(postID)
+#     img = create_thumbnail(f"static/images/{post.backImage}")
+#     return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN

@@ -20,26 +20,36 @@
                         
     </head>
     <body>
-        <section class="container forms">
+        <section id="formMode" class="container forms">
             <div class="form login">
                 <div class="form-content">
                     <header>Login</header>
                     <form action="#">
                         <div class="field input-field">
-                            <input type="email" placeholder="Email" class="input">
+                            <input id="existingUsername" type="username" placeholder="Username" class="input">
                         </div>
 
                         <div class="field input-field">
-                            <input type="password" placeholder="Password" class="password">
+                            <input id="existingPassword" type="password" placeholder="Password" class="password">
                             <i class='bx bx-hide eye-icon'></i>
                         </div>
 
+                        <style>
+                            #incorrectCredentials {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="incorrectCredentials">*The username/password is incorrect*</b>
+                        </div>
+
                         <div class="form-link">
-                            <a href="#" class="forgot-pass">Forgot password?</a>
+                            <a id="resetLink" href="#" class="reseter forgot-pass">Forgot password?</a>
                         </div>
 
                         <div class="field button-field">
-                            <button>Login</button>
+                            <button type = "button" onclick="loginExisting()">Login</button>
                         </div>
                     </form>
 
@@ -65,7 +75,7 @@
                 <div class="form-content">
                     <header>Signup</header>
                     <form action="#">
-                        <div class="field input-field">
+                        <!-- <div class="field input-field">
                             <input type="email" placeholder="GCC Email" class="input">
                         </div>
 
@@ -76,15 +86,121 @@
                         <div class="field input-field">
                             <input type="password" placeholder="Password" class="password">
                             <i class='bx bx-hide eye-icon'></i>
-                        </div>
+                        </div> -->
 
                         <div class="field button-field">
-                            <button onclick="signIn()">Signup</button>
+                            <button type = "button" onclick="signIn()">Signup</button>
                         </div>
                     </form>
 
                     <div class="form-link">
                         <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Show registration -->
+
+            <div class="form register">
+                <div class="form-content">
+                    <header>Register</header>
+                    <form action="#" id = "registerForm">
+                        <!-- <div class="field input-field">
+                            <input type="email" placeholder="GCC Email" class="input">
+                        </div> -->
+
+                        <div class="field input-field">
+                            <input id="newUsernameField" type="text" placeholder="Username" class="input">
+                        </div>
+
+                        <div class="field input-field">
+                            <input id="newPasswordField" type="password" placeholder="Password" class="password">
+                            <i class='bx bx-hide eye-icon'></i>
+                        </div>
+
+                        <style>
+                            #invalidUsername {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidUsername">*This username has already been taken*</b>
+                        </div>
+
+                        <style>
+                            #invalidPassword {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidPassword">*The password must be more than 7 characters*</b>
+                        </div>
+
+                        <div class="field button-field">
+                            <!-- <button onclick="signIn()">Register</button> -->
+                            <button type = "button" onclick="register()">Register</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password reset -->
+
+            <div class="form reset">
+                <div class="form-content">
+                    <header>Reset Password</header>
+                    <form action="#" id = "resetForm">
+                        <div class="field input-field">
+                            <input id="resetUsername" type="text" placeholder="Username" class="input">
+                        </div>
+
+                        <style>
+                            #usernameDNE {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="usernameDNE">*This username does not exist*</b>
+                        </div>
+
+                        <style>
+                            #emailSuccess {
+                                display: none;
+                                color:green;
+                                font-size: 12px;
+                                text-align: center;
+                                margin-top: 10px;
+                            }
+                        </style>
+
+                        <div>
+                            <b id="emailSuccess">*Email successfully sent. Follow the link in the email to reset your password.*</b>
+                        </div>
+
+                        <style>
+                            #emailError {
+                                display: none;
+                            }
+                        </style>
+        
+                        <div id="emailError" class="alert">
+                            <span>*There was an issue sending the email*</span>
+                        </div>
+
+                        <div class="field button-field">
+                            <button type="button" onclick="sendEmail()">Send Email</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <a id="resetLink" href="#" class="reseter reset-link">Login/Signin</a>
                     </div>
                 </div>
             </div>
