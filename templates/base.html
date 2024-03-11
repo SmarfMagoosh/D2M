@@ -33,12 +33,12 @@
             <button class="dropbtn">Dropdown</button>
             <div class="dropdown-content">
               <a href="{{ url_for('get_profile') }}">Profile</a>
-              [bookmarks]
+              <!-- [bookmarks] -->
               <a href="{{ url_for('get_settings') }}">Settings</a>
               <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
               <a id="logoutButton" onclick="signOut()">Logout</a>
             </div>
-    
+        </div>   
     <a href="{{ url_for('get_create') }}" class="circular-button-link">
         <button class="circular-button">+</button>
     </a>
