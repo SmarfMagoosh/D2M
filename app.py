@@ -46,9 +46,9 @@ update_times = [0, 0, 0]
 
 def update_like_backend():
     with app.app_context():
-        db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
-        db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
-        db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
+        # db.session.execute('UPDATE Posts SET numLikesD3 = numLikesD2')
+        # db.session.execute('UPDATE Posts SET numLikesD2 = numLikesD1')
+        # db.session.execute('UPDATE Posts SET numLikesD1 = numLikes')
         db.session.commit()
         
     global update_times
@@ -60,6 +60,12 @@ def create_follow(u1Email, u2Email):
     with app.app_context():
         follow = Follow(user1 = u1Email, user2 = u2Email)
         db.session.add(follow)
+        db.session.commit()
+
+def create_like(email, post, up):
+    with app.app_context():
+        like = Like(userEmail = email, postID = post, positive=up)
+        db.session.add(like)
         db.session.commit()
         
 # takes in a Pillow Image object and returns the thumbnail version
@@ -539,12 +545,38 @@ def loginExisting():
     else:
         return jsonify({'exists': False, 'email': ""})
 
-def create_comment(commentData, u2Email):
-    with app.app_context():
+# def create_comment(commentData, u2Email):
+#     with app.app_context():
        
-        db.session.add(follow)
-        db.session.commit()
-        
+#         db.session.add(follow)
+#         db.session.commit()
+
+# @app.post("/API/like/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
+
+# @app.post("/API/comment/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
+
 # from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
 # with minor adjustments to make it work here
 # no longer necessary, but the code is helpful to have around
