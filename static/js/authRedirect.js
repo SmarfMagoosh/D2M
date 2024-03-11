@@ -55,6 +55,7 @@ function loginExisting() {
             sessionStorage.setItem("customIdToken", data.email)
             window.location.href = "../home";
         } else {
+            document.getElementById("incorrectCredentials").style.display = "inline";
             usernameField.value = ""
             passwordField.value = ""
         }
@@ -102,9 +103,27 @@ function register() {
             // Add other fields as needed
         })
     })
-    .then(() => {
-        sessionStorage.setItem("customIdToken", email)
-        window.location.href = "../home";
+    .then(response => response.json())
+    .then(data => {
+        if ((data.uniqueUsername) && (data.goodPassword)) {
+            sessionStorage.setItem("customIdToken", email)
+            window.location.href = "../home";
+        }
+        else {
+            console.log("something badddd")
+            invalidUsername = document.getElementById("invalidUsername")
+            invalidPassword = document.getElementById("invalidPassword")
+
+            if(!(data.uniqueUsername))
+                invalidUsername.style.display = "inline"
+            else
+                invalidUsername.style.display = "none";
+
+            if(!(data.goodPassword))
+                invalidPassword.style.display = "inline"
+            else
+                invalidPassword.style.display = "none"
+        }
     })
     .catch(error => console.error('Error:', error));
 }
