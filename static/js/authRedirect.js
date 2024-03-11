@@ -30,6 +30,7 @@ function handleMSALLogin(response) {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
+            // fetch(`/login?email=${email}`)
             sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         } else {
@@ -100,7 +101,6 @@ function register() {
             username: usernameField.value,
             gccEmail: email,
             backupPasswordHash: passwordField.value
-            // Add other fields as needed
         })
     })
     .then(response => response.json())
@@ -110,7 +110,6 @@ function register() {
             window.location.href = "../home";
         }
         else {
-            console.log("something badddd")
             invalidUsername = document.getElementById("invalidUsername")
             invalidPassword = document.getElementById("invalidPassword")
 

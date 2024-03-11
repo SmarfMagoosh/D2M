@@ -9,11 +9,9 @@ fetch(`/validate_reset_token?token=${token}`)
 .then(response => response.json())
 .then(data => {
     valid = data.valid
-    console.log(valid)
     if(!valid) {
         document.getElementById("resetDisplay").style.display = "none"
         document.getElementById("faultyLinkDisplay").style.display = "inline"
-        console.log("invalid link")
     }
     else {
         document.getElementById("resetDisplay").style.display = "inline"
@@ -29,12 +27,8 @@ function reset() {
     .then(response => response.json())
     .then(data => {
         if(data.success) {
-            console.log("valid")
             sessionStorage.setItem("customIdToken", data.email)
             window.location.href = "../home";
-        }
-        else {
-            console.log("invalid")
         }
     })
 }
