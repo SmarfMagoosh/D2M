@@ -358,11 +358,11 @@ def get_post(post_id):
 
 @app.get("/profile/")
 @app.get("/profile/<string:user_email>/")
-def get_profile(user_id = None):
-    # if(user_id == None):
-    #     user = None
-    #     user_id = user.gccEmail
-    #     return render_template("profile.html")
+def get_profile(user_email = None):
+    if(user_email == None):
+         user = load_user(session.get('customIdToken'))
+         user_email = user.gccEmail
+         return render_template("profile.html", user = user)
     # # load a different person's profile
     return render_template("profile.html")
 

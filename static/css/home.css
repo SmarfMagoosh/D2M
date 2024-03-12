@@ -13,12 +13,6 @@ body {
     margin-bottom: 20px; /* 20 pixels of space below paragraphs */
   }
   
-  /* Style for links (a elements) - sets color and removes text decoration */
-  a {
-    color: #007BFF; /* Blue color for links */
-    text-decoration: none; /* No underline on links */
-  }
-  
   .row {
 
     /* data-masonry: '{"percentPosition": true }'; */

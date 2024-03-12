@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %} 
-<span id="username"></span>
+{{user.username}}
 {% endblock %}
 
 {% block head %}
@@ -23,7 +23,9 @@
                 
             </div>
             <div class="media-body mb-5 text-white"> 
-                <h2 class="mt-0 mb-0", id="username">username: {{username}}</h2>  <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block">Edit profile</a>
+                <h2 class="mt-0 mb-0", id="username">{{user.username}}</h2>
+                <h2 class="mt-1", id="email">{{user.gccEmail}}</h2>
+                <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block">Edit profile</a>
                     <p class="small mb-4">                  
             </div> 
         </div> 
@@ -48,15 +50,50 @@
                          </ul> 
                     </div> 
                     <div class="px-4 py-3"> 
-                        <h5 class="mb-0">About</h5> 
+                        <h5 class="mb-0">Bio</h5> 
                          <div class="p-4 rounded shadow-sm bg-light"> 
-                             <p class="font-italic mb-0">Bio Should go here </p> 
+                             <p class="font-italic mb-0">{{user.bio}} </p> 
                          </div> <div class="py-4 px-4"> 
                              <div class="d-flex align-items-center justify-content-between mb-3"> 
                                  <h5 class="mb-0">Recent photos</h5>
                                  <a href="#" class="btn btn-link text-muted">Show all</a> 
                              </div> 
-                            
+                        </div> 
+
+                  <div class="tab">
+                   <button class="tablinks" onclick="openTab(event, 'Created')">Created</button>
+                    <button class="tablinks" onclick="openTab(event, 'Liked')">Liked</button>
+                    <button class="tablinks" onclick="openTab(event, 'Bookmrked')">Bookmrked </button>
+                  </div>
+                              
+                  <div id="Created" class="tabcontent">
+                    PHOTOS GO HERE
+
+                    {% for post in user.postList  %}
+                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                    <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                    </a>
+                    {{post.title}}
+                   {% endfor %}
+                  </div>
+                              
+                  <div id="Liked" class="tabcontent">
+                   
+                   help
+                  </div>
+                              
+                  <div id="Bookmrked" class="tabcontent">
+                    <!-- {% for post in user.bookmarkList.postID %}
+                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                    <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                    </a>
+                    {{post.title}} -->
+                    me
+                   {% endfor %}
+                  </div>
+                           
+
+                   
         </div>
     </div>
     </div>
