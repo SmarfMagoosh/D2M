@@ -134,7 +134,14 @@ class User(db.Model) :
             "gccEmail": self.gccEmail,
             "bio": self.bio,
             "backupEmail": self.backupEmail,
-            # "backupPasswordHash": self.backupPasswordHash.decode('utf-8')
+        }
+    
+    def get_user_info(self):
+        return {
+            "username": self.username,
+            "gccEmail": self.gccEmail,
+            "bio": self.bio,
+            "backupEmail": self.backupEmail,
         }
 
 class Report(db.Model) :
@@ -365,17 +372,20 @@ def get_settings():
         redirect(url_for("get_home"))
         return {'loggedout': True}
 
-    user = load_user(email)
-    form.username.data = user.username
-    form.bio.data = user.bio
-    form.backup_email.data = user.backupEmail
-    return render_template('settings.html', form=form)
+    user = load_user(session['customIdToken'])
+    if user != None:
+        form.username.data = user.username
+        form.bio.data = user.bio
+        form.backup_email.data = user.backupEmail
+        return render_template('settings.html', form=form)
+    else:
+        return None
 
 @app.get("/checkNewSettings/")
 def checkNewSettings():
     info = json.loads(request.args.get('info'))
     email = request.args.get('email')
-    user = load_user(email)
+    user = load_user(session.get('customIdToken'))
 
     returnVal = {}
 
@@ -412,11 +422,13 @@ def checkNewSettings():
 @app.route("/settings/", methods=["POST"])
 def post_settings():
     json_data = request.json
-    user = load_user(json_data.get('email'))
+    user = load_user(session.get('customIdToken'))
     user.username = json_data.get('username')
     user.bio = json_data.get('bio')
-
     backupEmail = json_data.get('backup_email')
+
+
+
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     if(re.fullmatch(regex, backupEmail)):
         user.backupEmail = backupEmail
@@ -661,8 +673,37 @@ def checkUsername():
 @app.get('/getUsername')
 def getUsername():
     gccEmail = request.args.get('gccEmail')
-    return User.query.filter_by(gccEmail=gccEmail).first().username
+    user = User.query.filter_by(gccEmail=gccEmail).first()
+    if user:
+        return user.username
+    else:
+        return ""
+    
+@app.get('/getUserInfo')
+def getUser():
+    user = User.query.filter_by(gccEmail=session.get('customIdToken')).first()
+    if user:
+        userInfo = user.get_user_info()
+        userInfo['loggedIn'] = True
 
+        return userInfo
+    else:
+        return {'loggedIn': False}
+    
+@app.get('/login')
+def login():
+    email = request.args.get('email')
+    user = User.query.get(email)
+    if user:
+        session['customIdToken'] = user.gccEmail
+        return {'success': True}
+    else:
+        return {'success': False}
+    
+@app.get('/logout')
+def logout():
+    session.pop('customIdToken', None)
+    return {}
     
 @app.get('/loginExisting')
 def loginExisting():

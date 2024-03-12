@@ -1,23 +1,37 @@
-account = sessionStorage.getItem("customIdToken")
-
+// account = sessionStorage.getItem("customIdToken")
+account = ""
 username = ""
 
-if(account !== null) {
-    fetch(`/getUsername?gccEmail=${account}`)
-    .then(response => {
-        return response.text()
-    })
-    .then(data => {
-        username = data
-        setUsername(data)
-    })
-}
+fetch('/getUserInfo')
+.then(response => response.json())
+.then(data => {
+    console.log(data)
 
-if(account == null) {
-    document.getElementById('settingsButton').style.display = 'none'
-}
+    if(data.loggedIn) {
+        console.log("asdksjfdhsdkfjhsdkjfh")
+        account = data.gccEmail
+        username = data.username
+        fetch(`/getUsername?gccEmail=${account}`)
+        .then(response => {
+            return response.text()
+        })
+        .then(data => {
+            username = data
+            setUsername(data)
+        })
+    }
+    else {
+        document.getElementById('settingsButton').style.display = 'none'
+    }
+    if(account !== "") {
 
-dynamicLogin()
+    }
+    
+    if(account == null) {
+    }
+    
+    dynamicLogin()
+})
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
 
@@ -27,6 +41,7 @@ function signOut() {
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#request
      */
 
+    fetch(`/logout`)
     sessionStorage.removeItem("customIdToken");
 
     const currentAccounts = myMSALObj.getAllAccounts();
@@ -47,7 +62,7 @@ function dynamicLogin() {
     var loginButton = document.getElementById("loginButton");
     var logoutButton = document.getElementById("logoutButton");
 
-    if (account !== null) {
+    if (account !== "") {
         loginButton.style.display = "none";
         logoutButton.style.display = "block";
     } else {

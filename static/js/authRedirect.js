@@ -30,8 +30,8 @@ function handleMSALLogin(response) {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
-            // fetch(`/login?email=${email}`)
-            sessionStorage.setItem("customIdToken", email)
+            fetch(`/login?email=${email}`)
+            // sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         } else {
             formMode = document.getElementById("formMode");
@@ -53,7 +53,8 @@ function loginExisting() {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
-            sessionStorage.setItem("customIdToken", data.email)
+            fetch(`/login?email=${data.email}`)
+            // sessionStorage.setItem("customIdToken", data.email)
             window.location.href = "../home";
         } else {
             document.getElementById("incorrectCredentials").style.display = "inline";
@@ -106,7 +107,8 @@ function register() {
     .then(response => response.json())
     .then(data => {
         if ((data.uniqueUsername) && (data.goodPassword)) {
-            sessionStorage.setItem("customIdToken", email)
+            fetch(`/login?email=${email}`)
+            // sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         }
         else {

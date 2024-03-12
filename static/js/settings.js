@@ -1,3 +1,4 @@
+email = ""
 // base code provided by chatGPT, significantly modified by Tommy
 window.addEventListener('DOMContentLoaded', () => {
     const icon = document.getElementById('icon');
@@ -9,7 +10,8 @@ window.addEventListener('DOMContentLoaded', () => {
     icon.addEventListener('change', (event) => loadImg(event, icon_img));
     banner.addEventListener('change', (event) => loadImg(event, banner_img));
 
-    email = sessionStorage.getItem('customIdToken')
+    // fetch(`/login?email=${email}`)
+    email = ""//sessionStorage.getItem('customIdToken')
     if(email == null) {
         window.location.href = "../home";
     }
@@ -52,9 +54,9 @@ function applyChanges() {
         }
     });
 
-    formData['email'] = sessionStorage.getItem('customIdToken')
+    formData['email'] = email//sessionStorage.getItem('customIdToken')
 
-    fetch(`/checkNewSettings/?email=${sessionStorage.getItem('customIdToken')}&info=${JSON.stringify(formData)}`)
+    fetch(`/checkNewSettings/?email=${email/*sessionStorage.getItem('customIdToken')*/}&info=${JSON.stringify(formData)}`)
     .then(response => response.json())
     .then(data => {
 
