@@ -350,9 +350,13 @@ def get_post(post_id):
     return render_template("post.html", post=post.to_json())
 
 @app.get("/profile/")
-@app.get("/profile/<int:user_id>/")
-def get_profile(user_id = -1):
-    # if(user_id > -1) # load a different person's profile
+@app.get("/profile/<string:user_email>/")
+def get_profile(user_id = None):
+    # if(user_id == None):
+    #     user = None
+    #     user_id = user.gccEmail
+    #     return render_template("profile.html")
+    # # load a different person's profile
     return render_template("profile.html")
 
 @app.get('/getCurrentSettings')
