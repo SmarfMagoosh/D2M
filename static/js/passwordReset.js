@@ -27,7 +27,8 @@ function reset() {
     .then(response => response.json())
     .then(data => {
         if(data.success) {
-            sessionStorage.setItem("customIdToken", data.email)
+            fetch(`/login?email=${data.email}`)
+            // sessionStorage.setItem("customIdToken", data.email)
             window.location.href = "../home";
         }
     })
