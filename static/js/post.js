@@ -26,10 +26,10 @@ copyButton.addEventListener('click', () => {
    CopyText();
 
     // Provide some visual feedback to the user
-    copyButton.textContent = 'URL Copied!';
-    setTimeout(() => {
-        copyButton.textContent = 'Copy Link';
-    }, 2000); // Reset button text after 2 seconds
+    // copyButton.textContent = 'URL Copied!';
+    // setTimeout(() => {
+    //     copyButton.textContent = 'Copy Link';
+    // }, 2000); // Reset button text after 2 seconds
 });
 
 

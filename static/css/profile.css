@@ -1,5 +1,5 @@
 .profile-head {
-    transform: translateY(5rem)
+    transform: translateY(7rem)
 }
 
 .cover {
@@ -10,7 +10,9 @@
 
 body {
     background: #a34e4e;
-    background: linear-gradient(to right, #e96443, #954e4e);
+    background: #fffcfc;
     min-height: 100vh;
     overflow-x:hidden;
 }
+
+/* linear-gradient(to right, #efd8d3, #e66363); */

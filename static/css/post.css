@@ -8,25 +8,30 @@
 }
 
 #left-content {
-    border: black solid 2px;
     margin: 1rem;
-
+    max-width: 100%; /* Set the maximum width of the image to 100% of its container */
     height: auto; /* Allow the height to adjust based on the image */
     overflow: hidden; /* Hide any overflow from the image */
-    
+    border: #cccccc solid 2px; /* Use a color that fits your design */
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
    
 }
 /* Style for the image */
 #post-image img {
-    width: auto; /* Make the image fill the container horizontally */
+    max-width: 100%; /* Make the image fill the container horizontally */
     height: auto; /* Allow the height to adjust based on the original aspect ratio */
     display: block; /* Ensure the image behaves as a block element */
 }
 
 #right-content {
-    border: black solid 2px;
-    margin: 1rem;
+    border: #cccccc solid 2px; /* Use a color that fits your design */
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
 
 #meme-base {
     width: 95%;
@@ -58,9 +63,38 @@
 }
 
 #fileInputLabel p {
-    padding: 1rem;
+    padding: .5rem;
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
     color: #666666;
     font-weight: bolder;
+}
+
+.post-buttons {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.post-buttons button {
+    width: 50px; /* Adjust according to your preference */
+    height: 50px; /* Adjust according to your preference */
+    border-radius: 50%; /* Makes the button circular */
+    background-color: #9c9c9c; /* Change to your desired button color */
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.post-buttons button:hover {
+    background-color: #d8d8d8; /* Change to your desired hover color */
+}
+
+@media screen and (max-width: 768px) {
+    .post-buttons button {
+        width: 20px; /* Adjust based on screen size */
+        height: 20px; /* Adjust based on screen size */
+    }
 }
