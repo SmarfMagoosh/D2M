@@ -357,14 +357,16 @@ def get_post(post_id):
     return render_template("post.html", post=post.to_json())
 
 @app.get("/profile/")
-@app.get("/profile/<string:user_email>/")
-def get_profile(user_email = None):
-    if(user_email == None):
+@app.get("/profile/<string:username>/")
+def get_profile(username = None):
+    if(username == None):
          user = load_user(session.get('customIdToken'))
-         user_email = user.gccEmail
          return render_template("profile.html", user = user)
+    else:
+        user = User.query.filter_by(username=username).first()
+        return render_template("profile.html", user = user)
     # # load a different person's profile
-    return render_template("profile.html")
+    
 
 @app.get('/getCurrentSettings')
 def getCurrentSettings():

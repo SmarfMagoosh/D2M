@@ -29,7 +29,10 @@
     <div id = "details">
         <!-- put the meme details here!-->
         <h2> {{ post["title"] }} </h2>
-        <h4> {{ post["username"] }} </h4>
+        <a href="{{ url_for('get_profile', username=post.username) }}">
+            <h4>{{ post.username }}</h4>
+        </a>      
+        <h4> {{ post["numLikes"] }} likes </h5>
     </div>
     <div class="post-buttons">
         <button id="like-btn"><i class="fa-solid fa-thumbs-up"></i></button>  
