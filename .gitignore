@@ -1,5 +1,6 @@
 .idea/*
 __pycache__/*
 .vs/*
-database.sqlite3
+static/meme-templates/*
+static/thumbnails/*
 database.sqlite3

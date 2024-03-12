@@ -71,6 +71,12 @@ def create_follow(u1Email, u2Email):
         follow = Follow(user1 = u1Email, user2 = u2Email)
         db.session.add(follow)
         db.session.commit()
+
+def create_like(email, post, up):
+    with app.app_context():
+        like = Like(userEmail = email, postID = post, positive=up)
+        db.session.add(like)
+        db.session.commit()
         
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
@@ -176,7 +182,7 @@ class Follow(db.Model):
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    spacing = db.Column(db.Integer, nullable = False)
+    spacing = db.Column(db.Float, nullable = False)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
     timePosted = db.Column(db.String)#, nullable = False)
@@ -457,18 +463,33 @@ def load_user(userEmail):
 
 @app.post("/create/")
 def post_meme():
-    body = request.json
-    data = body['imgData'][23:]
-    id = len(Post.query.all()) + 1
-    # TODO save under unique name somehow (based on post ID I would guess)
-    with open(f"./static/images/{id}.jpeg", "wb") as file:
-         file.write(base64.b64decode(data))
+    body: dict = request.json
+    imgData = body["imgData"][22:]
     post_inst = Post(
-        spacing = 0, # TODO on sprint 1
-        title = data['title'],
-        backImage = f"./static/images/{id}.jpeg",
-        userEmail = "Carnge Melon Baller"
+        spacing = float(body["spacing"]),
+        title = body['title'],
+        backImage = "",
+        timePosted = 0, # TODO
+        username = "Carnegie Melon Baller",
+        numLikes = 0,
+        numLikesD1 = 0,
+        numLikesD2 = 0,
+        numLikesD3 = 0,
     )
+    db.session.add(post_inst)
+    db.session.commit()
+    for box in body["textboxes"]:
+        tb_inst = TextBox(
+            textBoxId = int(box["id"]),
+            content = box["text"],
+            postID = post_inst.postID
+            # TODO: store position, text settings
+        )
+        db.session.add(tb_inst)
+        db.session.commit()
+    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
+    with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
+         file.write(base64.b64decode(imgData))
     return "hello world"
 
 @app.post('/add_user/')
@@ -716,138 +737,38 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
-    
-@app.get('/genResetToken')
-def genResetToken():
-    name = request.args.get('username')
-    self = User.query.filter_by(username=name).first()
-    if self:
-        token_length = 32
-        expiration_minutes = 60
 
-        user_info = f"{self.username}~"
-        
-        # Use a secure random string for additional randomness
-        random_string = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(token_length))
-
-        # Concatenate user-specific info and random string to create the token
-        token = user_info + random_string
-
-        # Calculate expiration timestamp
-        expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
-        expiration_timestamp = expiration_time.timestamp()
-
-        # Append expiration timestamp to the token
-        token_with_expiration = f"{token}~{expiration_timestamp}"
-
-        return jsonify({'token': token_with_expiration})
-    else:
-        return jsonify({'token': False})
-    
-@app.get('/validate_reset_token')
-def validate_reset_token():
-    token = request.args.get('token')
-    expiration_minutes = 60
-
-    # Split token and expiration timestamp
-    token_parts = token.split('~')
-
-    username, token, expiration_timestamp = token_parts
-
-    # Convert expiration timestamp to datetime
-    expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
-
-    # Check if token has expired
-    if datetime.utcnow() > expiration_time:
-        return jsonify({'valid': False})
-
-    return jsonify({'valid': True})
-
-@app.get('/sendResetEmail')
-def sendResetEmail():
-    username = request.args.get('username')
-    token = request.args.get('token')
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({'success': False})
-    
-    user.passwordResetToken = token
-    db.session.commit()
-
-    # Email configuration
-    sender_email = 'svc_CS_D2M@gcc.edu'
-    receiver_email = user.gccEmail
-    password = 'Laq86937'
-
-    # Create message container
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = 'D2M Password Reset Request'
-
-    resetLink = 'http://localhost/resetPassword?token=' + token
-    # Email body
-    body = f"""
-Dear {user.username},
-
-We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
-
-{resetLink}
-
-If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
-
-Thank you,
-The D2M Team
-"""
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    # Connect to SMTP server
-    try:
-        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
-            server = smtplib.SMTP('smtp.office365.com', 587)
-            server.starttls()  # Secure the connection
-            server.login(sender_email, password)
-            text = msg.as_string()
-            server.sendmail(sender_email, receiver_email, text)
-            server.quit()  # Quit the SMTP server   
-            return jsonify({'success': True})
-    except smtplib.SMTPException as e:
-        print("SMTP error:", e)
-        return jsonify({'success': False, 'error': str(e)})
-    except TimeoutError:
-        print("SMTP connection timed out")
-        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
-    except Exception as e:
-        print("Other error:", e)
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.get('/setPassword')
-def setPassword():
-    token = request.args.get('token')
-    newPassword = request.args.get('password')
-    expiration_minutes = 60
-
-    # Split token and expiration timestamp
-    token_parts = token.split('~')
-
-    username, secretString, expiration_timestamp = token_parts
-
-    user = User.query.filter_by(username=username).first()
-
-    if not user or token != user.passwordResetToken:
-        return jsonify({'success': False})
-    
-    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
-    db.session.commit()
-
-    return jsonify({'success': True, 'email': user.gccEmail})
-
-def create_comment(commentData, u2Email):
-    with app.app_context():
+# def create_comment(commentData, u2Email):
+#     with app.app_context():
        
-        db.session.add(follow)
-        db.session.commit()
+#         db.session.add(follow)
+#         db.session.commit()
+
+# @app.post("/API/like/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
+
+# @app.post("/API/comment/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
 
 # from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
 # with minor adjustments to make it work here
