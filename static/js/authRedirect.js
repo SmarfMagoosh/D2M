@@ -30,7 +30,8 @@ function handleMSALLogin(response) {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
-            sessionStorage.setItem("customIdToken", email)
+            fetch(`/login?email=${email}`)
+            // sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         } else {
             formMode = document.getElementById("formMode");
@@ -52,7 +53,8 @@ function loginExisting() {
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
-            sessionStorage.setItem("customIdToken", data.email)
+            fetch(`/login?email=${data.email}`)
+            // sessionStorage.setItem("customIdToken", data.email)
             window.location.href = "../home";
         } else {
             document.getElementById("incorrectCredentials").style.display = "inline";
@@ -100,17 +102,16 @@ function register() {
             username: usernameField.value,
             gccEmail: email,
             backupPasswordHash: passwordField.value
-            // Add other fields as needed
         })
     })
     .then(response => response.json())
     .then(data => {
         if ((data.uniqueUsername) && (data.goodPassword)) {
-            sessionStorage.setItem("customIdToken", email)
+            fetch(`/login?email=${email}`)
+            // sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
         }
         else {
-            console.log("something badddd")
             invalidUsername = document.getElementById("invalidUsername")
             invalidPassword = document.getElementById("invalidPassword")
 

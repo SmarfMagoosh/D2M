@@ -16,7 +16,6 @@ $("document").ready(() => {
     // Add text boxes
     $(".meme-text").hide()
     $(".meme-text").mouseover(e => {
-        console.log(e)
         let x = $(e.target).parents(".text-box-container")
         let meme = x.parent()
         x.detach()
@@ -64,7 +63,10 @@ $("document").ready(() => {
     $("#cancel-btn").click(cancel_post)
     $("#spacer").click(e => adjust_spacing(e.target))
     $(".trash-btn").click(e => delete_box(e.target))
-    $(".settings-btn").click(e => function() { /* TODO: open modal */ })
+    $(".settings-btn").click(e => {
+        let elem = e.target.tagName == "I" ? e.target.parentNode : e.target;
+        $(elem.nextElementSibling).show();
+    })
     $("#new-box-btn").click(e => add_text_box(e.target.parentNode.previousElementSibling))
 })
 
@@ -106,6 +108,7 @@ function upload_base_image(input) {
             $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
             $("#new-box-btn").attr("disabled", false)
             $("#list-opener").remove()
+            $("#meme-img").
             window.numboxes = 2
         } else {
             alert("That image is too large! we only accept files less than ______mb");
@@ -115,12 +118,14 @@ function upload_base_image(input) {
 
 function post() {
     meme = {
+        spacing: $("#spacer").val(),
         textboxes: [],
         imgData: window.create.canvas.toDataURL(),
         title: $("#post-title")[0].value
     }
     for (let textarea of $(".text-box")) {
-        meme.textboxes.push(textarea.value)
+        let tb = new MemeTextBox(textarea)
+        meme.textboxes.push(tb)
     }
     fetch(window.location.href, {
         method: "POST",
@@ -179,7 +184,6 @@ function add_text_box(elem) {
         .draggable({containment: "parent"})
         .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
         .mouseover(e => {
-            console.log(e)
             let x = $(e.target).parents(".text-box-container")
             let meme = x.parent()
             x.detach()
@@ -198,4 +202,19 @@ function delete_box(btn) {
     btn.remove()
     $(`#meme-${id}`).remove()
     window.numboxes -= 1
+}
+
+class MemeTextBox {
+    constructor(tb) {
+        // TODO: settings
+        let meme_box = $(`#meme-${tb.id}`)
+        this.text = tb.value
+        this.width = tb.clientWidth / window.create.dimensions.width
+        this.height = tb.clientHeight / window.create.dimensions.height
+        this.top = meme_box[0].style.top == "" ? 0 : parseInt(meme_box[0].style.top)
+        this.left = meme_box[0].style.left == "" ? 0 : parseInt(meme_box[0].style.left)
+        this.top /= window.create.dimensions.height
+        this.left /= window.create.dimensions.width
+        this.id = tb.id
+    }
 }

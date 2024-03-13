@@ -1,21 +1,37 @@
-account = sessionStorage.getItem("customIdToken")
+// account = sessionStorage.getItem("customIdToken")
+account = ""
 username = ""
-console.log(sessionStorage)
-dynamicLogin()
 
-if(account !== null) {
-    fetch(`/getUsername?gccEmail=${account}`)
-    .then(response => {
-        return response.text()
-    })
-    .then(data => {
-        username = data
-        console.log("username: " + username)
-        setUsername(data)
-    })
-}
+fetch('/getUserInfo')
+.then(response => response.json())
+.then(data => {
+    console.log(data)
 
-console.log("username: " + username)
+    if(data.loggedIn) {
+        console.log("asdksjfdhsdkfjhsdkjfh")
+        account = data.gccEmail
+        username = data.username
+        fetch(`/getUsername?gccEmail=${account}`)
+        .then(response => {
+            return response.text()
+        })
+        .then(data => {
+            username = data
+            setUsername(data)
+        })
+    }
+    else {
+        document.getElementById('settingsButton').style.display = 'none'
+    }
+    if(account !== "") {
+
+    }
+    
+    if(account == null) {
+    }
+    
+    dynamicLogin()
+})
 
 const myMSALObj = new msal.PublicClientApplication(msalConfig);
 
@@ -25,6 +41,7 @@ function signOut() {
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#request
      */
 
+    fetch(`/logout`)
     sessionStorage.removeItem("customIdToken");
 
     const currentAccounts = myMSALObj.getAllAccounts();
@@ -38,14 +55,14 @@ function signOut() {
         myMSALObj.logoutRedirect(logoutRequest);
     }
 
-    location.reload();
+    window.location.href = "../home";
 }
 
 function dynamicLogin() {
     var loginButton = document.getElementById("loginButton");
     var logoutButton = document.getElementById("logoutButton");
 
-    if (account !== null) {
+    if (account !== "") {
         loginButton.style.display = "none";
         logoutButton.style.display = "block";
     } else {
@@ -55,6 +72,9 @@ function dynamicLogin() {
 }
 
 function setUsername(username) {
-    console.log("it did the thing: " + username)
     document.getElementById("username").textContent = username
+}
+
+function goToSettings() {
+    window.location.href = `/settings?email=${account}`
 }
