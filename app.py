@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+from flask import session
 import os, sys, hashlib, json
 import string
 import secrets
+import re
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
@@ -69,6 +71,12 @@ def create_follow(u1Email, u2Email):
         follow = Follow(user1 = u1Email, user2 = u2Email)
         db.session.add(follow)
         db.session.commit()
+
+def create_like(email, post, up):
+    with app.app_context():
+        like = Like(userEmail = email, postID = post, positive=up)
+        db.session.add(like)
+        db.session.commit()
         
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
@@ -106,7 +114,7 @@ class User(db.Model) :
     
     bio = db.Column(db.String, nullable = True)
     
-    backupEmail = db.Column(db.String, nullable = True)
+    backupEmail = db.Column(db.String, default = "")#nullable = True)
     backupPasswordHash = db.Column(db.String, nullable = True)
     passwordResetToken = db.Column(db.String, nullable = True)
     timesReported = db.Column(db.Integer, default = 0)
@@ -125,6 +133,22 @@ class User(db.Model) :
         return {
             "posts": [p.render_json() for p in self.postList]
 		}
+    
+    def get_settings_info(self):
+        return {
+            "username": self.username,
+            "gccEmail": self.gccEmail,
+            "bio": self.bio,
+            "backupEmail": self.backupEmail,
+        }
+    
+    def get_user_info(self):
+        return {
+            "username": self.username,
+            "gccEmail": self.gccEmail,
+            "bio": self.bio,
+            "backupEmail": self.backupEmail,
+        }
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -261,9 +285,9 @@ with app.app_context():
     db.create_all()
 
         # Create posts  to be inserted
-    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1123".encode('utf-8'), bcrypt.gensalt()))
-    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2123".encode('utf-8'), bcrypt.gensalt()))
-    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3123".encode('utf-8'), bcrypt.gensalt()))
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
+    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
                  backImage = "4 rules.png", owner = u2, numLikes=10)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
@@ -338,12 +362,100 @@ def get_profile(user_id = -1):
     # if(user_id > -1) # load a different person's profile
     return render_template("profile.html")
 
+@app.get('/getCurrentSettings')
+def getCurrentSettings():
+    email = request.args.get('email')
+    return redirect(url_for('get_settings')+ "email=" + str(email))
+
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
 # @login_required
 def get_settings():
     form = SettingsForm()
-    return render_template('settings.html', form=form)
+    email = request.args.get('email')
+
+    if email == None:
+        redirect(url_for("get_home"))
+        return {'loggedout': True}
+
+    user = load_user(session['customIdToken'])
+    if user != None:
+        form.username.data = user.username
+        form.bio.data = user.bio
+        form.backup_email.data = user.backupEmail
+        return render_template('settings.html', form=form)
+    else:
+        return None
+
+@app.get("/checkNewSettings/")
+def checkNewSettings():
+    info = json.loads(request.args.get('info'))
+    email = request.args.get('email')
+    user = load_user(session.get('customIdToken'))
+
+    returnVal = {}
+
+    returnVal['usernameUpdate'] = info['username'] != user.username
+    if User.query.filter_by(username=info['username']).first():
+        returnVal['usernameUnique'] = False
+    else:
+        returnVal['usernameUnique'] = True
+
+    backupEmail = info['backup_email']
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+
+    returnVal['emailUpdate'] = str(backupEmail) != str(user.backupEmail)
+    returnVal['validEmail'] = True if re.fullmatch(regex, backupEmail) else False
+
+    returnVal['passwordUpdate'] = info['old_password'] != "" or info['change_password'] != "" or info['confirm_password'] != ""
+    returnVal['oldPasswordMatch'] = bcrypt.checkpw(info['old_password'].encode('utf-8'), user.backupPasswordHash)
+    returnVal['newPasswordValid'] = len(info['change_password']) >= 8
+    returnVal['newPasswordMatch'] = info['change_password'] == info['confirm_password']
+
+    success = True
+
+    if returnVal['usernameUpdate'] and not returnVal['usernameUnique']:
+        success = False
+    if returnVal['emailUpdate'] and not returnVal['validEmail']:
+        success = False
+    if returnVal['passwordUpdate'] and (not returnVal['oldPasswordMatch'] or not returnVal['newPasswordValid'] or not returnVal['newPasswordMatch']):
+        success = False
+
+    returnVal['success'] = success
+    
+    return jsonify(returnVal)
+
+@app.route("/settings/", methods=["POST"])
+def post_settings():
+    json_data = request.json
+    user = load_user(session.get('customIdToken'))
+    user.username = json_data.get('username')
+    user.bio = json_data.get('bio')
+    backupEmail = json_data.get('backup_email')
+
+
+
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    if(re.fullmatch(regex, backupEmail)):
+        user.backupEmail = backupEmail
+    else:
+        print("Invalid Email")
+
+    oldPassword = json_data.get('old_password')
+    newPassword = json_data.get('change_password')
+    confirmPassword = json_data.get('confirm_password')
+
+    if bcrypt.checkpw(oldPassword.encode('utf-8'), user.backupPasswordHash) and newPassword == confirmPassword:
+        user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+
+    db.session.commit()
+    return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
+
+def load_user(userEmail):
+    if userEmail != None:
+        return User.query.get(userEmail)
+    else:
+        return None
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -386,18 +498,14 @@ def post_meme():
          file.write(base64.b64decode(imgData))
     return "hello world"
 
-@app.post("/login/")
-def post_login():
-    return ""
-
-@app.post('/add_user')#, methods=['POST'])
+@app.post('/add_user/')
 def add_user():
     returnVal = {}
     data = request.get_json()
     username=data['username']
     password=data['backupPasswordHash']
     checkUser = User.query.filter_by(username=username).first()
-    print(username + " " + password)
+
     if checkUser:
         returnVal['uniqueUsername'] = False
     else:
@@ -407,8 +515,6 @@ def add_user():
         returnVal['goodPassword'] = False
     else:
         returnVal['goodPassword'] = True
-
-    print(returnVal)
 
     if not returnVal['uniqueUsername'] or not returnVal['goodPassword']:
         return jsonify(returnVal)
@@ -573,7 +679,6 @@ def search():
 def check_user():
     gccEmail = request.args.get('gccEmail')
 
-    # user = User.query.get_or_404(gccEmail);
     user = User.query.filter_by(gccEmail=gccEmail).first()
     
     if user:
@@ -595,157 +700,81 @@ def checkUsername():
 @app.get('/getUsername')
 def getUsername():
     gccEmail = request.args.get('gccEmail')
-    print(User.query.filter_by(gccEmail=gccEmail).first().username)
-    return User.query.filter_by(gccEmail=gccEmail).first().username
+    user = User.query.filter_by(gccEmail=gccEmail).first()
+    if user:
+        return user.username
+    else:
+        return ""
+    
+@app.get('/getUserInfo')
+def getUser():
+    user = User.query.filter_by(gccEmail=session.get('customIdToken')).first()
+    if user:
+        userInfo = user.get_user_info()
+        userInfo['loggedIn'] = True
 
+        return userInfo
+    else:
+        return {'loggedIn': False}
+    
+@app.get('/login')
+def login():
+    email = request.args.get('email')
+    user = User.query.get(email)
+    if user:
+        session['customIdToken'] = user.gccEmail
+        return {'success': True}
+    else:
+        return {'success': False}
+    
+@app.get('/logout')
+def logout():
+    session.pop('customIdToken', None)
+    return {}
     
 @app.get('/loginExisting')
 def loginExisting():
     name = request.args.get('username')
     password = request.args.get('password')
 
-    user = User.query.filter_by(username=name).first()#, backupPasswordHash=password
-
-    # if bcrypt.checkpw(password, user.backupPasswordHash):
+    user = User.query.filter_by(username=name).first()
 
     if user:
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
-    
-@app.get('/genResetToken')
-def genResetToken():
-    name = request.args.get('username')
-    self = User.query.filter_by(username=name).first()
-    if self:
-        token_length = 32
-        expiration_minutes = 60
 
-        user_info = f"{self.username}~"
-        
-        # Use a secure random string for additional randomness
-        random_string = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(token_length))
-
-        # Concatenate user-specific info and random string to create the token
-        token = user_info + random_string
-
-        # Calculate expiration timestamp
-        expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
-        expiration_timestamp = expiration_time.timestamp()
-
-        # Append expiration timestamp to the token
-        token_with_expiration = f"{token}~{expiration_timestamp}"
-
-        return jsonify({'token': token_with_expiration})
-    else:
-        return jsonify({'token': False})
-    
-@app.get('/validate_reset_token')
-def validate_reset_token():
-    token = request.args.get('token')
-    expiration_minutes = 60
-
-    # Split token and expiration timestamp
-    token_parts = token.split('~')
-    # if len(token_parts) != 2:
-    #     return False
-
-    username, token, expiration_timestamp = token_parts
-
-    # Convert expiration timestamp to datetime
-    expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
-
-    # Check if token has expired
-    if datetime.utcnow() > expiration_time:
-        return jsonify({'valid': False})
-
-    return jsonify({'valid': True})
-
-@app.get('/sendResetEmail')
-def sendResetEmail():
-    username = request.args.get('username')
-    token = request.args.get('token')
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({'success': False})
-    
-    user.passwordResetToken = token
-    db.session.commit()
-
-    # Email configuration
-    sender_email = 'svc_CS_D2M@gcc.edu'
-    receiver_email = user.gccEmail
-    password = 'Laq86937'
-
-    # Create message container
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = 'D2M Password Reset Request'
-
-    resetLink = 'http://localhost/resetPassword?token=' + token
-    # Email body
-    body = f"""
-Dear {user.username},
-
-We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
-
-{resetLink}
-
-If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
-
-Thank you,
-The D2M Team
-"""
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    # Connect to SMTP server
-    try:
-        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
-            server = smtplib.SMTP('smtp.office365.com', 587)
-            server.starttls()  # Secure the connection
-            server.login(sender_email, password)
-            text = msg.as_string()
-            server.sendmail(sender_email, receiver_email, text)
-            server.quit()  # Quit the SMTP server   
-            return jsonify({'success': True})
-    except smtplib.SMTPException as e:
-        print("SMTP error:", e)
-        return jsonify({'success': False, 'error': str(e)})
-    except TimeoutError:
-        print("SMTP connection timed out")
-        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
-    except Exception as e:
-        print("Other error:", e)
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.get('/setPassword')
-def setPassword():
-    token = request.args.get('token')
-    newPassword = request.args.get('password')
-    expiration_minutes = 60
-
-    # Split token and expiration timestamp
-    token_parts = token.split('~')
-
-    username, secretString, expiration_timestamp = token_parts
-
-    user = User.query.filter_by(username=username).first()
-
-    if not user or token != user.passwordResetToken:
-        return jsonify({'success': False})
-    
-    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
-    db.session.commit()
-
-    return jsonify({'success': True, 'email': user.gccEmail})
-
-def create_comment(commentData, u2Email):
-    with app.app_context():
+# def create_comment(commentData, u2Email):
+#     with app.app_context():
        
-        db.session.add(follow)
-        db.session.commit()
+#         db.session.add(follow)
+#         db.session.commit()
+
+# @app.post("/API/like/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
+
+# @app.post("/API/comment/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
 
 # from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
 # with minor adjustments to make it work here
