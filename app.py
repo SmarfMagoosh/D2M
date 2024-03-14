@@ -134,6 +134,11 @@ class User(db.Model) :
             "posts": [p.render_json() for p in self.postList]
 		}
     
+    def likelist_to_json(self):
+        return {
+            "posts": [l.render_json() for l in self.likeList]
+		}
+    
     def get_settings_info(self):
         return {
             "username": self.username,
@@ -744,7 +749,7 @@ def loginExisting():
     else:
         return jsonify({'exists': False, 'email': ""})
 
-# def create_comment(commentData, u2Email):
+# def create_comment(commentData, user_name):
 #     with app.app_context():
        
 #         db.session.add(follow)

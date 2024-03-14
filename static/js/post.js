@@ -11,20 +11,18 @@ document.addEventListener('DOMContentLoaded', function () {
 const reportButton = document.getElementById('report-btn');
 const reportPopup = document.getElementById('report-popup');
 
-// Event listener for the report button
-reportButton.addEventListener('click', openPopup);
-
-    closePopup;
-    
-    
-// Get reference to the copy button
-const copyButton = document.getElementById('copy-link-btn');
 
 // Event listener for click event on copy button
-copyButton.addEventListener('click', () => {
-    
-   CopyText();
+document.getElementById('copy-link-btn').addEventListener('click', () => {
 
+    var copyText = window.location.href;
+    console.log(copyText);
+  
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(copyText);
+    
+    // Alert the copied text
+    alert("Copied the text: " + copyText);
     // Provide some visual feedback to the user
     // copyButton.textContent = 'URL Copied!';
     // setTimeout(() => {
@@ -32,14 +30,8 @@ copyButton.addEventListener('click', () => {
     // }, 2000); // Reset button text after 2 seconds
 });
 
-
-
-
-  //THE REMIX BUTTON
-const remixButton = document.getElementById('remix-btn');
-
-// Event listener for click event on copy button
-remixButton.addEventListener('click', () => {
+// Event listener for click event on remix button
+document.getElementById('remix-btn').addEventListener('click', () => {
     
     window.location.href = "../../create"
     //Not implemented lmao
@@ -72,20 +64,47 @@ commentForm.addEventListener('submit', function(event) {
 
 });
 
+document.getElementById('like-btn').addEventListener('click', function() {
+    // Retrieve the post ID associated with the button
+    const postId = this.closest('.post').dataset.postId;
 
+    // Call the createLike function to create a new like for the post
+    createLike('user@example.com', postId, true)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Handle successful response
+            console.log('New like created for post ID:', postId);
+            // Optionally, update the UI to reflect the new like
+        })
+        .catch(error => {
+            // Handle fetch errors
+            console.error('Fetch error:', error);
+        });
 });
 
-function CopyText() {
-    // Get the text field
-    var copyText = window.location.href;
-    console.log(copyText);
-  
-    // Copy the text inside the text field
-    navigator.clipboard.writeText(copyText);
+const dislikeButton = document.getElementById('like-btn');
+
+dislikeButton.addEventListener('click', () => {
     
-    // Alert the copied text
-    alert("Copied the text: " + copyText);
-};
+    window.location.href = "../../create"
+    //Not implemented lmao
+ 
+});  
+
+
+
+function createLike(email, postId, isPositive) {
+    return fetch('/createLike', {
+        method: 'POST',
+        body: JSON.stringify({ email: email, postId: postId, isPositive: isPositive }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}
+
 
 // Function to open the popup
 function openPopup() {
@@ -104,3 +123,5 @@ function submitReport() {
     console.log('Report submitted:', reportText);
     closePopup(); // Close the popup after submission
 };
+
+});
