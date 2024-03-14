@@ -581,8 +581,8 @@ def setPassword():
 
     return jsonify({'success': True, 'email': user.gccEmail})
 
-def create_comment(commentData, u2Email):
-    with app.app_context():
+# def create_comment(commentData, u2Email):
+#     with app.app_context():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
