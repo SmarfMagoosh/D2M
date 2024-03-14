@@ -78,6 +78,7 @@ def create_like(email, post, up):
         db.session.add(like)
         db.session.commit()
         
+
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
@@ -372,6 +373,7 @@ def get_profile(username = None):
         return render_template("profile.html", user = user)
     # # load a different person's profile
     
+
 
 @app.get('/getCurrentSettings')
 def getCurrentSettings():
@@ -748,6 +750,11 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
+    
+
+
+
+
 
 # def create_comment(commentData, user_name):
 #     with app.app_context():

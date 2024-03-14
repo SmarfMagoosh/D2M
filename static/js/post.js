@@ -43,11 +43,10 @@ document.getElementById('remix-btn').addEventListener('click', () => {
 
 
 
-// Get a reference to the form element
-const commentForm = document.getElementById('comment-form');
+
 
 // Add an event listener for form submission
-commentForm.addEventListener('submit', function(event) {
+document.getElementById('comment-form').addEventListener('submit', function(event) {
     // Prevent the default form submission behavior
     event.preventDefault();
 
@@ -66,10 +65,11 @@ commentForm.addEventListener('submit', function(event) {
 
 document.getElementById('like-btn').addEventListener('click', function() {
     // Retrieve the post ID associated with the button
-    const postId = this.closest('.post').dataset.postId;
-
+    const postId = this.getAttribute('data-postId');
+    console.log("I've been clicked by!");
+    console.log(getCurrentUser);
     // Call the createLike function to create a new like for the post
-    createLike('user@example.com', postId, true)
+    createLike(getCurrentUser(), postId, true)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -84,15 +84,47 @@ document.getElementById('like-btn').addEventListener('click', function() {
         });
 });
 
-const dislikeButton = document.getElementById('like-btn');
+document.getElementById('dislike-btn').addEventListener('click', function() {
+    // Retrieve the post ID associated with the button
+    const postId = this.getAttribute('data-postId');
+    console.log("I've been clicked by!");
+    console.log(getCurrentUser);
+    // Call the createLike function to create a new like for the post
+    createLike(getCurrentUser().gccEmail, postId, false)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Handle successful response
+            console.log('New dislike created for post ID:', postId);
+            // Optionally, update the UI to reflect the new like
+        })
+        .catch(error => {
+            // Handle fetch errors
+            console.error('Fetch error:', error);
+        });
+});
 
-dislikeButton.addEventListener('click', () => {
-    
-    window.location.href = "../../create"
-    //Not implemented lmao
- 
-});  
-
+document.getElementById('bookmark-btn').addEventListener('click', function() {
+    // Retrieve the post ID associated with the button
+    const postId = this.getAttribute('data-postId');
+    console.log("I've been clicked by!");
+    console.log(getCurrentUser);
+    // Call the createLike function to create a new like for the post
+    createLike(getCurrentUser(), postId, false)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Handle successful response
+            console.log('New dislike created for post ID:', postId);
+            // Optionally, update the UI to reflect the new like
+        })
+        .catch(error => {
+            // Handle fetch errors
+            console.error('Fetch error:', error);
+        });
+});
 
 
 function createLike(email, postId, isPositive) {
@@ -105,16 +137,39 @@ function createLike(email, postId, isPositive) {
     });
 }
 
+function createLike(email, postId, isPositive) {
+    return fetch('/createLike', {
+        method: 'POST',
+        body: JSON.stringify({ email: email, postId: postId, isPositive: isPositive }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}
 
-// Function to open the popup
-function openPopup() {
-    reportPopup.classList.toggle("show")
-};
-
-// Function to close the popup
-function closePopup() {
-    reportPopup.classList.toggle("hide")
-};
+function getCurrentUser() {
+    return fetch('/getUserInfo')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.loggedIn) {
+                // User is logged in, return user information
+                return data;
+            } else {
+                // User is not logged in, return null or handle as needed
+                return null;
+            }
+        })
+        .catch(error => {
+            // Handle fetch errors
+            console.error('Fetch error:', error);
+            return null;
+        });
+}
 
 // Function to submit the report
 function submitReport() {

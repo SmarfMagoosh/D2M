@@ -31,7 +31,7 @@
         </div> 
     </div> 
     <div class="bg-light p-4 d-flex justify-content-end text-center"> 
-        <ul class="list-inline mb-0"> 
+        <!-- <ul class="list-inline mb-0"> 
             <li class="list-inline-item">                         
                     <h5 class="font-weight-bold mb-0 d-block">215</h5>
             <small class="text-muted"> 
@@ -47,7 +47,7 @@
                             <small class="text-muted"> 
                                 <i class="fas fa-user mr-1"></i>Following</small> 
                             </li> 
-                         </ul> 
+                         </ul>  -->
                     </div> 
                     <div class="px-4 py-3"> 
                         <h5 class="mb-0">Bio</h5> 
@@ -63,26 +63,38 @@
                   <div class="tab">
                    <button class="tablinks" onclick="openTab(event, 'Created')">Created</button>
                     <button class="tablinks" onclick="openTab(event, 'Liked')">Liked</button>
-                    <button class="tablinks" onclick="openTab(event, 'Bookmrked')">Bookmrked </button>
+                    <button class="tablinks" onclick="openTab(event, 'Bookmarked')">Bookmarked </button>
                   </div>
                               
                   <div id="Created" class="tabcontent">
-                    PHOTOS GO HERE
-
                     {% for post in user.postList  %}
                     <a href="{{ url_for('get_post', post_id=post.postID) }}">
                     <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
                     </a>
                     {{post.title}}
+                    <br>
                    {% endfor %}
                   </div>
                               
                   <div id="Liked" class="tabcontent">
                    
                    PUT LIKED STUFFS HERE
+
+                   <!-- {% for post in liked_posts %}
+                   <div class="post">
+                       <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                           <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                       </a>
+                       <p>{{ post.title }}</p>
+                   </div>
+               {% endfor %} -->
+
+                    {% for like in user.likeList %}
+                        {{ like.postID }}
+                    {% endfor %}
                   </div>
                               
-                  <div id="Bookmrked" class="tabcontent">
+                  <div id="Bookmarked" class="tabcontent">
                     <!-- {% for post in user.bookmarkList.postID %}
                     <a href="{{ url_for('get_post', post_id=post.postID) }}">
                     <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
@@ -90,6 +102,11 @@
                     {{post.title}} 
                    {% endfor %}-->
                    PUT BOOKMARK STUFFS HERE
+
+                    {% for bookmark in user.bookmarkList %}
+                        {{ bookmark.postID }}
+                    {% endfor %}
+
                   </div>
                            
         </div>
