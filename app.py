@@ -270,7 +270,7 @@ class TextBox(db.Model) :
 
 class Comment(db.Model) :
     __tablename__ = 'Comments'
-    commentID = db.Column(db.Integer, primary_key = True)
+    commentID = db.Column(db.Integer, primary_key = True, autoincrement=True)
     content = db.Column(db.String, nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
@@ -469,6 +469,7 @@ def load_user(userEmail):
         return User.query.get(userEmail)
     else:
         return None
+    
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -541,6 +542,29 @@ def add_user():
 def follow(u1Email, u2Email):
     create_follow(u1Email, u2Email)
     return "success"
+
+# Define a route to handle AJAX requests for creating comments
+@app.post('/create_comment')
+def create_comment_route():
+    # Get the data from the AJAX request
+    data = request.json
+    content = data.get('content')
+    username = data.get('username')
+    postID = data.get('postID')
+
+    new_comment = Comment(
+        content=content,
+        postID=postID,
+        username=username,
+        timePosted = datetime.now().strftime("%m-%d %H:%M")
+        # The commentID will be automatically generated due to autoincrement=True
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+    print("HEY! IT DOES A THING!!")
+
+    # Return a response indicating success
+    return {'message': 'Comment created successfully'}, 200
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)

@@ -32,12 +32,14 @@
         <a href="{{ url_for('get_profile', username=post.username) }}">
             <h4>{{ post.username }}</h4>
         </a>      
-        <h4> {{ post["numLikes"] }} likes </h5>
+        <h5> {{ post["numLikes"] }} likes </h5>
+        
     </div>
     <div class="post-buttons">
-        <button id="like-btn" data-postId="{{ post['postId'] }}" ><i class="fa-solid fa-thumbs-up"></i></button>  
-        <button id="dislike-btn" data-postId="{{ post['postId'] }}" ><i class="fa-solid fa-thumbs-down"></i></button>   
-        <button id="bookmark-btn" data-postId="{{ post['postId'] }}" ><i class="fa-solid fa-bookmark"></i></button>
+        
+        <button id="like-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-up"></i></button>  
+        <button id="dislike-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-down"></i></button>   
+        <button id="bookmark-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-bookmark"></i></button>
         <!-- <button id="report-btn"><i class="fa-solid fa-flag"></i></button> -->
         <button id="copy-link-btn"><i class="fa-solid fa-link"></i></button>
         <button id="remix-btn"><i class="fa-solid fa-file-pen"></i></button>
@@ -53,7 +55,7 @@
         </div>
     </div> -->
 
-    <form id="comment-form">
+    <form id="comment-form" data-postId="{{ post['id'] }}">
         <label for="comment">Leave a Comment:</label><br>
         <textarea id="comment-box" placeholder="Enter your comment"></textarea><br>
         <input type="submit" value="Submit!">
@@ -63,13 +65,17 @@
 <div id = "comment-content">
     <h1> Comments:</h1>
 
-
-  {% for comment in Comments %}
-  <a href="../post/{{post['id']}}/">
-    <img src="../../static/images/{{post['backImage']}}" alt="">
-  </a>
-  {% endfor %}
+    {% for comment in post.comments %}
+    <div class="comment-box">
+        <div class="comment">
+            <p class="comment-time">{{ comment.timePosted }}</p>
+            <div class="comment-content">
+                <p><strong>{{ comment.username }}</strong>: {{ comment.content }}</p>
+            </div>
+        </div>
+    </div>
     
+    {% endfor %}
 </div>
 
 

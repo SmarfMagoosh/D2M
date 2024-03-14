@@ -51,17 +51,33 @@ document.getElementById('comment-form').addEventListener('submit', function(even
     event.preventDefault();
 
     // Get the value of the comment input field
-    const commentInput = document.getElementById('comment-box');
-    const commentValue = commentInput.value;
-    
-    
-    
+    const commentValue = document.getElementById('comment-box').value;
 
-    // Perform any action you want with the comment value
+    // You also need to retrieve the username and postID from somewhere
+    const user = getCurrentUser();  // Assuming you have a function to get the current user
+    const postID = this.getAttribute('data-postId');
+    console.log(commentValue)
+    console.log(getCurrentUser().username)
+    console.log(postID)
 
-    window.location.reload();
-
+    // Call the createComment function to create a new comment
+    createComment(commentValue, "u1", postID)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Handle successful response
+            console.log('New comment created successfully');
+            // Optionally, update the UI or perform other actions
+            window.location.reload();  // Reload the page to display the new comment
+        })
+        .catch(error => {
+            // Handle fetch errors
+            console.error('Fetch error:', error);
+        });
+        window.location.reload();
 });
+
 
 document.getElementById('like-btn').addEventListener('click', function() {
     // Retrieve the post ID associated with the button
@@ -69,7 +85,7 @@ document.getElementById('like-btn').addEventListener('click', function() {
     console.log("I've been clicked by!");
     console.log(getCurrentUser);
     // Call the createLike function to create a new like for the post
-    createLike(getCurrentUser(), postId, true)
+    createLike(getCurrentUser, postId, true)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -137,46 +153,55 @@ function createLike(email, postId, isPositive) {
     });
 }
 
-function createLike(email, postId, isPositive) {
-    return fetch('/createLike', {
+function createComment(content, username, postID) {
+
+    // Make a POST request to the Flask route
+    fetch('/create_comment', {
         method: 'POST',
-        body: JSON.stringify({ email: email, postId: postId, isPositive: isPositive }),
         headers: {
             'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            content: content,
+            username: username,
+            postID: postID
+        }) // Convert data to JSON format
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
+        // Handle successful response
+        console.log('Okay I built the comment');
+        // Optionally, update the UI or perform other actions
+    })
+    .catch(error => {
+        // Handle fetch errors
+        console.error('Fetch error:', error);
     });
 }
 
-function getCurrentUser() {
-    return fetch('/getUserInfo')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.loggedIn) {
-                // User is logged in, return user information
-                return data;
-            } else {
-                // User is not logged in, return null or handle as needed
-                return null;
-            }
-        })
-        .catch(error => {
-            // Handle fetch errors
-            console.error('Fetch error:', error);
+async function getCurrentUser() {
+    try {
+        const response = await fetch('/getUserInfo');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        if (data.loggedIn) {
+            // User is logged in, return user information
+            return data;
+        } else {
+            // User is not logged in, return null or handle as needed
             return null;
-        });
+        }
+    } catch (error) {
+        // Handle fetch errors
+        console.error('Fetch error:', error);
+        return null;
+    }
 }
 
-// Function to submit the report
-function submitReport() {
-    const reportText = document.getElementById('report-text').value;
-    // Do something with the report text (e.g., send it to a server)
-    console.log('Report submitted:', reportText);
-    closePopup(); // Close the popup after submission
-};
+
 
 });

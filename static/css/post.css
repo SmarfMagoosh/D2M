@@ -98,3 +98,19 @@
         height: 20px; /* Adjust based on screen size */
     }
 }
+
+.comment-box {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.comment-time {
+    color: #999;
+    font-size: 0.8em;
+}
+
+.comment-content {
+    margin-top: 5px;
+}
