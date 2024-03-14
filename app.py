@@ -78,12 +78,7 @@ def create_like(email, post, up):
         db.session.add(like)
         db.session.commit()
         
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
-=======
->>>>>>> 1c883ca1dde07f14031b2ee53085c7032a96570e
 def create_notification(email, text, title, time):
     with app.app_context():
         notif = Notification(userEmail = email, text = text, title=title, time=time)
@@ -94,10 +89,6 @@ def delete_notification(notif):
     with app.app_context():
         db.session.delete(notif)
         db.session.commit()
-<<<<<<< HEAD
->>>>>>> 05024209030cde0bd617fceddb88193e87beba65
-=======
->>>>>>> 1c883ca1dde07f14031b2ee53085c7032a96570e
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
@@ -509,11 +500,6 @@ def load_user(userEmail):
     else:
         return None
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 1c883ca1dde07f14031b2ee53085c7032a96570e
 @app.get('/genResetToken')
 def genResetToken():
     name = request.args.get('username')
@@ -641,10 +627,6 @@ def setPassword():
 
 # def create_comment(commentData, u2Email):
 #     with app.app_context():
-<<<<<<< HEAD
->>>>>>> 05024209030cde0bd617fceddb88193e87beba65
-=======
->>>>>>> 1c883ca1dde07f14031b2ee53085c7032a96570e
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)

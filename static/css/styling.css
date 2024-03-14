@@ -186,3 +186,14 @@ body{
 .notif-link{
   color: inherit;
 }
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+}
+
+.navbar-items {
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
+  gap: 10px; /* Add space between items */
+}
