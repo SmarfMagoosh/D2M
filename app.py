@@ -78,6 +78,16 @@ def create_like(email, post, up):
         db.session.add(like)
         db.session.commit()
         
+def create_notification(email, text, title, time):
+    with app.app_context():
+        notif = Notification(userEmail = email, text = text, title=title, time=time)
+        db.session.add(notif)
+        db.session.commit()
+
+def delete_notification(notif):
+    with app.app_context():
+        db.session.delete(notif)
+        db.session.commit()
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
@@ -126,6 +136,7 @@ class User(db.Model) :
     reportList = db.relationship('Report', backref='reporter')
     likeList = db.relationship('Like', backref='user')
     bookmarkList = db.relationship('Bookmark', backref='user')
+    notificationList = db.relationship('Notification', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
     
@@ -156,6 +167,23 @@ class Report(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
+    
+class Notification(db.Model) :
+    __tablename__ = 'Notifications'
+    NotificationID = db.Column(db.Integer, primary_key = True)
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    title = db.Column(db.String)
+    text = db.Column(db.String)
+    # format: mm/dd/yy hh:mm AM/PM
+    # ex: 3/7/24 5:30 AM
+    time = db.Column(db.String)
+    def to_json(self):
+        return {
+            "title": self.title,
+            "text" : self.text,
+            "time" : self.time,
+            "id" : self.NotificationID
+		}
 
 class Like(db.Model):
     __tablename__ = 'Likes'
@@ -302,12 +330,14 @@ with app.app_context():
     bm11 = Bookmark(user=u1, postID=10)
     bm12 = Bookmark(user=u1, postID=30)
     bm13 = Bookmark(user=u1, postID=20)
+    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
     # Add all of these records to the session and commit changes
     db.session.add_all((u1,u2,u3))
     db.session.add_all((post1, post2, post3))
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
+    db.session.add(notif)
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -730,6 +760,28 @@ def get_bookmarked(gccEmail):
     bookmarks.sort(key=lambda b: b.bookmarkID, reverse=True)
     bookmarks =  bookmarks[0:count] #reduce to count or less elements
     return [l.post.render_json() for l in bookmarks]
+
+@app.get("/API/get_notifications/<string:gccEmail>")
+@app.get("/API/get_notifications/")
+def get_notifications(gccEmail=None):
+    if gccEmail == None: 
+        gccEmail = session.get('customIdToken')
+    notifications = Notification.query.filter_by(userEmail=gccEmail).all()
+    return {"logged_in": gccEmail != None, "list": [n.to_json() for n in notifications]}
+
+# posts to this route will contain this json:
+# {"id" : notification id}
+@app.post("/API/delete_notification")
+def delete_notifications():
+    data = request.get_json()
+    notif = Notification.query.get_or_404(data.get("id"))
+    user = User.query.get_or_404(session.get('customIdToken'))
+    
+    if notif.userEmail == user.gccEmail:
+        delete_notification(notif)
+        return 200, ""
+    else:
+        return 401, ""
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
