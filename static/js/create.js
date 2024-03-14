@@ -271,7 +271,6 @@ function post() {
         imgData: window.create.canvas.toDataURL(),
         title: $("#post-title")[0].value
     }
-    console.log(meme);
     for (let textarea of $(".text-box")) {
         let tb = new MemeTextBox(textarea)
         meme.textboxes.push(tb)
@@ -422,7 +421,6 @@ class MemeTextBox {
         this.left /= window.create.dimensions.width
         this.id = tb.id.split("-")[1]
         let int_id = tb.id.split("-")[1]
-        console.log(int_id)
         this.settings = {
             alignment: $(`#alignment-${int_id}`).val(),
             font_size: $(`#font-size-${int_id}`).val(),
