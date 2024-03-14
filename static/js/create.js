@@ -1,8 +1,92 @@
 $("document").ready(() => {
+    $("#image-tool-bar").hide()
+
     // create namespace for window
     window.create = {}
+    window.settings_menu = x => `
+        <div>
+            <label for = "alignment-${x}">Alignment:</label>
+            <select id = "alignment-${x}" class = "form-control settings-alignment">
+                <option value = "center">Center</option>
+                <option value = "left">Left</option>
+                <option value = "right">Right</option>
+            </select>
+        </div>
+        <div>
+            <label for = "font-size-${x}">Font Size:</label>
+            <input type = "number" min = "1" max = "100" id = "font-size-${x}" value = "32" class = "form-control settings-font-size">
+        </div>
+        <div>
+            <label for = "font-${x}">Font:</label>
+            <select id = "font-${x}" class = "form-control settings-font">
+                <option value="Arial, sans-serif;">Arial</option>
+                <option value="'Arial Black', sans-serif;">Arial Black</option>
+                <option value="'Comic Sans MS', cursive;">Comic Sans MS</option>
+                <option value="'Courier New', monospace;">Courier New</option>
+                <option value="Georgia, serif;">Georgia</option>
+                <option value="Impact, sans-serif;" selected>Impact</option>
+                <option value="'Times New Roman', Times, serif;">Times New Roman</option>
+                <option value="'Trebuchet MS', sans-serif;">Trebuchet MS</option>
+                <option value="Verdana, Geneva, sans-serif;">Verdana</option>
+                <option value="'Lucida Console', Monaco, monospace;">Lucida Console</option>
+                <option value="'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">Lucida Sans Unicode</option>
+                <option value="'Palatino Linotype', 'Book Antiqua', Palatino, serif;">Palatino Linotype</option>
+                <option value="Tahoma, Geneva, sans-serif;">Tahoma</option>
+                <option value="Geneva, Tahoma, sans-serif;">Geneva</option>
+                <option value="Helvetica, Arial, sans-serif;">Helvetica</option>
+                <option value="'Book Antiqua', Palatino, serif;">Book Antiqua</option>
+                <option value="Calibri, Candara, Arial, sans-serif;">Calibri</option>
+                <option value="Cambria, Georgia, serif;">Cambria</option>
+                <option value="Garamond, Baskerville, 'Baskerville Old Face', 'Hoefler Text', 'Times New Roman', serif;">Garamond</option>
+                <option value="'Century Gothic', sans-serif;">Century Gothic</option>
+            </select>
+        </div>
+        <div class = "two-items">
+            <div>
+                <label for = "font-color-${x}">Color:</label>
+                <input type = "color" id = "font-color-${x}" value = "#000000" class = "form-control settings-font-color">
+            </div>
+            <div>
+                <label for = "font-shadow-${x}">Outline:</label>
+                <input type = "color" id = "font-shadow-${x}" value = "#ffffff" class = "form-control settings-font-shadow">
+            </div>
+        </div>
+        <div class = "two-items">
+            <div>
+                <input type = "checkbox" id = "bold-${x}" class = "form-check-input settings-bold">
+                <label for = "bold-${x}">Bold</label>
+            </div>
+            <div>
+                <input type = "checkbox" id = "italics-${x}" class = "form-check-input settings-italics">
+                <label for = "italics-${x}">Italics</label>
+            </div>
+        </div>
+        <div class = "two-items">
+            <div>
+                <input type = "checkbox" id = "underline-${x}" class = "form-check-input settings-underline">
+                <label for = "underline-${x}">Underline</label>
+            </div>
+            <div>
+                <input type = "checkbox" id = "strikethrough-${x}" class = "form-check-input settings-strikethrough">
+                <label for = "strikethrough-${x}">Strike</label>
+            </div>
+        </div>
+        <div class = "two-items">
+            <div>
+                <input type = "checkbox" id = "shadow-${x}" class = "form-check-input settings-shadow" checked>
+                <label for = "shadow-${x}">Shadow</label>
+            </div>
+            <div>
+                <input type = "checkbox" id = "capitals-${x}" class = "form-check-input settings-capitals" checked>
+                <label for = "capitals-${x}">All Caps</label>
+            </div>
+        </div>
+    `
 
+    // no create text boxes until image selected
     $("#new-box-btn").attr("disabled", true)
+    $(".settings-menu").attr("disabled", true)
+    $(".trash-btn").attr("disabled", true)
 
     // locate important elems
     window.create.textBoxes = [$("#text-1"), $("#text-2")]
@@ -28,6 +112,8 @@ $("document").ready(() => {
         $(`#meme-${e.target.id}`).text(e.target.value)
         $(`#meme-${e.target.id}`).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
     })
+
+    // event listeners for adding the base image
     $("#fileInput").on("input", () => { upload_base_image($("#fileInput")[0]) })
     $(".template-card").click(e => {
         window.create.baseImg = new Image()
@@ -49,25 +135,86 @@ $("document").ready(() => {
                 .width(window.create.canvas.width)
                 .height(window.create.canvas.height)
                 .attr("style", "top: 0")
+            $("#template-modal-button").remove()
         }
 
         $("#fileInputLabel").remove()
         $(".meme-text").show()
         $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
         $("#new-box-btn").attr("disabled", false)
+        $(".settings-menu").attr("disabled", false)
+        $(".trash-btn").attr("disabled", false)
         $("#list-opener").remove()
+        $("#fileInputBtn").remove()
+        $("#img-tool-bar").show()
+        $("#template-list").modal()
+        $("#image-tool-bar").show()
         window.numboxes = 2
     })
     // add mor event listeners
     $("#post-btn").click(post)
     $("#cancel-btn").click(cancel_post)
-    $("#spacer").click(e => adjust_spacing(e.target))
     $(".trash-btn").click(e => delete_box(e.target))
-    $(".settings-btn").click(e => {
-        let elem = e.target.tagName == "I" ? e.target.parentNode : e.target;
-        $(elem.nextElementSibling).show();
+    $(".settings-menu").click(e => {
+        if (e.target.tagName == "I") {
+            $(e.target).parent().next(".dropdown-menu").toggle()
+        } else {
+            $(e.target).next(".dropdown-menu").toggle()
+        }
     })
     $("#new-box-btn").click(e => add_text_box(e.target.parentNode.previousElementSibling))
+    $("#list-opener").click(e => $("#template-list").modal())
+    $("#fileInputBtn, #fileInputBtn2").click(e => $("#fileInput").click())
+    $(".image-tool").click(e => update_tools(e.target.innerText))
+    $("#text-1").next().children(".dropdown-menu").html(window.settings_menu(1))
+    $("#text-2").next().children(".dropdown-menu").html(window.settings_menu(2))
+
+    // text box settings event listeners
+    $(".settings-alignment").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).css("text-align", e.target.value)
+    })
+    $(".settings-font-size").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[2])
+        $(`#meme-text-${id}`).css("font-size", `${e.target.value}px`)
+    })
+    $(".settings-font").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).css("font-family", e.target.value)
+    })
+    $(".settings-font-color").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[2])
+        $(`#meme-text-${id}`).css("color", e.target.value)
+    })
+    $(".settings-font-shadow").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[2])
+        $(`#meme-text-${id}`).css("-webkit-text-stroke", `${e.target.value} 1px`)
+    })
+    $(".settings-bold").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("bold")
+    })
+    $(".settings-italics").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("italics")
+    })
+    $(".settings-underline").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("underline")
+    })
+    $(".settings-strikethrough").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("strike")
+    })
+    $(".settings-capitals").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("all-caps")
+    })
+    $(".settings-shadow").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("no-shadow")
+    })
+    
 })
 
 function upload_base_image(input) {
@@ -94,31 +241,32 @@ function upload_base_image(input) {
                         window.create.canvas.width, 
                         window.create.canvas.height
                     )
-                    $(".text-box-container")
-                        .width(window.create.canvas.width)
-                        .height(window.create.canvas.height)
-                        .attr("style", "top: 0")
+                    $(".text-box-container").width(window.create.canvas.width)
+                        .height(window.create.canvas.height).attr("style", "top: 0")
+                    $("#template-modal-button").remove()
+                    $("#img-tool-bar").show()
                 }
-                
             }
             reader.readAsDataURL(base);
-
             $("#fileInputLabel").remove()
             $(".meme-text").show()
             $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
             $("#new-box-btn").attr("disabled", false)
+            $(".settings-menu").attr("disabled", false)
+            $(".trash-btn").attr("disabled", false)
             $("#list-opener").remove()
-            $("#meme-img").
+            $("#fileInputBtn").remove()
+            $("#image-tool-bar").show()
             window.numboxes = 2
         } else {
-            alert("That image is too large! we only accept files less than ______mb");
+            alert(`That image is too large! we only accept files less than ${MAX_FILE_SIZE}mb`);
         }
     }
 }
 
 function post() {
     meme = {
-        spacing: $("#spacer").val(),
+        spacing: document.getElementById("space") === null ? 0 : $("#spacer").val(),
         textboxes: [],
         imgData: window.create.canvas.toDataURL(),
         title: $("#post-title")[0].value
@@ -131,7 +279,7 @@ function post() {
         method: "POST",
         body: JSON.stringify(meme),
         headers: { "Content-type": "application/json; charset=UTF-8" }
-    });
+    })//.then(response => window.location.href = "../profile");
 }
 
 function cancel_post() {
@@ -153,9 +301,11 @@ function add_text_box(elem) {
     let cont = $("<div></div>")
 
     let box = $("<textarea></textarea>")
-        .attr("placeholder", `Enter Text`)
+        .attr("placeholder", "Enter Text")
         .attr("id", `text-${window.numboxes}`)
-        .attr("class", "text-box")
+        .attr("class", "form-control text-box")
+        .attr("rows", 1)
+        .attr("style", "resize: none;")
 
     let meme_text = $("<div></div>")
         .attr("class", "meme-text")
@@ -163,9 +313,11 @@ function add_text_box(elem) {
         .attr("id", `meme-text-${window.numboxes}`)
 
     let btn1 = $("<button></button>")
-        .attr("class", "btn settings-btn")
+        .attr("class", "btn settings-menu")
+        .attr("type", "button")
         .html("<i class = 'fa fa-gear'></i>")
-        .on("click", e => function() { /* TODO: show modal for settings */})
+
+    let dropdown_menu = $(`<div class = 'dropdown-menu'>${window.settings_menu(window.numboxes)}</div>`)
 
     let btn2 = $("<button></button>")
         .attr("class", "btn trash-btn")
@@ -174,7 +326,7 @@ function add_text_box(elem) {
 
     window.create.textBoxes.push(box);
 
-    cont.append(box, btn1, btn2)
+    cont.append(box, $("<div class = 'dropdown'></div>").append(btn1, dropdown_menu), btn2)
     elem.append(cont[0])
     $("#meme").append(
         $("<div class = 'text-box-container' style = 'top: 0'></div>")
@@ -194,6 +346,59 @@ function add_text_box(elem) {
         $(`#meme-${e.target.id}`).text(e.target.value)
         $(`#meme-${e.target.id}`).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
     })
+    btn1.click(e => {
+        if (e.target.tagName == "I") {
+            $(e.target).parent().next(".dropdown-menu").toggle()
+        } else {
+            $(e.target).next(".dropdown-menu").toggle()
+        }
+    })
+    
+    // set up text box settings event listeners
+    $(".settings-alignment").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).css("text-align", e.target.value)
+    })
+    $(".settings-font-size").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[2])
+        $(`#meme-text-${id}`).css("font-size", `${e.target.value}px`)
+    })
+    $(".settings-font").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).css("font-family", e.target.value)
+    })
+    $(".settings-font-color").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[2])
+        $(`#meme-text-${id}`).css("color", e.target.value)
+    })
+    $(".settings-font-shadow").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[2])
+        $(`#meme-text-${id}`).css("-webkit-text-stroke", `${e.target.value} 1px`)
+    })
+    $(".settings-bold").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("bold")
+    })
+    $(".settings-italics").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("italics")
+    })
+    $(".settings-underline").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("underline")
+    })
+    $(".settings-strikethrough").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("strike")
+    })
+    $(".settings-capitals").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("all-caps")
+    })
+    $(".settings-shadow").on("input", e => {
+        let id = parseInt(e.target.id.split("-")[1])
+        $(`#meme-text-${id}`).toggleClass("no-shadow")
+    })
 }
 
 function delete_box(btn) {
@@ -201,7 +406,6 @@ function delete_box(btn) {
     let id = btn.children[0].id
     btn.remove()
     $(`#meme-${id}`).remove()
-    window.numboxes -= 1
 }
 
 class MemeTextBox {
@@ -215,6 +419,67 @@ class MemeTextBox {
         this.left = meme_box[0].style.left == "" ? 0 : parseInt(meme_box[0].style.left)
         this.top /= window.create.dimensions.height
         this.left /= window.create.dimensions.width
-        this.id = tb.id
+        this.id = tb.id.split("-")[1]
+        let int_id = tb.id.split("-")[1]
+        this.settings = {
+            alignment: $(`#alignment-${int_id}`).val(),
+            font_size: $(`#font-size-${int_id}`).val(),
+            font: $(`#font-${int_id}`).val(),
+            font_color: $(`#font-color-${int_id}`).val(),
+            font_shadow: $(`#font-shadow-${int_id}`).val(),
+            is_bold: $(`#bold-${int_id}`).val(),
+            is_italic: $(`#italics-${int_id}`).val(),
+            underlined: $(`#underline-${int_id}`).val(),
+            is_struckthrough: $(`#strikethrough-${int_id}`).val(),
+            has_shadow: $(`#shadow-${int_id}`).val(),
+            is_capitalized: $(`#capitals-${int_id}`).val(),
+        }
+    }
+}
+
+function update_tools(tool_bar) {
+    if (tool_bar == "Adjust Spacing") {
+        $("#image-tools").html(`
+        <select id = "spacer" class = "form-control">
+            <option value = ".0" selected>0% </option>
+            <option value = ".1">10%</option>
+            <option value = ".2">20%</option>
+            <option value = ".3">30%</option>
+            <option value = ".4">40%</option>
+            <option value = ".5">50%</option>
+            <option value = ".6">60%</option>
+            <option value = ".7">70%</option>
+            <option value = ".8">80%</option>
+            <option value = ".9">90%</option>
+        </select>
+        `)
+        $("#spacer").click(e => adjust_spacing(e.target))
+    } else if (tool_bar == "Draw") {
+        $("#image-tools").html(`
+        <div>
+            <label for = "color">Color</label>
+            <input type = "color" id = "color" value = "#000000" class = "form-control">
+        </div>
+        <div>
+            <label for = "thickness">Brush Size</label>
+            <input type = "number" id = "thickness" value = "10" min = "0" max = "100" class = "form-control">
+        </div>
+        <div>
+            <button class = "btn btn-danger" id = "erase">Erase</button>
+        </div>
+        `)
+        //drawing event listeners
+        $("#color").on("change", e => {
+            $(e.target).css("background-color", e.target.value)
+        })
+        $("#color").css("background-color", $("#color").val()).css("border", "none")
+    } else if (tool_bar == "Filters") {
+        $("#image-tools").html(`
+        `)
+    } else if (tool_bar == "Add Image") {
+        $("#image-tools").html(`
+        `)
+    } else {
+        $("#image-tools").empty()
     }
 }
