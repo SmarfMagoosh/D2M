@@ -334,7 +334,7 @@ def get_resetPassword():
 
 @app.get("/create/")
 def get_create():
-    return render_template("create.html", templates = [url_for('static', filename = f"images/thumbnails/{file}") for file in os.listdir("./static/thumbnails")])
+    return render_template("create.html", templates = [url_for('static', filename = f"images/thumbnails/{file}") for file in os.listdir("./static/images/thumbnails")])
 
 @app.get("/home/")
 def get_home():
