@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     gccEmail = sessionStorage.getItem("customIdToken")//TODO: figure out why not working
     gccEmail = "u1@gcc.edu"//TODO: remove temporary solution
+    //TODO: don't unhide notification bell if not logged in
+    document.getElementById('notifications').removeAttribute("hidden")
     //load the timer
     await fetch(`/API/get_notifications/${gccEmail}`)
         .then(validateJSON)
