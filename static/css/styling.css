@@ -1,6 +1,6 @@
 /* Dropdown Button */
 .dropbtn {
-    background-color: #a81414;
+    background-color: #842626;
     color: white;
     padding: 16px;
     font-size: 16px;
@@ -38,7 +38,7 @@
   .dropdown:hover .dropdown-content {display: block;}
   
   /* Change the background color of the dropdown button when the dropdown content is shown */
-  .dropdown:hover .dropbtn {background-color: #895454;}
+  .dropdown:hover .dropbtn {background-color: #823737;}
 
   /* Style for the navigation bar */
 .navbar {
@@ -53,6 +53,15 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
   z-index: 1000; /* Ensure the navbar appears above other content */
 }
+
+.bold-text {
+  font-weight: bold;
+}
+
+.white-text {
+  color: white;
+}
+
 
 /* Style for the links in the navbar */
 .navbar a {
@@ -152,7 +161,7 @@ body{
 #searchButton {
     padding: 8px 16px;
     font-size: 16px;
-    background-color: #007bff; /* Adjust to your preferred color */
+    background-color: #842626; /* Adjust to your preferred color */
     color: #fff; /* Text color */
     border: none;
     border-radius: 4px;
@@ -162,5 +171,5 @@ body{
 
 /* Hover effect for the search button */
 #searchButton:hover {
-    background-color: #0056b3; /* Adjust to a darker shade for hover effect */
+    background-color: #823737; /* Adjust to a darker shade for hover effect */
 }
