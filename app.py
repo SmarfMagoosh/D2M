@@ -364,7 +364,7 @@ def get_resetPassword():
 
 @app.get("/create/")
 def get_create():
-    return render_template("create.html", templates = [url_for('static', filename = f"thumbnails/{file}") for file in os.listdir("./static/thumbnails")])
+    return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")])
 
 @app.get("/home/")
 def get_home():
@@ -621,30 +621,36 @@ def setPassword():
 @app.post("/create/")
 def post_meme():
     body: dict = request.json
+    print(body.keys())
     imgData = body["imgData"][22:]
     post_inst = Post(
         spacing = float(body["spacing"]),
         title = body['title'],
         backImage = "",
         timePosted = 0, # TODO
-        username = "Carnegie Melon Baller",
+        username = "Carnegie Mellon Baller", # TODO
         numLikes = 0,
         numLikesD1 = 0,
         numLikesD2 = 0,
         numLikesD3 = 0,
     )
+    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
     db.session.add(post_inst)
     db.session.commit()
     for box in body["textboxes"]:
         tb_inst = TextBox(
-            textBoxId = int(box["id"]),
             content = box["text"],
-            postID = post_inst.postID
+            postID = post_inst.postID,
+            font = box["settings"]["font"],
+            fontSize = box["settings"]["font_size"],
+            orientation = "", #TODO: remove
+            shadowColor = box["settings"]["font_shadow"],
+            color = box["settings"]["font_color"],
+            position = "", # TODO: change
             # TODO: store position, text settings
         )
         db.session.add(tb_inst)
-        db.session.commit()
-    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
+    db.session.commit()
     with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
          file.write(base64.b64decode(imgData))
     return "hello world"

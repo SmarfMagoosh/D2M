@@ -5,64 +5,98 @@
 {% endblock %}
 
 {% block head %}
+    <!--JQuery and JQuery UI-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+
+    <!--Modal libraries-->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    
+    <!--Icon library-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!--Local Files-->
     <script src = "../static/js/create.js" type = "module"></script>
     <link rel = "stylesheet" href = "../static/css/create.css">
 {% endblock %}
 
 {% block content %}
-<div id = "template-list" class = "modal">
+<input id = "fileInput" type = "file" accept = "image/*">
+<div id = "template-list" class = "modal fade" tabindex = "-1" role = "dialog">
+    <div class = "modal-dialog" role = "document">
+        <div class = "modal-content">
+            <div class = "modal-header">
+                <h3 class = "modal-title">Select a Template</h3>
+                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">Close</span>
+                </button>
+            </div>
+            <div class = "modal-body">
+                <table>
+                    <colgroup>
+                        <col style = "width: 30%;">
+                        <col style = "width: 70%">
+                    </colgroup>
+                    <tbody>
+                        {% for template in templates %}
+                        <tr>
+                            <td type="button" class="btn btn-light modal-button" data-dismiss="modal" aria-label="Close">
+                                <img src = "{{ template }}" class = "template-card">
+                            </td>
+                            <td>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class = "modal-footer">
+                <button id = "fileInputBtn2" class = "btn btn-primary" data-dismiss="modal">
+                    Or Upload your own!
+                </button>
+                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
     <a href = "#" rel = "modal:close"></a>
     <input type = "text">
-    {% for template in templates %}
-    <div>
-        <a href = "#" rel = "modal:close">
-            <img src = "{{ template }}" class = "template-card">
-        </a>
-        <p>{{ template[19:] }}</p>
-    </div>
-    {% endfor %}
 </div>
-
 <div id = "left-content">
-    <div id = "image-tool-bar" hidden = "true">
-        <div>
-            <p style = "display: inline;">Spacing</p>
-            <select id = "spacer">
-                <option value = ".0" selected>0% </option>
-                <option value = ".1">10%</option>
-                <option value = ".2">20%</option>
-                <option value = ".3">30%</option>
-                <option value = ".4">40%</option>
-                <option value = ".5">50%</option>
-                <option value = ".6">60%</option>
-                <option value = ".7">70%</option>
-                <option value = ".8">80%</option>
-                <option value = ".9">90%</option>
-            </select>
-        </div>
-        <div>
-            <button onclick="//TODO">Add Image</button>
-        </div>
-        <div>
-            <button onclick="//TODO">Draw</button>
-        </div>
-        <div>
-            <button onclick="//TODO">Filters</button>
-        </div>
+    <div id = "image-tool-bar">
+        <span>
+            <button class = "btn btn-dark image-tool">Adjust Spacing</button>
+        </span>
+        <!-- <span>
+            <button onclick="//TODO" class = "btn btn-dark">Add Image</button>
+        </span> -->
+        <!-- <span>
+            <button class = "btn btn-dark image-tool">Draw</button>
+        </span> -->
+        <!-- <span>
+            <button class = "btn btn-dark image-tool">Filters</button>
+        </span> -->
+    </div>
+    <div id = "image-tools">
+
     </div>
     <div id = "meme">
         <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;">
-            <label for = "fileInput" id = "fileInputLabel">
-                <input id = "fileInput" type = "file" accept = "image/*">
-                <p>Uploading an Image</p>
-            </label>
-            <a href = "#template-list" rel = "modal:open" id = "list-opener">Or use a template!</a>
+            <button id = "fileInputBtn" class = "btn btn-primary">
+                Upload an Image
+            </button>
+            <button 
+                class = "btn btn-primary" 
+                data-toggle = "modal" 
+                data-target = "#template-list"
+                id = "template-modal-button">
+                Or use a template!
+            </button>
         </div>
         <canvas id = "meme-img" height = "0"></canvas>
         <div class = "text-box-container">
@@ -76,21 +110,28 @@
 <div id = "right-content">
     <div id = "text-tool-bar">
         <div>
-            <textarea placeholder = "Text #1" id = "text-1" class = "text-box"></textarea>
-            <button class = 'btn settings-btn'>
-                <i class = 'fa fa-gear'></i>
-            </button>
+            <textarea placeholder = "Enter Text" id = "text-1" class = "form-control text-box" rows = "1" style = "resize: none;"></textarea>
+            <div class = "dropdown">
+                <button class = 'btn settings-menu' type = 'button'>
+                    <i class = 'fa fa-gear'></i>
+                </button>
+                <div class = 'dropdown-menu'>
+                    hello world
+                </div>
+            </div>
             <button class = 'btn trash-btn'>
                 <i class = 'fa fa-trash'></i>
             </button>
         </div>
-        <div style = "position: relative;">
-            <textarea placeholder = "Text #2" id = "text-2" class = "text-box"></textarea>
-            <button class = 'btn settings-btn'>
-                <i class = 'fa fa-gear'></i>
-            </button>
-            <div class = "text-settings">
-                <p>hello world</p>
+        <div>
+            <textarea placeholder = "Enter Text" id = "text-2" class = "form-control text-box" rows = "1" style = "resize: none;"></textarea>
+            <div class = "dropdown">
+                <button class = 'btn settings-menu' type = 'button'>
+                    <i class = 'fa fa-gear'></i>
+                </button>
+                <div class = 'dropdown-menu'>
+                    hello world
+                </div>
             </div>
             <button class = 'btn trash-btn'>
                 <i class = 'fa fa-trash'></i>
@@ -98,14 +139,14 @@
         </div>
     </div>
     <div>
-        <button id = "new-box-btn">Add Text Area</button>
+        <button id = "new-box-btn" class = "btn btn-secondary">Add Text Area</button>
     </div>
     <div>
-        <textarea placeholder = "Give your post a title!" id = "post-title"></textarea>
+        <textarea placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
     </div>
     <div>
-        <button id = "post-btn">Post!</button>
-        <button id = "cancel-btn">Cancel</button>
+        <button id = "post-btn" class = "btn btn-primary">Post</button>
+        <button id = "cancel-btn" class = "btn btn-danger">Cancel</button>
     </div>
 </div>
 </div>
