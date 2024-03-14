@@ -78,7 +78,20 @@ def create_like(email, post, up):
         db.session.add(like)
         db.session.commit()
         
+<<<<<<< HEAD
 
+=======
+def create_notification(email, text, title, time):
+    with app.app_context():
+        notif = Notification(userEmail = email, text = text, title=title, time=time)
+        db.session.add(notif)
+        db.session.commit()
+
+def delete_notification(notif):
+    with app.app_context():
+        db.session.delete(notif)
+        db.session.commit()
+>>>>>>> 05024209030cde0bd617fceddb88193e87beba65
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
@@ -127,6 +140,7 @@ class User(db.Model) :
     reportList = db.relationship('Report', backref='reporter')
     likeList = db.relationship('Like', backref='user')
     bookmarkList = db.relationship('Bookmark', backref='user')
+    notificationList = db.relationship('Notification', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
     
@@ -162,6 +176,23 @@ class Report(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
+    
+class Notification(db.Model) :
+    __tablename__ = 'Notifications'
+    NotificationID = db.Column(db.Integer, primary_key = True)
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    title = db.Column(db.String)
+    text = db.Column(db.String)
+    # format: mm/dd/yy hh:mm AM/PM
+    # ex: 3/7/24 5:30 AM
+    time = db.Column(db.String)
+    def to_json(self):
+        return {
+            "title": self.title,
+            "text" : self.text,
+            "time" : self.time,
+            "id" : self.NotificationID
+		}
 
 class Like(db.Model):
     __tablename__ = 'Likes'
@@ -308,12 +339,14 @@ with app.app_context():
     bm11 = Bookmark(user=u1, postID=10)
     bm12 = Bookmark(user=u1, postID=30)
     bm13 = Bookmark(user=u1, postID=20)
+    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
     # Add all of these records to the session and commit changes
     db.session.add_all((u1,u2,u3))
     db.session.add_all((post1, post2, post3))
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
+    db.session.add(notif)
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -340,7 +373,7 @@ def get_resetPassword():
 
 @app.get("/create/")
 def get_create():
-    return render_template("create.html", templates = [url_for('static', filename = f"thumbnails/{file}") for file in os.listdir("./static/thumbnails")])
+    return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")])
 
 @app.get("/home/")
 def get_home():
@@ -470,6 +503,136 @@ def load_user(userEmail):
     else:
         return None
     
+<<<<<<< HEAD
+=======
+@app.get('/genResetToken')
+def genResetToken():
+    name = request.args.get('username')
+    self = User.query.filter_by(username=name).first()
+    if self:
+        token_length = 32
+        expiration_minutes = 60
+
+        user_info = f"{self.username}~"
+
+        # Use a secure random string for additional randomness
+        random_string = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(token_length))
+
+        # Concatenate user-specific info and random string to create the token
+        token = user_info + random_string
+
+        # Calculate expiration timestamp
+        expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
+        expiration_timestamp = expiration_time.timestamp()
+
+# def create_comment(commentData, u2Email):
+#     with app.app_context():
+        # Append expiration timestamp to the token
+        token_with_expiration = f"{token}~{expiration_timestamp}"
+
+        return jsonify({'token': token_with_expiration})
+    else:
+        return jsonify({'token': False})
+
+@app.get('/validate_reset_token')
+def validate_reset_token():
+    token = request.args.get('token')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+
+    username, token, expiration_timestamp = token_parts
+
+    # Convert expiration timestamp to datetime
+    expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
+
+    # Check if token has expired
+    if datetime.utcnow() > expiration_time:
+        return jsonify({'valid': False})
+
+    return jsonify({'valid': True})
+
+@app.get('/sendResetEmail')
+def sendResetEmail():
+    username = request.args.get('username')
+    token = request.args.get('token')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'success': False})
+
+    user.passwordResetToken = token
+    db.session.commit()
+
+    # Email configuration
+    sender_email = 'svc_CS_D2M@gcc.edu'
+    receiver_email = user.gccEmail
+    password = 'Laq86937'
+
+    # Create message container
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = 'D2M Password Reset Request'
+
+    resetLink = 'http://localhost/resetPassword?token=' + token
+    # resetLink = 'https://d2m.gcc.edu/resetPassword?token=' + token
+    # Email body
+    body = f"""
+Dear {user.username},
+We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
+{resetLink}
+If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+Thank you,
+The D2M Team
+"""
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Connect to SMTP server
+    try:
+        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
+            server = smtplib.SMTP('smtp.office365.com', 587)
+            server.starttls()  # Secure the connection
+            server.login(sender_email, password)
+            text = msg.as_string()
+            server.sendmail(sender_email, receiver_email, text)
+            server.quit()  # Quit the SMTP server   
+            return jsonify({'success': True})
+    except smtplib.SMTPException as e:
+        print("SMTP error:", e)
+        return jsonify({'success': False, 'error': str(e)})
+    except TimeoutError:
+        print("SMTP connection timed out")
+        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
+    except Exception as e:
+        print("Other error:", e)
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.get('/setPassword')
+def setPassword():
+    token = request.args.get('token')
+    newPassword = request.args.get('password')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+
+    username, secretString, expiration_timestamp = token_parts
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user or token != user.passwordResetToken:
+        return jsonify({'success': False})
+
+    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+    db.session.commit()
+
+    return jsonify({'success': True, 'email': user.gccEmail})
+
+# def create_comment(commentData, u2Email):
+#     with app.app_context():
+>>>>>>> 05024209030cde0bd617fceddb88193e87beba65
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
@@ -478,30 +641,36 @@ def load_user(userEmail):
 @app.post("/create/")
 def post_meme():
     body: dict = request.json
+    print(body.keys())
     imgData = body["imgData"][22:]
     post_inst = Post(
         spacing = float(body["spacing"]),
         title = body['title'],
         backImage = "",
         timePosted = 0, # TODO
-        username = "Carnegie Melon Baller",
+        username = "Carnegie Mellon Baller", # TODO
         numLikes = 0,
         numLikesD1 = 0,
         numLikesD2 = 0,
         numLikesD3 = 0,
     )
+    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
     db.session.add(post_inst)
     db.session.commit()
     for box in body["textboxes"]:
         tb_inst = TextBox(
-            textBoxId = int(box["id"]),
             content = box["text"],
-            postID = post_inst.postID
+            postID = post_inst.postID,
+            font = box["settings"]["font"],
+            fontSize = box["settings"]["font_size"],
+            orientation = "", #TODO: remove
+            shadowColor = box["settings"]["font_shadow"],
+            color = box["settings"]["font_color"],
+            position = "", # TODO: change
             # TODO: store position, text settings
         )
         db.session.add(tb_inst)
-        db.session.commit()
-    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
+    db.session.commit()
     with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
          file.write(base64.b64decode(imgData))
     return "hello world"
@@ -634,6 +803,28 @@ def get_bookmarked(gccEmail):
     bookmarks.sort(key=lambda b: b.bookmarkID, reverse=True)
     bookmarks =  bookmarks[0:count] #reduce to count or less elements
     return [l.post.render_json() for l in bookmarks]
+
+@app.get("/API/get_notifications/<string:gccEmail>")
+@app.get("/API/get_notifications/")
+def get_notifications(gccEmail=None):
+    if gccEmail == None: 
+        gccEmail = session.get('customIdToken')
+    notifications = Notification.query.filter_by(userEmail=gccEmail).all()
+    return {"logged_in": gccEmail != None, "list": [n.to_json() for n in notifications]}
+
+# posts to this route will contain this json:
+# {"id" : notification id}
+@app.post("/API/delete_notification")
+def delete_notifications():
+    data = request.get_json()
+    notif = Notification.query.get_or_404(data.get("id"))
+    user = User.query.get_or_404(session.get('customIdToken'))
+    
+    if notif.userEmail == user.gccEmail:
+        delete_notification(notif)
+        return 200, ""
+    else:
+        return 401, ""
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)

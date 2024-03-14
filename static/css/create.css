@@ -1,14 +1,19 @@
 /* main page structure */
 
+body {
+    background-color: #999999;
+}
+
 #main-content-div {
+    margin: 2rem auto;
     width: 90%;
     display: grid;
     grid-template-columns: 50% 50%;
-    margin: auto;
+    background-color: white;
+    border-radius: 0.5rem;
 }
 
 #left-content, #right-content {
-    border: black solid 2px;
     margin: 0.5rem;
     height: fit-content
 }
@@ -29,15 +34,22 @@
 
 .meme-text {
     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-    font-size: 2rem;
+    font-size: 32px;
     text-transform: uppercase;
-    -webkit-text-stroke: white 2px;
+    -webkit-text-stroke: white 1px;
     text-align: center;
     overflow: hidden;
     width: 40%;
     height: 3rem;
     border: dashed black 2px;
 }
+
+.bold {font-weight: bold;}
+.italics {font-style: italic;}
+.strike {text-decoration: line-through;}
+.underline {text-decoration: underline;}
+.no-shadow {-webkit-text-stroke: white 0px;}
+.all-caps {text-transform: capitalize;}
 
 .ui-resizable-s, .ui-resizable-n {
     height: 15px;
@@ -94,79 +106,118 @@
     display: none;
 }
 
-#fileInputLabel, #list-opener {
-    display: inline-block;
-    margin: auto;
-    /* width: 45%; */
-    text-align: center;
-    cursor: pointer;
-    border: solid #666666 4px;
-    border-radius: 1rem;
-}
-
-#fileInputLabel p, #list-opener {
-    padding: 1rem;
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #666666;
-    font-weight: bolder;
-    text-decoration: none;
-}
-
 /* left tool bar */
 
 #image-tool-bar {
-    width: 90%;
-    display: grid;
-    grid-template-columns: 40% 20% 15% 15%;
-}
-
-#image-tool-bar div button {
     margin: auto;
-    display: block;
+    margin-top: 1rem;
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
 }
 
-#image-tool-bar div {
-    padding: 0.5rem;
-    vertical-align: middle;
+#image-tool-bar > span {
+    display: flex;
+    width: fit-content;
+}
+
+#image-tools {
+    display: flex;
+    margin: 1rem auto;
+    width: 90%;
+    justify-content: space-between;
+}
+
+#image-tools > div {
+    display: inline-flex;
+}
+
+#image-tools input {
+    width:50%;
+}
+
+input::-moz-color-swatch {
+    border: none;
+}
+
+#image-tools label {
+    margin-right: 0.5rem;
+}
+
+#spacer {
+    max-width: 100%;
+    display: inline;
 }
 
 /* right tools */
+#text-tool-bar > div {
+    margin: 0.5rem;
+    padding: 0.5rem;
+    height: 3.5rem;
+}
 
-.text-box, #post-title {
-    /* margin: 1rem; */
-    height: 1rem;
-    width: 70%;
+textarea.form-control, #post-title {
+    display: inline-block;
+    width: 60%;
+    min-height: 1rem;
+    height: 2.5rem;
     resize: none;
 }
 
-.text-box, .trash-btn {
-    margin: 0;
-    padding: 0;
-}
-
-#right-content div {
+#post-title {
     margin: 1rem;
 }
 
-span img {
-    height: 100%
+.btn {
+    padding: 0.5;
 }
 
+#right-content div .btn-secondary, #right-content div .btn-primary {
+    margin-left: 1rem;
+}
+
+.dropdown-menu {
+    padding: 1rem;
+    width: 18vw;
+}
+
+.dropdown-menu div {
+    margin-bottom: 0.5rem;
+}
+
+.two-items {
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+/* MODAL SETTINGS */
 #template-list img {
-    width: 40%;
-}
-
-#template-list input {
-    margin: 0.5rem;
     width: 100%;
-    height: 1.5rem;
 }
 
-.text-settings {
-    display: none;
-    position: absolute;
-    top: 10px;
-    right: 50px;
-    background-color: white;
+.modal-button {
+    height: 5rem;
+    overflow: hidden;
+}
+
+.modal-button img {
+    width: 100%;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-header h3, .modal-header button {
+    display: flex;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-footer button {
+    display: flex;
 }

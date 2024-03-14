@@ -64,7 +64,7 @@
 
 
 /* Style for the links in the navbar */
-.navbar a {
+.navbar a.highlight {
     color: white; /* White text for the links */
     padding: 14px 20px; /* Padding around the links */
     text-decoration: none; /* Remove underline from links */
@@ -72,7 +72,7 @@
 }
 
 /* Change the color of links on hover */
-.navbar a:hover {
+.navbar a.highlight:hover {
     background-color: #ddd; /* Light gray background on hover */
     color: black; /* Black text on hover */
 }
@@ -172,4 +172,17 @@ body{
 /* Hover effect for the search button */
 #searchButton:hover {
     background-color: #823737; /* Adjust to a darker shade for hover effect */
+}
+
+
+.dropdown-menu-center {
+  right: auto;
+  left: 50%;
+  -webkit-transform: translate(-50%, 0);
+  -o-transform: translate(-50%, 0);
+  transform: translate(-50%, 0);
+}
+
+.notif-link{
+  color: inherit;
 }
