@@ -762,18 +762,20 @@ def get_bookmarked(gccEmail):
     return [l.post.render_json() for l in bookmarks]
 
 @app.get("/API/get_notifications/<string:gccEmail>")
-def get_notifications(gccEmail):
+@app.get("/API/get_notifications/")
+def get_notifications(gccEmail=None):
+    if gccEmail == None: 
+        gccEmail = session.get('customIdToken')
     notifications = Notification.query.filter_by(userEmail=gccEmail).all()
-    return {"list": [n.to_json() for n in notifications]}
+    return {"logged_in": gccEmail != None, "list": [n.to_json() for n in notifications]}
 
 # posts to this route will contain this json:
-# "id" : notification id
-# "gccEmail" : the user who the notification belongs to
+# {"id" : notification id}
 @app.post("/API/delete_notification")
 def delete_notifications():
     data = request.get_json()
     notif = Notification.query.get_or_404(data.get("id"))
-    user = User.query.get_or_404(data.get("gccEmail"))
+    user = User.query.get_or_404(session.get('customIdToken'))
     
     if notif.userEmail == user.gccEmail:
         delete_notification(notif)
