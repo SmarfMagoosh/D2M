@@ -456,6 +456,133 @@ def load_user(userEmail):
         return User.query.get(userEmail)
     else:
         return None
+    
+@app.get('/genResetToken')
+def genResetToken():
+    name = request.args.get('username')
+    self = User.query.filter_by(username=name).first()
+    if self:
+        token_length = 32
+        expiration_minutes = 60
+
+        user_info = f"{self.username}~"
+
+        # Use a secure random string for additional randomness
+        random_string = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(token_length))
+
+        # Concatenate user-specific info and random string to create the token
+        token = user_info + random_string
+
+        # Calculate expiration timestamp
+        expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
+        expiration_timestamp = expiration_time.timestamp()
+
+# def create_comment(commentData, u2Email):
+#     with app.app_context():
+        # Append expiration timestamp to the token
+        token_with_expiration = f"{token}~{expiration_timestamp}"
+
+        return jsonify({'token': token_with_expiration})
+    else:
+        return jsonify({'token': False})
+
+@app.get('/validate_reset_token')
+def validate_reset_token():
+    token = request.args.get('token')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+
+    username, token, expiration_timestamp = token_parts
+
+    # Convert expiration timestamp to datetime
+    expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
+
+    # Check if token has expired
+    if datetime.utcnow() > expiration_time:
+        return jsonify({'valid': False})
+
+    return jsonify({'valid': True})
+
+@app.get('/sendResetEmail')
+def sendResetEmail():
+    username = request.args.get('username')
+    token = request.args.get('token')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'success': False})
+
+    user.passwordResetToken = token
+    db.session.commit()
+
+    # Email configuration
+    sender_email = 'svc_CS_D2M@gcc.edu'
+    receiver_email = user.gccEmail
+    password = 'Laq86937'
+
+    # Create message container
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = 'D2M Password Reset Request'
+
+    resetLink = 'http://localhost/resetPassword?token=' + token
+    # Email body
+    body = f"""
+Dear {user.username},
+We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
+{resetLink}
+If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+Thank you,
+The D2M Team
+"""
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Connect to SMTP server
+    try:
+        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
+            server = smtplib.SMTP('smtp.office365.com', 587)
+            server.starttls()  # Secure the connection
+            server.login(sender_email, password)
+            text = msg.as_string()
+            server.sendmail(sender_email, receiver_email, text)
+            server.quit()  # Quit the SMTP server   
+            return jsonify({'success': True})
+    except smtplib.SMTPException as e:
+        print("SMTP error:", e)
+        return jsonify({'success': False, 'error': str(e)})
+    except TimeoutError:
+        print("SMTP connection timed out")
+        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
+    except Exception as e:
+        print("Other error:", e)
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.get('/setPassword')
+def setPassword():
+    token = request.args.get('token')
+    newPassword = request.args.get('password')
+    expiration_minutes = 60
+
+    # Split token and expiration timestamp
+    token_parts = token.split('~')
+
+    username, secretString, expiration_timestamp = token_parts
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user or token != user.passwordResetToken:
+        return jsonify({'success': False})
+
+    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+    db.session.commit()
+
+    return jsonify({'success': True, 'email': user.gccEmail})
+
+def create_comment(commentData, u2Email):
+    with app.app_context():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect)
