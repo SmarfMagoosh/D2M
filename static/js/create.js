@@ -279,7 +279,7 @@ function post() {
         method: "POST",
         body: JSON.stringify(meme),
         headers: { "Content-type": "application/json; charset=UTF-8" }
-    })//.then(response => window.location.href = "../profile");
+    }).then(response => window.location.href = "../profile");
 }
 
 function cancel_post() {
