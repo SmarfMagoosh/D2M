@@ -48,7 +48,7 @@
                             <td type="button" class="btn btn-light modal-button" data-dismiss="modal" aria-label="Close">
                                 <img src = "{{ template }}" class = "template-card">
                             </td>
-                            <td>{{ template[19:].replace("%20", " ")[:-4] }}</td>
+                            <td>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
