@@ -5,9 +5,16 @@
 {% endblock %}
 
 {% block head %}
-    <script src = "../../static/js/post.js"></script>
-    <link rel = "stylesheet" href = "../../static/css/post.css">
-    <link rel="stylesheet" href="../../static/css/styling.css">
+    <script src = "../../../static/js/post.js"></script>  <!-- remember to sub this for (url_for) !!!! -->
+    <link rel = "stylesheet" href = "../../../static/css/post.css">
+    <link rel="stylesheet" href="../../../static/css/styling.css">
+    <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
 {% endblock %}
 
 {% block content %}
@@ -15,25 +22,30 @@
 <div id = "left-content">
     <div id = "meme">
         <!-- put the image source here!-->
-        <img src = "../../static/images/{{post['backImage']}}" alt = "" id = "post-image">
+        <img src = "../../static/images/{{post['backImage']}}" alt = "" id = "post-image" width="425">
     </div>
 </div>
 <div id = "right-content">
     <div id = "details">
         <!-- put the meme details here!-->
         <h2> {{ post["title"] }} </h2>
-        <h3> {{ post["username"] }} </h3>
+        <a href="{{ url_for('get_profile', username=post.username) }}">
+            <h4>{{ post.username }}</h4>
+        </a>      
+        <h5> {{ post["numLikes"] }} likes </h5>
+        
     </div>
     <div class="post-buttons">
-        <button id="like-btn">Like</button>  
-        <button id="dislike-btn">Dislike</button>   
-        <button id="bookmark-btn">Bookmark</button>
-        <button id="report-btn">Report</button>
-        <button id="copy-link-btn">Copy Link</button>
-        <button id="remix-btn">Remix</button>
+        
+        <button id="like-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-up"></i></button>  
+        <button id="dislike-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-down"></i></button>   
+        <button id="bookmark-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-bookmark"></i></button>
+        <!-- <button id="report-btn"><i class="fa-solid fa-flag"></i></button> -->
+        <button id="copy-link-btn"><i class="fa-solid fa-link"></i></button>
+        <button id="remix-btn"><i class="fa-solid fa-file-pen"></i></button>
     </div>
     
-    <div id="report-popup" class="popup">
+    <!-- <div id="report-popup" class="popup">
         <div class="popup-content">
             <span class="close-btn" onclick="closePopup()">&times;</span>
             <label for="comment">Reason for Report:</label>
@@ -41,9 +53,9 @@
             <button onclick="submitReport()">Submit</button>
             <button onclick="closePopup()">Cancel</button>
         </div>
-    </div>
+    </div> -->
 
-    <form>
+    <form id="comment-form" data-postId="{{ post['id'] }}">
         <label for="comment">Leave a Comment:</label><br>
         <textarea id="comment-box" placeholder="Enter your comment"></textarea><br>
         <input type="submit" value="Submit!">
@@ -53,13 +65,17 @@
 <div id = "comment-content">
     <h1> Comments:</h1>
 
-
-  {% for comment in Comments %}
-  <a href="../post/{{post['id']}}/">
-    <img src="../../static/images/{{post['backImage']}}" alt="">
-  </a>
-  {% endfor %}
+    {% for comment in post.comments %}
+    <div class="comment-box">
+        <div class="comment">
+            <p class="comment-time">{{ comment.timePosted }}</p>
+            <div class="comment-content">
+                <p><strong>{{ comment.username }}</strong>: {{ comment.content }}</p>
+            </div>
+        </div>
+    </div>
     
+    {% endfor %}
 </div>
 
 

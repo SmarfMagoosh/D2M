@@ -78,6 +78,7 @@ def create_like(email, post, up):
         db.session.add(like)
         db.session.commit()
         
+
 def create_notification(email, text, title, time):
     with app.app_context():
         notif = Notification(userEmail = email, text = text, title=title, time=time)
@@ -143,6 +144,11 @@ class User(db.Model) :
     def postlist_to_json(self):
         return {
             "posts": [p.render_json() for p in self.postList]
+		}
+    
+    def likelist_to_json(self):
+        return {
+            "posts": [l.render_json() for l in self.likeList]
 		}
     
     def get_settings_info(self):
@@ -292,7 +298,7 @@ class TextBox(db.Model) :
 
 class Comment(db.Model) :
     __tablename__ = 'Comments'
-    commentID = db.Column(db.Integer, primary_key = True)
+    commentID = db.Column(db.Integer, primary_key = True, autoincrement=True)
     content = db.Column(db.String, nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
@@ -387,10 +393,17 @@ def get_post(post_id):
     return render_template("post.html", post=post.to_json())
 
 @app.get("/profile/")
-@app.get("/profile/<int:user_id>/")
-def get_profile(user_id = -1):
-    # if(user_id > -1) # load a different person's profile
-    return render_template("profile.html")
+@app.get("/profile/<string:username>/")
+def get_profile(username = None):
+    if(username == None):
+         user = load_user(session.get('customIdToken'))
+         return render_template("profile.html", user = user)
+    else:
+        user = User.query.filter_by(username=username).first()
+        return render_template("profile.html", user = user)
+    # # load a different person's profile
+    
+
 
 @app.get('/getCurrentSettings')
 def getCurrentSettings():
@@ -693,6 +706,29 @@ def follow(u1Email, u2Email):
     create_follow(u1Email, u2Email)
     return "success"
 
+# Define a route to handle AJAX requests for creating comments
+@app.post('/create_comment')
+def create_comment_route():
+    # Get the data from the AJAX request
+    data = request.json
+    content = data.get('content')
+    username = data.get('username')
+    postID = data.get('postID')
+
+    new_comment = Comment(
+        content=content,
+        postID=postID,
+        username=username,
+        timePosted = datetime.now().strftime("%m-%d %H:%M")
+        # The commentID will be automatically generated due to autoincrement=True
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+    print("HEY! IT DOES A THING!!")
+
+    # Return a response indicating success
+    return {'message': 'Comment created successfully'}, 200
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -923,8 +959,13 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
+    
 
-# def create_comment(commentData, u2Email):
+
+
+
+
+# def create_comment(commentData, user_name):
 #     with app.app_context():
        
 #         db.session.add(follow)

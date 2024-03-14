@@ -13,6 +13,8 @@
     <title>{% block title %}{% endblock %} - D2M</title>
     <link rel="stylesheet" href="../static/css/styling.css">
     <script src = "../static/js/scripting.js"></script>
+    <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
     <script src = "{{url_for('static', filename='js/notification.js')}}"></script>
     <script src = "{{url_for('static', filename='js/colorMode.js')}}"></script>
     <link rel="icon" type="image/x-icon" href="../../static/images/logo.png">
@@ -23,57 +25,58 @@
 <body>
     <nav class="navbar">
         <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:2rem;height:2rem;"></a>
-        <script src = "../static/js/search.js"></script>
-        <div>
+        <script src="../static/js/search.js"></script>
+        <div class="navbar-items">
             <input type="text" id="searchInput" placeholder="Search by name">
-            <button onclick="search()">Search</button>
-        </div>
-        <div id="searchResultsDropdown" class="dropdown-content">
-            
-        </div>
-        <div class="dropdown" id="notifications" hidden>
-            <a href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                <img src="{{url_for('static', filename='images/bell.png')}}" alt="Notification Bell" style="width:2rem;height:2rem;">
-            </a>
-            <span class="badge text-bg-warning rounded-pill translate-middle" id="notif-count" hidden>
-                0
-            </span>
-            <ul class="dropdown-menu" style="width: 20vw;" id="notif-dropdown">
-                <li style="text-align: center;">You have <strong id="notif-count-dd">0</strong> pending notifications</li>
-                <div id="notif-template" hidden>
-                    <li class="dropdown-divider"></li>
-                    <li class="container row">
-                        <a class="col-10 notif-link" href="#">
-                            <p style="text-wrap: wrap;">
-                                <span class="notif-time"></span><br>
-                                <strong><span class="notif-title"></span></strong><br>
-                                <span class="notif-text"></span>
-                            </p>
-                        </a>
-                        <!-- TODO: remove hidden attribute -->
-                        <span class="col-2"><button type="button" class="btn-close" hidden></button></span>
-                    </li>
-                </div>
-            </ul>
-        </div>
-        <span id="username" class="text-light"></span>
-        <div class="dropdown">
-            <button class="dropbtn">Dropdown</button>
-            <div class="dropdown-content">
-              <a href="{{ url_for('get_profile') }}">Profile</a>
-              <a id="settingsButton" onclick="goToSettings()">Settings</a>
-              <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
-              <a id="logoutButton" onclick="signOut()">Logout</a>
-              <div class="form-check form-switch">
-                <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
-                <input class="form-check-input pull-right" type="checkbox" role="switch" id="darkModeToggle" onclick="dmToggleFlip()">
-              </div>
+            <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <div class="dropdown-content" id="searchResultsDropdown">
+                <!-- Content for search results dropdown goes here -->
             </div>
-        </div>   
-    <a href="{{ url_for('get_create') }}" class="circular-button-link">
-        <button class="circular-button">+</button>
-    </a>
-</nav>
+            <div class="dropdown" id="notifications" hidden>
+                <a href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                    <img src="{{url_for('static', filename='images/bell.png')}}" alt="Notification Bell" style="width:2rem;height:2rem;">
+                </a>
+                <span class="badge text-bg-warning rounded-pill translate-middle" id="notif-count" hidden>0</span>
+                <ul class="dropdown-menu" style="width: 20vw;" id="notif-dropdown">
+                    <li style="text-align: center;">You have <strong id="notif-count-dd">0</strong> pending notifications</li>
+                    <div id="notif-template" hidden>
+                        <li class="dropdown-divider"></li>
+                        <li class="container row">
+                            <a class="col-10 notif-link" href="#">
+                                <p style="text-wrap: wrap;">
+                                    <span class="notif-time"></span><br>
+                                    <strong><span class="notif-title"></span></strong><br>
+                                    <span class="notif-text"></span>
+                                </p>
+                            </a>
+                            <!-- TODO: remove hidden attribute -->
+                            <span class="col-2"><button type="button" class="btn-close" hidden></button></span>
+                        </li>
+                    </div>
+                </ul>
+            </div>
+        </div>
+        <div class="navbar-items">
+           
+            <div class="dropdown">
+                <button class="dropbtn"><i class="fa-solid fa-bars"></i></button>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('get_profile') }}">Profile</a>
+                    <a id="settingsButton" onclick="goToSettings()">Settings</a>
+                    <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
+                    <a id="logoutButton" onclick="signOut()">Logout</a>
+                    <div class="form-check form-switch">
+                        <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+                        <input class="form-check-input pull-right" type="checkbox" role="switch" id="darkModeToggle" onclick="dmToggleFlip()">
+                    </div>
+                </div>
+            </div>
+            <h4 class="bold-text white-text">__<span id="username" class="text-light"></span>__</h4>
+            <a href="{{ url_for('get_create') }}" class="circular-button-link">
+                <button class="circular-button">+</button>
+            </a>
+        </div>
+    </nav>
     <div id = "main-content-div">
         {% block content %}{% endblock %}
     </div>
