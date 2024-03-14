@@ -78,6 +78,16 @@ def create_like(email, post, up):
         db.session.add(like)
         db.session.commit()
         
+def create_notification(email, text, title, time):
+    with app.app_context():
+        notif = Notification(userEmail = email, text = text, title=title, time=time)
+        db.session.add(notif)
+        db.session.commit()
+
+def delete_notification(notif):
+    with app.app_context():
+        db.session.delete(notif)
+        db.session.commit()
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
@@ -171,7 +181,8 @@ class Notification(db.Model) :
         return {
             "title": self.title,
             "text" : self.text,
-            "time" : self.time
+            "time" : self.time,
+            "id" : self.NotificationID
 		}
 
 class Like(db.Model):
@@ -319,12 +330,14 @@ with app.app_context():
     bm11 = Bookmark(user=u1, postID=10)
     bm12 = Bookmark(user=u1, postID=30)
     bm13 = Bookmark(user=u1, postID=20)
+    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
     # Add all of these records to the session and commit changes
     db.session.add_all((u1,u2,u3))
     db.session.add_all((post1, post2, post3))
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
+    db.session.add(notif)
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -618,7 +631,22 @@ def get_bookmarked(gccEmail):
 @app.get("/API/get_notifications/<string:gccEmail>")
 def get_notifications(gccEmail):
     notifications = Notification.query.filter_by(userEmail=gccEmail).all()
-    return [l.post.render_json() for l in notifications]
+    return {"list": [n.to_json() for n in notifications]}
+
+# posts to this route will contain this json:
+# "id" : notification id
+# "gccEmail" : the user who the notification belongs to
+@app.post("/API/delete_notification")
+def delete_notifications():
+    data = request.get_json()
+    notif = Notification.query.get_or_404(data.get("id"))
+    user = User.query.get_or_404(data.get("gccEmail"))
+    
+    if notif.userEmail == user.gccEmail:
+        delete_notification(notif)
+        return 200, ""
+    else:
+        return 401, ""
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)

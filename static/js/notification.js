@@ -1,57 +1,75 @@
+let notif_template = null
+let gccEmail = null
 document.addEventListener("DOMContentLoaded", async () => {
     //get elements
-    const notif_count = document.getElementById('notif_count');
-    const notif_list = document.getElementById('notif_list');
+    const notif_count = document.getElementById('notif-count');//callout on notifications
+    const notif_count_dd = document.getElementById('notif-count-dd');//count inside of the notification dropdown
+    notif_template = document.getElementById('notif-template');//div containing sample notification
+    
+    gccEmail = sessionStorage.getItem("customIdToken")//TODO: figure out why not working
+    gccEmail = "u1@gcc.edu"//TODO: remove temporary solution
     //load the timer
-    await fetch("/API/get_notifications/<string:gccEmail>")//TODO: get gcc email from somewhere
+    await fetch(`/API/get_notifications/${gccEmail}`)
         .then(validateJSON)
-        .then(loadList);
-    //set up the pause/play and skip buttons
-    toggleBtn.addEventListener("click", toggle);
-    skipBtn.addEventListener("click", changeState)
+        .then(data => {
+                for (const notif of data.list) {
+                    insert_notification(notif);
+                }
+                const l = data.list.length
+                notif_count.innerText = l
+                notif_count_dd.innerText = l
+                if (l>0) notif_count.removeAttribute("hidden")
+            }
+        );
 });
-//TODO: edit this so that it no longer is for timers
-/**
- * sets the list up with the data received from the backend
- * @param {JSON} actionData the data for the list of notifications
- */
-async function loadList(actionData){
+
+async function insert_notification(notification){
     /**
-     * receive data from 
-     * {
-     * "a": active? (true=running, false=paused)
-     * "w": working? (true=working, false=break)
-     * "s": start time (only sent if running)
-     * "t": time left in seconds (if start time is included, then remove time passed since starting)
-     * "c": cycle number
-     * }
+     * notification contains:
+     * title, time, text, and id
      */
-    timeLeft = actionData.t;
-    cycle = actionData.c;
-    if(actionData.w) {
-        timer_div.className = "work";
-        is_working = true;
-    }
-    else {
-        timer_div.className = "break";
-        is_working = false;
-    }
-    active = actionData.a;
-    toggleBtn.innerText = active ? "Pause" : "Start";
-    toggleBtn.className = active ? "btn btn-warning btn-sm":"btn btn-success btn-sm";
-    if (active) {
-        //if the timer is already active, then some other page must have started it
-        timeLeft -= Math.floor((new Date()-new Date(actionData.s))/1000); //figure out how much time is left
-        if(timeLeft <= 0){
-            //if it somehow already finished during page transition, finish it
-            changeState();
-        }
-        else{
-            //otherwise resume the timer
-            num_loops_active++;
-            timerLoop();
-        }
-    }else{
-        timer.innerText = timerText(timeLeft);
+    const container = document.getElementById("flashcards-container");
+
+    const nDiv = notif_template.cloneNode(true);
+
+    // nDiv.id = notification.id;
+    nDiv.removeAttribute("hidden")
+
+    const time = nDiv.querySelector(".notif-time");
+    const title = nDiv.querySelector(".notif-title");
+    const text = nDiv.querySelector(".notif-text");
+
+    time.innerText = notification.time;
+    title.innerText = notification.title;
+    text.innerText = notification.text;
+
+    const closeBtn = nDiv.querySelector(".btn-close");
+    closeBtn.addEventListener("click", () => { 
+        fetch("/API/delete_notification", {
+            "method":"POST",
+            "headers": {"Content-Type": "application/json"},
+            "body": JSON.stringify({
+                "id" : notification.id,
+                "gccEmail" : gccEmail
+            })
+        });
+        // console.log(notification.id + "" + )
+    });
+    
+
+    notif_template.parentElement.appendChild(nDiv);
+}
+
+/**
+   * Validate a response to ensure the HTTP status code indcates success.
+   * 
+   * @param {Response} response HTTP response to be checked
+   * @returns {object} object encoded by JSON in the response
+   */
+function validateJSON(response) {
+    if (response.ok) {
+        return response.json();
+    } else {
+        return Promise.reject(response);
     }
 }
