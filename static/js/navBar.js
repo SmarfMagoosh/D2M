@@ -1,4 +1,5 @@
-// account = sessionStorage.getItem("customIdToken")
+document.addEventListener('DOMContentLoaded', function () {
+    // account = sessionStorage.getItem("customIdToken")
 account = ""
 username = ""
 
@@ -30,10 +31,16 @@ fetch('/getUserInfo')
     if(account == null) {
     }
     
+    console.log("helloooo")
     dynamicLogin()
+
+    const myMSALObj = new msal.PublicClientApplication(msalConfig);
+})
 })
 
-const myMSALObj = new msal.PublicClientApplication(msalConfig);
+
+
+
 
 function signOut() {
     /**
