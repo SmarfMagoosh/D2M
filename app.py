@@ -159,6 +159,7 @@ class User(db.Model) :
             "bio": self.bio,
             "backupEmail": self.backupEmail,
         }
+    
     def get_user_info(self):
         return {
             "username": self.username,
