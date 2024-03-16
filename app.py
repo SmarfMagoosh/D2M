@@ -142,7 +142,23 @@ class User(db.Model) :
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
     
-
+    def postlist_to_json(self):
+        return {
+            "posts": [p.render_json() for p in self.postList]
+		}
+    
+    def likelist_to_json(self):
+        return {
+            "posts": [l.render_json() for l in self.likeList]
+		}
+    
+    def get_settings_info(self):
+        return {
+            "username": self.username,
+            "gccEmail": self.gccEmail,
+            "bio": self.bio,
+            "backupEmail": self.backupEmail,
+        }
     def get_user_info(self):
         return {
             "username": self.username,
