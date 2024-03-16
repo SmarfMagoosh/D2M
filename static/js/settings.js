@@ -10,12 +10,7 @@ window.addEventListener('DOMContentLoaded', () => {
     icon.addEventListener('change', (event) => loadImg(event, icon_img));
     banner.addEventListener('change', (event) => loadImg(event, banner_img));
 
-    // fetch(`/login?email=${email}`)
-    email = ""//sessionStorage.getItem('customIdToken')
-    if(email == null) {
-        window.location.href = "../home";
-    }
-
+    //get all warning message elements
     alerts = document.getElementsByClassName("bruh")
 });
 
@@ -54,11 +49,13 @@ function applyChanges() {
         }
     });
 
-    formData['email'] = email//sessionStorage.getItem('customIdToken')
 
-    fetch(`/checkNewSettings/?email=${email/*sessionStorage.getItem('customIdToken')*/}&info=${JSON.stringify(formData)}`)
+    // validate the new settings entered in the fields
+    fetch(`/checkNewSettings/?info=${JSON.stringify(formData)}`)
     .then(response => response.json())
     .then(data => {
+
+        // show appropriate alerts based on reponse
 
         if(data.usernameUpdate && !data.usernameUnique) alerts[0].classList.add("showBruh")
         else alerts[0].classList.remove("showBruh")
@@ -77,6 +74,7 @@ function applyChanges() {
             else alerts[4].classList.remove("showBruh")
         }
     
+        // upon data valid, update settings in db
         if(data.success) {
             fetch(`/settings/`, {
                 method: 'POST',
@@ -86,6 +84,7 @@ function applyChanges() {
                 body: JSON.stringify(formData)
             })
             .then(reponse => {
+                // indicate update success
                 alerts[5].classList.add("success")
             })
         }
