@@ -17,9 +17,3 @@ class SettingsForm(FlaskForm):
     # the old_password field will be invisible if there isn't an old password
     old_password = PasswordField("Current Password", validators=[Optional(), Length(min=8, max=256)])
     submit = SubmitField("Apply Changes")
-    
-    #TODO: figure out a way to import User without circular references
-    # def validate_username(self, username):
-    #     user = User.query.filter_by(username=username.data).first()
-    #     if user:
-    #         raise ValidationError('That username is taken. Please choose another.')

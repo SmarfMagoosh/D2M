@@ -38,7 +38,7 @@
                 {{ form.icon(accept="image/*") }}
             </div>
             <br>
-            <img id="icon_img" src="#" alt="Icon Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
+            <img id="icon_img" src="{{ pfp }}" alt="Icon Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
         </div>
 
         <div class="mb-2">
@@ -47,7 +47,7 @@
                 {{form.banner(accept="image/*")}}
             </div>
             <br>
-            <img id="banner_img" src="#" alt="Banner Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
+            <img id="banner_img" src="{{ banner }}" alt="Banner Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
         </div>
         <h3>Account Backup</h3>
         <hr>

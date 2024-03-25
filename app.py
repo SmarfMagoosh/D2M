@@ -425,14 +425,13 @@ def get_settings():
         form.username.data = user.username
         form.bio.data = user.bio
         form.backup_email.data = user.backupEmail
-        # TODO: uncomment and pass along
-        # pfp = "#"
-        # banner = "#"
-        # if os.path.isfile(f"static/images/users/${user.gccEmail}/pfp.png"):
-        #     pfp = url_for('static', filename=f'images/${user.gccEmail}/pfp.png')
-        # if os.path.isfile(f"static/images/users/${user.gccEmail}/banner.png"):
-        #     banner = url_for('static', filename=f'images/${user.gccEmail}/banner.png')
-        return render_template('settings.html', form=form)
+        pfp = "#"
+        banner = "#"
+        if os.path.isfile(f"static/images/users/{user.gccEmail}/pfp.png"):
+            pfp = url_for('static', filename=f'images/users/{user.gccEmail}/pfp.png')
+        if os.path.isfile(f"static/images/users/{user.gccEmail}/banner.png"):
+            banner = url_for('static', filename=f'images/users/{user.gccEmail}/banner.png')
+        return render_template('settings.html', form=form, pfp=pfp, banner=banner)
     else:
         redirect(url_for("get_home"))
         return {'loggedout': True}

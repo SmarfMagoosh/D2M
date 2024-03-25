@@ -4,10 +4,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const icon = document.getElementById('icon');
     const icon_img = document.getElementById('icon_img');
     icon.addEventListener('change', (event) => loadImg(event, icon_img));
+    if (icon_img.src != ""){
+        icon_img.style.display = 'block';
+    }
 
     const banner = document.getElementById('banner');
     const banner_img = document.getElementById('banner_img');
     banner.addEventListener('change', (event) => loadImg(event, banner_img));
+    if (banner_img.src != ""){
+        banner_img.style.display = 'block';
+    }
 
     //get all warning message elements
     alerts = document.getElementsByClassName("bruh")
