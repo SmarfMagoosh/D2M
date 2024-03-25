@@ -88,7 +88,8 @@ body {
     height: 15px;
 }
 
-.text-box-container {
+.text-box-container, #drawing {
+    top: 0;
     position: absolute;
     left: 0;
     right: 0;

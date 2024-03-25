@@ -91,11 +91,29 @@ $("document").ready(() => {
     // locate important elems
     window.create.textBoxes = [$("#text-1"), $("#text-2")]
     window.create.meme = $("#meme")[0];
+    window.create.draw = $("#drawing")[0];
 
     // get canvas and context for it
-    window.create.canvas =  $("#meme-img")[0]
-    window.create.canvas.width = window.create.canvas.parentNode.clientWidth - 20 // TODO: async issues
-    window.create.ctx = window.create.canvas.getContext("2d")
+    window.canvas =  $("#meme-img")[0]
+    window.canvas.width = window.canvas.parentNode.clientWidth - 20
+    window.create.draw.width = window.canvas.parentNode.clientWidth - 20
+    window.ctx = window.canvas.getContext("2d")
+
+    const canv = $("#drawing")[0]
+    window.drawing = {
+        mouseStart: null,
+        ctx: canv.getContext("2d"),
+        last: new Date(),
+        timeout: 25,
+        erase: false,
+        eraseDown: false
+    }
+    window.drawing.ctx.lineCap = "round";
+    window.drawing.ctx.lineJoin = "round";
+
+    $("#drawing").mousedown(drawMousedown);
+    $("#drawing").mouseup(drawMouseup);
+    $("#drawing").mousemove(drawMousemove);
 
     // Add text boxes
     $(".meme-text").hide()
@@ -121,19 +139,20 @@ $("document").ready(() => {
         window.create.baseImg.onload = function() {
             let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
             window.create.dimensions = {
-                width: window.create.canvas.width, 
-                height: aspectRatio * window.create.canvas.width
+                width: window.canvas.width, 
+                height: aspectRatio * window.canvas.width
             }
             // adjust width and height of img to fit meme and draw it
-            window.create.canvas.height = window.create.dimensions.height
-            window.create.ctx.drawImage(
+            window.canvas.height = window.create.dimensions.height
+            window.create.draw.height = window.create.dimensions.height
+            window.ctx.drawImage(
                 window.create.baseImg, 0, 0, 
-                window.create.canvas.width, 
-                window.create.canvas.height
+                window.canvas.width, 
+                window.canvas.height
             )
             $(".text-box-container")
-                .width(window.create.canvas.width)
-                .height(window.create.canvas.height)
+                .width(window.canvas.width)
+                .height(window.canvas.height)
                 .attr("style", "top: 0")
             $("#template-modal-button").remove()
         }
@@ -149,6 +168,7 @@ $("document").ready(() => {
         $("#img-tool-bar").show()
         $("#template-list").modal()
         $("#image-tool-bar").show()
+        $("#drawing").show()
         window.numboxes = 2
     })
     // add mor event listeners
@@ -214,11 +234,12 @@ $("document").ready(() => {
         let id = parseInt(e.target.id.split("-")[1])
         $(`#meme-text-${id}`).toggleClass("no-shadow")
     })
-    
+    $(".text-box-container").hide()
+    $("#drawing").hide()
 })
 
 function upload_base_image(input) {
-    const MAX_FILE_SIZE = 1_000_000
+    const MAX_FILE_SIZE = 20_000
     if (FileReader && input.files && input.files.length) {
         let base = input.files[0]
         if (base.size < MAX_FILE_SIZE) {
@@ -230,19 +251,20 @@ function upload_base_image(input) {
                 window.create.baseImg.onload = function() {
                     let aspectRatio = window.create.baseImg.naturalHeight / window.create.baseImg.naturalWidth
                     window.create.dimensions = {
-                        width: window.create.canvas.width, 
-                        height: aspectRatio * window.create.canvas.width
+                        width: window.canvas.width, 
+                        height: aspectRatio * window.canvas.width
                     }
 
                     // adjust width and height of img to fit meme and draw it
-                    window.create.canvas.height = window.create.dimensions.height
-                    window.create.ctx.drawImage(
+                    window.canvas.height = window.create.dimensions.height;
+                    window.create.draw.height = window.create.dimensions.height;
+                    window.ctx.drawImage(
                         window.create.baseImg, 0, 0, 
-                        window.create.canvas.width, 
-                        window.create.canvas.height
+                        window.canvas.width, 
+                        window.canvas.height
                     )
-                    $(".text-box-container").width(window.create.canvas.width)
-                        .height(window.create.canvas.height).attr("style", "top: 0")
+                    $(".text-box-container").width(window.canvas.width)
+                        .height(window.canvas.height).attr("style", "top: 0")
                     $("#template-modal-button").remove()
                     $("#img-tool-bar").show()
                 }
@@ -257,6 +279,7 @@ function upload_base_image(input) {
             $("#list-opener").remove()
             $("#fileInputBtn").remove()
             $("#image-tool-bar").show()
+            $("#drawing").show()
             window.numboxes = 2
         } else {
             alert(`That image is too large! we only accept files less than ${MAX_FILE_SIZE}mb`);
@@ -268,7 +291,7 @@ function post() {
     meme = {
         spacing: document.getElementById("space") === null ? 0 : $("#spacer").val(),
         textboxes: [],
-        imgData: window.create.canvas.toDataURL(),
+        imgData: window.canvas.toDataURL(),
         title: $("#post-title")[0].value
     }
     for (let textarea of $(".text-box")) {
@@ -287,8 +310,9 @@ function cancel_post() {
 }
 
 function adjust_spacing(elem) {
-    window.create.canvas.height = window.create.dimensions.height * (1 + elem.value)
-    window.create.ctx.drawImage(
+    window.canvas.height = window.create.dimensions.height * (1 + elem.value)
+    window.create.draw.height = window.create.dimensions.height * (1 + elem.value)
+    window.ctx.drawImage(
         window.create.baseImg, 0,
         window.create.dimensions.height * elem.value,
         window.create.dimensions.width,
@@ -454,6 +478,7 @@ function update_tools(tool_bar) {
         </select>
         `)
         $("#spacer").click(e => adjust_spacing(e.target))
+        $(".text-box-container").show()
     } else if (tool_bar == "Draw") {
         $("#image-tools").html(`
         <div>
@@ -473,6 +498,11 @@ function update_tools(tool_bar) {
             $(e.target).css("background-color", e.target.value)
         })
         $("#color").css("background-color", $("#color").val()).css("border", "none")
+        $(".text-box-container").hide()
+        $("#erase").click(e => {
+            $("#erase").toggleClass("btn-danger btn-outline-danger");
+            window.drawing.erase = !window.drawing.erase;
+        })
     } else if (tool_bar == "Filters") {
         $("#image-tools").html(`
         `)
@@ -482,4 +512,70 @@ function update_tools(tool_bar) {
     } else {
         $("#image-tools").empty()
     }
+}
+
+function drawMousedown(e) {
+    if (e.buttons % 2 == 1 && !window.drawing.erase) { 
+        window.drawing.mouseStart = {
+            'x': e.offsetX,
+            'y': e.offsetY
+        };
+        window.drawing.ctx.beginPath();
+        window.drawing.ctx.moveTo(window.drawing.mouseStart.x, window.drawing.mouseStart.y);
+    } else if (window.drawing.erase) {
+        const thickness = $("#thickness").val();
+        window.drawing.ctx.clearRect(
+            e.offsetX - thickness / 2,
+            e.offsetY - thickness / 2,
+            $("#thickness").val(),
+            $("#thickness").val()
+        )
+    }
+}
+
+function drawMouseup(e) {
+    if (e.buttons & 2 == 0 && !window.drawing.erase) {
+        const end = {
+            'x': e.offsetX,
+            'y': e.offsetY
+        };
+        const color = $("#color").val();
+        draw(end, color);
+        window.drawing.ctx.closePath();
+        window.drawing.mouseStart = null;
+    }
+}
+
+function drawMousemove(e) {
+    const now = new Date();
+    if ((now - window.drawing.last) < window.drawing.timeout) { return; }
+    window.drawing.last = now;
+
+    if (window.drawing.mouseStart !== null && e.buttons % 2 == 1  && !window.drawing.erase) {
+        const next = {
+            'x': e.offsetX,
+            'y': e.offsetY
+        };
+        const color = $("#color").val();
+        draw(next, color);
+        window.drawing.mouseStart = next;
+        console.log(window.drawing.erase);
+    } else if (e.buttons % 2 == 1 && window.drawing.erase) {
+        console.log("erasing")
+        const thickness = $("#thickness").val();
+        window.drawing.ctx.clearRect(
+            e.offsetX - thickness / 2,
+            e.offsetY - thickness / 2,
+            $("#thickness").val(),
+            $("#thickness").val()
+        )
+    }
+}
+
+function draw(end, color) {
+    // draw this line locally
+    window.drawing.ctx.lineWidth = $("#thickness").val();
+    window.drawing.ctx.strokeStyle = color;
+    window.drawing.ctx.lineTo(end.x, end.y);
+    window.drawing.ctx.stroke();
 }
