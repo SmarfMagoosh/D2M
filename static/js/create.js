@@ -239,7 +239,7 @@ $("document").ready(() => {
 })
 
 function upload_base_image(input) {
-    const MAX_FILE_SIZE = 20_000
+    const MAX_FILE_SIZE = 4_000_000
     if (FileReader && input.files && input.files.length) {
         let base = input.files[0]
         if (base.size < MAX_FILE_SIZE) {
@@ -282,7 +282,7 @@ function upload_base_image(input) {
             $("#drawing").show()
             window.numboxes = 2
         } else {
-            alert(`That image is too large! we only accept files less than ${MAX_FILE_SIZE}mb`);
+            alert(`That image is too large! we only accept files less than ${MAX_FILE_SIZE / 1_000_000}mb`);
         }
     }
 }
