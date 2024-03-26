@@ -14,6 +14,5 @@ class SettingsForm(FlaskForm):
     backup_email = EmailField("Backup Email", validators=[Email()])
     change_password = PasswordField("New Password", validators=[Optional(), Length(min=8, max=256)])
     confirm_password = PasswordField("Confirm New Password", validators=[EqualTo('new_password')])
-    # the old_password field will be invisible if there isn't an old password
     old_password = PasswordField("Current Password", validators=[Optional(), Length(min=8, max=256)])
     submit = SubmitField("Apply Changes")

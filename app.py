@@ -443,7 +443,7 @@ def get_settings():
 def checkNewSettings():
     info = json.loads(request.args.get('info'))
     user = load_user(session.get('customIdToken'))
-
+    print(info)
     returnVal = {}
 
     # indicate if username was updated
@@ -503,6 +503,7 @@ def post_settings():
         user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
 
     db.session.commit()
+    # TODO: when I ran this it caused an error saying that json_data.get('email') was NoneType
     return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
 
 # get a user object
