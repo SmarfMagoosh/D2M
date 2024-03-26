@@ -8,7 +8,6 @@ fetch('/getUserInfo')
     console.log(data)
 
     if(data.loggedIn) {
-        console.log("asdksjfdhsdkfjhsdkjfh")
         account = data.gccEmail
         username = data.username
         fetch(`/getUsername?gccEmail=${account}`)
@@ -22,12 +21,6 @@ fetch('/getUserInfo')
     }
     else {
         document.getElementById('settingsButton').style.display = 'none'
-    }
-    if(account !== "") {
-
-    }
-    
-    if(account == null) {
     }
     
     dynamicLogin()
@@ -76,5 +69,5 @@ function setUsername(username) {
 }
 
 function goToSettings() {
-    window.location.href = `/settings?email=${account}`
+    window.location.href = `/settings`
 }

@@ -2,7 +2,7 @@
 
 /* Style for the body element - sets the background color and font */
 body {
-    background-color: #f0f0f0; /* Light gray background */
+    /*background-color: #f0f0f0; /* Light gray background */
     font-family: Arial, sans-serif; /* Arial font, with sans-serif as the fallback */
   }
   
@@ -13,16 +13,13 @@ body {
     margin-bottom: 20px; /* 20 pixels of space below paragraphs */
   }
   
-  /* Style for links (a elements) - sets color and removes text decoration */
-  a {
-    color: #007BFF; /* Blue color for links */
-    text-decoration: none; /* No underline on links */
-  }
-  
   .row {
 
     /* data-masonry: '{"percentPosition": true }'; */
     text-decoration: none;
   }
-  
-  
+
+  /* CSS for the image links */
+  .image-link {
+      margin-right: 20px; /* Adjust the margin value to add spacing */
+  }

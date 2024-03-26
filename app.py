@@ -78,6 +78,18 @@ def create_like(email, post, up):
         db.session.add(like)
         db.session.commit()
         
+
+def create_notification(email, text, title, time):
+    with app.app_context():
+        notif = Notification(userEmail = email, text = text, title=title, time=time)
+        db.session.add(notif)
+        db.session.commit()
+
+def delete_notification(notif):
+    with app.app_context():
+        db.session.delete(notif)
+        db.session.commit()
+        
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
@@ -114,7 +126,7 @@ class User(db.Model) :
     
     bio = db.Column(db.String, nullable = True)
     
-    backupEmail = db.Column(db.String, default = "")#nullable = True)
+    backupEmail = db.Column(db.String, default = "")
     backupPasswordHash = db.Column(db.String, nullable = True)
     passwordResetToken = db.Column(db.String, nullable = True)
     timesReported = db.Column(db.Integer, default = 0)
@@ -126,12 +138,18 @@ class User(db.Model) :
     reportList = db.relationship('Report', backref='reporter')
     likeList = db.relationship('Like', backref='user')
     bookmarkList = db.relationship('Bookmark', backref='user')
+    notificationList = db.relationship('Notification', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
     
     def postlist_to_json(self):
         return {
             "posts": [p.render_json() for p in self.postList]
+		}
+    
+    def likelist_to_json(self):
+        return {
+            "posts": [l.render_json() for l in self.likeList]
 		}
     
     def get_settings_info(self):
@@ -156,6 +174,23 @@ class Report(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
+    
+class Notification(db.Model) :
+    __tablename__ = 'Notifications'
+    NotificationID = db.Column(db.Integer, primary_key = True)
+    userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
+    title = db.Column(db.String)
+    text = db.Column(db.String)
+    # format: mm/dd/yy hh:mm AM/PM
+    # ex: 3/7/24 5:30 AM
+    time = db.Column(db.String)
+    def to_json(self):
+        return {
+            "title": self.title,
+            "text" : self.text,
+            "time" : self.time,
+            "id" : self.NotificationID
+		}
 
 class Like(db.Model):
     __tablename__ = 'Likes'
@@ -264,7 +299,7 @@ class TextBox(db.Model) :
 
 class Comment(db.Model) :
     __tablename__ = 'Comments'
-    commentID = db.Column(db.Integer, primary_key = True)
+    commentID = db.Column(db.Integer, primary_key = True, autoincrement=True)
     content = db.Column(db.String, nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
@@ -302,12 +337,14 @@ with app.app_context():
     bm11 = Bookmark(user=u1, postID=10)
     bm12 = Bookmark(user=u1, postID=30)
     bm13 = Bookmark(user=u1, postID=20)
+    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
     # Add all of these records to the session and commit changes
     db.session.add_all((u1,u2,u3))
     db.session.add_all((post1, post2, post3))
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
+    db.session.add(notif)
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -344,6 +381,7 @@ def get_home():
                         .all()
     return render_template("home.html", posts=[p.render_json() for p in recent])
 
+# render the signin page html
 @app.get("/signin-oidc/")
 def get_login():
     return render_template("signin-oidc.html")
@@ -357,63 +395,80 @@ def get_post(post_id):
     return render_template("post.html", post=post.to_json())
 
 @app.get("/profile/")
-@app.get("/profile/<int:user_id>/")
-def get_profile(user_id = -1):
-    # if(user_id > -1) # load a different person's profile
-    return render_template("profile.html")
+@app.get("/profile/<string:username>/")
+def get_profile(username = None):
+    if(username == None):
+         user = load_user(session.get('customIdToken'))
+         return render_template("profile.html", user = user)
+    else:
+        user = User.query.filter_by(username=username).first()
+        return render_template("profile.html", user = user)
+    # # load a different person's profile
+    
 
-@app.get('/getCurrentSettings')
-def getCurrentSettings():
-    email = request.args.get('email')
-    return redirect(url_for('get_settings')+ "email=" + str(email))
 
+# @app.get('/getCurrentSettings')
+# def getCurrentSettings():
+#     email = request.args.get('email')
+#     return redirect(url_for('get_settings')+ "email=" + str(email))
+
+# this method loads the settings page with settings updated for the current user
+# return back to home if there is no user signed in
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
 # @login_required
 def get_settings():
     form = SettingsForm()
-    email = request.args.get('email')
-
-    if email == None:
-        redirect(url_for("get_home"))
-        return {'loggedout': True}
-
-    user = load_user(session['customIdToken'])
-    if user != None:
+    #get curr user
+    user = load_user(session.get('customIdToken'))
+    if user:
         form.username.data = user.username
         form.bio.data = user.bio
         form.backup_email.data = user.backupEmail
         return render_template('settings.html', form=form)
     else:
-        return None
+        redirect(url_for("get_home"))
+        return {'loggedout': True}
+    
 
+# this method gettings the new settings entered on the settings page and validates them
+# returns a json indicating which entries are valid
 @app.get("/checkNewSettings/")
 def checkNewSettings():
     info = json.loads(request.args.get('info'))
-    email = request.args.get('email')
     user = load_user(session.get('customIdToken'))
 
     returnVal = {}
 
+    # indicate if username was updated
     returnVal['usernameUpdate'] = info['username'] != user.username
+
+    # indicate if new username already exists or not
     if User.query.filter_by(username=info['username']).first():
         returnVal['usernameUnique'] = False
     else:
         returnVal['usernameUnique'] = True
 
+
     backupEmail = info['backup_email']
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 
+    # indicate if backup email is being updated
     returnVal['emailUpdate'] = str(backupEmail) != str(user.backupEmail)
+    # indicate is new backup email is of valid email form
     returnVal['validEmail'] = True if re.fullmatch(regex, backupEmail) else False
 
+    # indicate if the password is being updated
     returnVal['passwordUpdate'] = info['old_password'] != "" or info['change_password'] != "" or info['confirm_password'] != ""
+    # indicate the current passwords match
     returnVal['oldPasswordMatch'] = bcrypt.checkpw(info['old_password'].encode('utf-8'), user.backupPasswordHash)
+    # indicate if the new password is valid
     returnVal['newPasswordValid'] = len(info['change_password']) >= 8
+    # indicate if the new passwords match
     returnVal['newPasswordMatch'] = info['change_password'] == info['confirm_password']
 
+    # indicate if info was successfully updated
     success = True
-
     if returnVal['usernameUpdate'] and not returnVal['usernameUnique']:
         success = False
     if returnVal['emailUpdate'] and not returnVal['validEmail']:
@@ -425,21 +480,14 @@ def checkNewSettings():
     
     return jsonify(returnVal)
 
+# this post route updates the user settings based on the inputed values on the settings page
 @app.route("/settings/", methods=["POST"])
 def post_settings():
     json_data = request.json
     user = load_user(session.get('customIdToken'))
     user.username = json_data.get('username')
     user.bio = json_data.get('bio')
-    backupEmail = json_data.get('backup_email')
-
-
-
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-    if(re.fullmatch(regex, backupEmail)):
-        user.backupEmail = backupEmail
-    else:
-        print("Invalid Email")
+    user.backupEmail = json_data.get('backup_email')
 
     oldPassword = json_data.get('old_password')
     newPassword = json_data.get('change_password')
@@ -451,6 +499,7 @@ def post_settings():
     db.session.commit()
     return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
 
+# get a user object
 def load_user(userEmail):
     if userEmail != None:
         return User.query.get(userEmail)
@@ -463,7 +512,7 @@ def genResetToken():
     self = User.query.filter_by(username=name).first()
     if self:
         token_length = 32
-        expiration_minutes = 60
+        expiration_minutes = 15
 
         user_info = f"{self.username}~"
 
@@ -477,8 +526,6 @@ def genResetToken():
         expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
         expiration_timestamp = expiration_time.timestamp()
 
-# def create_comment(commentData, u2Email):
-#     with app.app_context():
         # Append expiration timestamp to the token
         token_with_expiration = f"{token}~{expiration_timestamp}"
 
@@ -489,7 +536,6 @@ def genResetToken():
 @app.get('/validate_reset_token')
 def validate_reset_token():
     token = request.args.get('token')
-    expiration_minutes = 60
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
@@ -500,7 +546,7 @@ def validate_reset_token():
     expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
 
     # Check if token has expired
-    if datetime.utcnow() > expiration_time:
+    if  datetime.utcnow() > expiration_time:
         return jsonify({'valid': False})
 
     return jsonify({'valid': True})
@@ -528,15 +574,16 @@ def sendResetEmail():
     msg['Subject'] = 'D2M Password Reset Request'
 
     resetLink = 'http://localhost/resetPassword?token=' + token
+    # resetLink = 'https://d2m.gcc.edu/resetPassword?token=' + token
     # Email body
     body = f"""
-Dear {user.username},
-We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
-{resetLink}
-If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
-Thank you,
-The D2M Team
-"""
+    Dear {user.username},
+    We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
+    {resetLink}
+    If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+    Thank you,
+    The D2M Team
+    """
 
     msg.attach(MIMEText(body, 'plain'))
 
@@ -562,9 +609,10 @@ The D2M Team
 
 @app.get('/setPassword')
 def setPassword():
+    print("hello")
     token = request.args.get('token')
     newPassword = request.args.get('password')
-    expiration_minutes = 60
+    expiration_minutes = 15
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
@@ -662,6 +710,29 @@ def follow(u1Email, u2Email):
     create_follow(u1Email, u2Email)
     return "success"
 
+# Define a route to handle AJAX requests for creating comments
+@app.post('/create_comment')
+def create_comment_route():
+    # Get the data from the AJAX request
+    data = request.json
+    content = data.get('content')
+    username = data.get('username')
+    postID = data.get('postID')
+
+    new_comment = Comment(
+        content=content,
+        postID=postID,
+        username=username,
+        timePosted = datetime.now().strftime("%m-%d %H:%M")
+        # The commentID will be automatically generated due to autoincrement=True
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+    print("HEY! IT DOES A THING!!")
+
+    # Return a response indicating success
+    return {'message': 'Comment created successfully'}, 200
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -730,6 +801,28 @@ def get_bookmarked(gccEmail):
     bookmarks.sort(key=lambda b: b.bookmarkID, reverse=True)
     bookmarks =  bookmarks[0:count] #reduce to count or less elements
     return [l.post.render_json() for l in bookmarks]
+
+@app.get("/API/get_notifications/<string:gccEmail>")
+@app.get("/API/get_notifications/")
+def get_notifications(gccEmail=None):
+    if gccEmail == None: 
+        gccEmail = session.get('customIdToken')
+    notifications = Notification.query.filter_by(userEmail=gccEmail).all()
+    return {"logged_in": gccEmail != None, "list": [n.to_json() for n in notifications]}
+
+# posts to this route will contain this json:
+# {"id" : notification id}
+@app.post("/API/delete_notification")
+def delete_notifications():
+    data = request.get_json()
+    notif = Notification.query.get_or_404(data.get("id"))
+    user = User.query.get_or_404(session.get('customIdToken'))
+    
+    if notif.userEmail == user.gccEmail:
+        delete_notification(notif)
+        return 200, ""
+    else:
+        return 401, ""
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
@@ -870,8 +963,13 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
+    
 
-# def create_comment(commentData, u2Email):
+
+
+
+
+# def create_comment(commentData, user_name):
 #     with app.app_context():
        
 #         db.session.add(follow)
