@@ -1,4 +1,4 @@
 .idea/*
 __pycache__/*
 .vs/*
-database.sqlite3
+*.sqlite3
