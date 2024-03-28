@@ -122,14 +122,14 @@ body {
     width: fit-content;
 }
 
-#image-tools {
+#image-tools > div{
     display: flex;
     margin: 1rem auto;
     width: 90%;
     justify-content: space-between;
 }
 
-#image-tools > div {
+#image-tools > div > div {
     display: inline-flex;
 }
 
