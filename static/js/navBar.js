@@ -37,16 +37,7 @@ function signOut() {
     fetch(`/logout`)
     sessionStorage.removeItem("customIdToken");
 
-    const currentAccounts = myMSALObj.getAllAccounts();
-    if(currentAccounts && currentAccounts.length == 1) {
-        // Choose which account to logout from by passing a username.
-        const logoutRequest = {
-            account: myMSALObj.getAllAccounts()[0]//getAccountByUsername(username),
-            // postLogoutRedirectUri: 'http://localhost', // Simply remove this line if you would like navigate to index page after logout.
-        };
-
-        myMSALObj.logoutRedirect(logoutRequest);
-    }
+    logout()
 
     window.location.href = "../home";
 }
