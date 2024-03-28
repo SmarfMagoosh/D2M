@@ -1,7 +1,7 @@
 /* main page structure */
 
 body {
-    background-color: #999999;
+    background-color: dimgray;
 }
 
 #main-content-div {
@@ -42,6 +42,7 @@ body {
     width: 40%;
     height: 3rem;
     border: dashed black 2px;
+    cursor: move;
 }
 
 .bold {font-weight: bold;}

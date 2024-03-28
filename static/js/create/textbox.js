@@ -54,8 +54,7 @@ function add_text_box() {
     })
     $(".trash-btn").click(e => delete_box(e.target))
 
-    $(".settings-menu").off("click").click(e => {
-        console.log("hello")
+    textbox.children(".dropdown").children(".settings-menu").click(e => {
         if (e.target.tagName == "I") {
             $(e.target).parent().next(".dropdown-menu").slideToggle() 
         } else { 
@@ -67,19 +66,11 @@ function add_text_box() {
     const id = e => parseInt(e.target.id.split("-")[1])
     $(".settings-alignment").off("change").change(e => $(`#meme-text-${id(e)}`).css("text-align", e.target.value))
     $(".settings-font-size").off("change").change(e => $(`#meme-text-${id(e)}`).css("font-size", `${e.target.value}px`))
-    
-    $(".settings-font").off("change").change(e => {
-        console.log(e.target.value);
-        $(`#meme-text-${id(e)}`).css({"font-family": e.target.value})
-    })
+    $(".settings-font").off("change").change(e => $(`#meme-text-${id(e)}`).css({"font-family": e.target.value}))
     $(".settings-font-color").off("change").change(e => $(`#meme-text-${id(e)}`).css("color", e.target.value))
     $(".settings-font-shadow").off("change").change(e => $(`#meme-text-${id(e)}`).css("-webkit-text-stroke", `${e.target.value} 1px`))
-    
     $(".settings-bold").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("bold"))
-    $(".settings-italics").off("change").change(e => {
-        console.log($(`#meme-text-${id(e)}`))
-        $(`#meme-text-${id(e)}`).toggleClass("italics")
-    })
+    $(".settings-italics").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("italics"))
     $(".settings-underline").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("underline"))
     $(".settings-strikethrough").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("strike"))
     $(".settings-capitals").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("all-caps"))

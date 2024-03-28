@@ -67,17 +67,37 @@
             </div>
         </div>
     </div>
-    <a href = "#" rel = "modal:close"></a>
-    <input type = "text">
+</div>
+<div id = "add-image" class = "modal fade" tabindex = "-1" role = "dialog">
+    <div class = "modal-dialog" role = "document">
+        <div class = "modal-content">
+            <div class = "modal-header">
+                <h3 class = "modal-title">Insert Additional Image</h3>
+                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">Close</span>
+                </button>
+            </div>
+            <div class = "modal-body">
+                
+            </div>
+            <div class = "modal-footer">
+
+            </div>
+        </div>
+    </div>
 </div>
 <div id = "left-content">
     <div id = "image-tool-bar">
         <span>
             <button class = "btn btn-dark image-tool">Adjust Spacing</button>
         </span>
-        <!-- <span>
-            <button onclick="//TODO" class = "btn btn-dark">Add Image</button>
-        </span> -->
+        <span>
+            <button 
+                class = "btn btn-dark image-tool"
+                data-toggle = "modal"
+                data-target = "#add-image"
+                id = "image-modal-button">Add Image</button>
+        </span>
         <span>
             <button class = "btn btn-dark image-tool">Draw</button>
         </span>

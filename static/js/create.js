@@ -61,16 +61,16 @@ $("document").ready(() => {
                 .width(window.canvas.width)
                 .height(window.canvas.height)
                 .attr("style", "top: 0")
-            $("#template-modal-button").remove()
+            $("#template-modal-button").hide()
         }
         add_text_box()
         add_text_box()
-        $("#fileInputLabel").remove()
+        $("#fileInputLabel").hide()
         $("#new-box-btn").attr("disabled", false)
         $(".settings-menu").attr("disabled", false)
         $(".trash-btn").attr("disabled", false)
-        $("#list-opener").remove()
-        $("#fileInputBtn").remove()
+        $("#list-opener").hide()
+        $("#fileInputBtn").hide()
         $("#img-tool-bar").show()
         $("#image-tool-bar").show()
         $("#drawing").show()
@@ -96,7 +96,7 @@ function upload_base_image(input) {
 
                     // adjust width and height of img to fit meme and draw it
                     window.canvas.height = window.create.dimensions.height;
-                    window.create.draw.height = window.create.dimensions.height;
+                    window.drawing.canv.height = window.create.dimensions.height;
                     window.ctx.drawImage(
                         window.create.baseImg, 0, 0, 
                         window.canvas.width, 
@@ -104,19 +104,19 @@ function upload_base_image(input) {
                     )
                     $(".text-box-container").width(window.canvas.width)
                         .height(window.canvas.height).attr("style", "top: 0")
-                    $("#template-modal-button").remove()
+                    $("#template-modal-button").hide()
                     $("#img-tool-bar").show()
                 }
             }
             reader.readAsDataURL(base);
-            $("#fileInputLabel").remove()
+            $("#fileInputLabel").hide()
             $(".meme-text").show()
             $(".meme-text").draggable({containment: "parent"}).resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
             $("#new-box-btn").attr("disabled", false)
             $(".settings-menu").attr("disabled", false)
             $(".trash-btn").attr("disabled", false)
-            $("#list-opener").remove()
-            $("#fileInputBtn").remove()
+            $("#list-opener").hide()
+            $("#fileInputBtn").hide()
             $("#image-tool-bar").show()
             $("#drawing").show()
             window.numboxes = 2
@@ -177,8 +177,8 @@ class MemeTextBox {
 }
 
 function update_tools(tool_bar) {
+    $("#image-tools").children().hide()
     if (tool_bar == "Adjust Spacing") {
-        $("#image-tools").children().hide()
         $("#spacing-tools").show()
         $(".text-box-container").each((i, elem) => {
             console.log(elem)
@@ -188,7 +188,6 @@ function update_tools(tool_bar) {
         })
         enable_textboxes()
     } else if (tool_bar == "Draw") {
-        $("#image-tools").children().hide()
         $("#drawing-tools").show()
         disable_textboxes()
         let x = $("#drawing")
@@ -196,6 +195,7 @@ function update_tools(tool_bar) {
         x.detach()
         meme.append(x)
     } else if (tool_bar == "Add Image") {
-
+        console.log("hello world");
+        $("#add-image").modal()
     }
 }
