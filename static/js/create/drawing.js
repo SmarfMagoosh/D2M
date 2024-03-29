@@ -1,4 +1,5 @@
-function drawing_init(canvas) {
+function drawing_init() {
+    const canvas = $("#drawing")
     window.drawing = {
         canv: canvas[0],
         mouseStart: null,
@@ -23,9 +24,7 @@ function drawing_init(canvas) {
         window.drawing.color = e.target.value
     })
     $("#color").css("background-color", $("#color").val()).css("border", "none")
-    $("#thickness").on("change", e => {
-        window.drawing.thickness = e.target.value
-    })
+    $("#thickness").on("change", e => window.drawing.thickness = e.target.value)
     $("#erase").click(e => {
         $("#erase").toggleClass("btn-danger btn-outline-danger");
         window.drawing.erase = !window.drawing.erase;
@@ -34,17 +33,13 @@ function drawing_init(canvas) {
 
 function drawMousedown(e) {
     if (e.buttons % 2 == 1 && !window.drawing.erase) { 
-        window.drawing.mouseStart = {
-            'x': e.offsetX,
-            'y': e.offsetY
-        };
+        window.drawing.mouseStart = {'x': e.offsetX, 'y': e.offsetY};
         window.drawing.ctx.beginPath();
         window.drawing.ctx.moveTo(window.drawing.mouseStart.x, window.drawing.mouseStart.y);
     } else if (window.drawing.erase) {
-        const thickness = window.drawing.thickness;
         window.drawing.ctx.clearRect(
-            e.offsetX - thickness / 2,
-            e.offsetY - thickness / 2,
+            e.offsetX - window.drawing.thickness / 2,
+            e.offsetY - window.drawing.thickness / 2,
             window.drawing.thickness,
             window.drawing.thickness
         )
@@ -53,12 +48,8 @@ function drawMousedown(e) {
 
 function drawMouseup(e) {
     if (e.buttons & 2 == 0 && !window.drawing.erase) {
-        const end = {
-            'x': e.offsetX,
-            'y': e.offsetY
-        };
-        const color = window.drawing.color;
-        draw(end, color);
+        // end the path
+        draw({'x': e.offsetX, 'y': e.offsetY});
         window.drawing.ctx.closePath();
         window.drawing.mouseStart = null;
     }
@@ -66,34 +57,28 @@ function drawMouseup(e) {
 
 function drawMousemove(e) {
     const now = new Date();
-    if ((now - window.drawing.last) < window.drawing.timeout) { 
-        return; 
-    }
+    if ((now - window.drawing.last) < window.drawing.timeout) { return; }
     window.drawing.last = now;
 
     if (window.drawing.mouseStart !== null && e.buttons % 2 == 1  && !window.drawing.erase) {
-        const next = {
-            'x': e.offsetX,
-            'y': e.offsetY
-        };
-        const color = window.drawing.color;
-        draw(next, color);
-        window.drawing.mouseStart = next;
+        // when not in erase mode, continue the path and draw line segment
+        window.drawing.mouseStart = {'x': e.offsetX, 'y': e.offsetY};
+        draw(window.drawing.mouseStart);
     } else if (e.buttons % 2 == 1 && window.drawing.erase) {
-        const thickness = window.drawing.thickness;
+        // when in erase mode, clear the rectangle around the cursor
         window.drawing.ctx.clearRect(
-            e.offsetX - thickness / 2,
-            e.offsetY - thickness / 2,
+            e.offsetX - window.drawing.thickness / 2,
+            e.offsetY - window.drawing.thickness / 2,
             window.drawing.thickness,
             window.drawing.thickness
         )
     }
 }
 
-function draw(end, color) {
-    // draw this line locally
+function draw(end) {
+    // draw line as part of existing path
     window.drawing.ctx.lineWidth = window.drawing.thickness;
-    window.drawing.ctx.strokeStyle = color;
+    window.drawing.ctx.strokeStyle = window.drawing.color;
     window.drawing.ctx.lineTo(end.x, end.y);
     window.drawing.ctx.stroke();
 }
