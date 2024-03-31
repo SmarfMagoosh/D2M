@@ -71,6 +71,7 @@ if (typeof exports !== 'undefined') {
 
 
 function logout() {
+    const myMSALObj = new msal.PublicClientApplication(msalConfig);
     const currentAccounts = myMSALObj.getAllAccounts();
     if(currentAccounts && currentAccounts.length == 1) {
         // Choose which account to logout from by passing a username.

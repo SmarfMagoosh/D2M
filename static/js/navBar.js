@@ -18,13 +18,12 @@ fetch('/getUserInfo')
         })
     }
     else {
-        document.getElementById('settingsButton').style.display = 'none'
+        settingsButton = document.getElementById('settingsButton')
+        if (settingsButton) settingsButton.style.display = 'none'
     }
     
     dynamicLogin()
 })
-
-const myMSALObj = new msal.PublicClientApplication(msalConfig);
 
 function signOut() {
     /**
@@ -34,27 +33,32 @@ function signOut() {
 
     fetch(`/logout`)
     sessionStorage.removeItem("customIdToken");
-
     logout()
-
     window.location.href = "../home";
 }
 
 function dynamicLogin() {
+    console.log("navbar options should be updating")
     var loginButton = document.getElementById("loginButton");
     var logoutButton = document.getElementById("logoutButton");
+    var profileButton = document.getElementById("profileButton");
 
-    if (account !== "") {
-        loginButton.style.display = "none";
-        logoutButton.style.display = "block";
-    } else {
-        loginButton.style.display = "block";
-        logoutButton.style.display = "none";
+    if (loginButton && logoutButton && profileButton){
+        if (account !== "") {
+            loginButton.style.display = "none";
+            logoutButton.style.display = "block";
+            profileButton.style.display = "block";
+        } else {
+            loginButton.style.display = "block";
+            logoutButton.style.display = "none";
+            profileButton.style.display = "none";
+        }
     }
 }
 
 function setUsername(username) {
-    document.getElementById("username").textContent = username
+    usernameElem = document.getElementById("username")
+    if (usernameElem) usernameElem.textContent = username
 }
 
 function goToSettings() {

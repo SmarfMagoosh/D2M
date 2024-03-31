@@ -60,7 +60,7 @@
             <div class="dropdown">
                 <button class="dropbtn"><i class="fa-solid fa-bars"></i></button>
                 <div class="dropdown-content">
-                    <a href="{{ url_for('get_profile') }}">Profile</a>
+                    <a id="profileButton" href="{{ url_for('get_profile') }}">Profile</a>
                     <a id="settingsButton" onclick="goToSettings()">Settings</a>
                     <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
                     <a id="logoutButton" onclick="signOut()">Logout</a>
@@ -70,7 +70,7 @@
                     </div>
                 </div>
             </div>
-            <h4 class="bold-text white-text">__<span id="username" class="text-light"></span>__</h4>
+            <h4 class="bold-text white-text"><span id="username" class="text-light"></span></h4>
             <a href="{{ url_for('get_create') }}" class="circular-button-link">
                 <button class="circular-button">+</button>
             </a>
