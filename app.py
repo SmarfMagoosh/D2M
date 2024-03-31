@@ -1,18 +1,16 @@
 from datetime import datetime, timedelta
 from flask import session
-import os, sys, hashlib, json
+import os, sys, json
 import string
 import secrets
 import re
 
-from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from forms import SettingsForm
-from sqlalchemy import Integer, String, JSON, Boolean
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
-from io import BytesIO
 import base64
 import atexit
 import time
@@ -407,11 +405,6 @@ def get_profile(username = None):
     
 
 
-# @app.get('/getCurrentSettings')
-# def getCurrentSettings():
-#     email = request.args.get('email')
-#     return redirect(url_for('get_settings')+ "email=" + str(email))
-
 # this method loads the settings page with settings updated for the current user
 # return back to home if there is no user signed in
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
@@ -612,7 +605,6 @@ def setPassword():
     print("hello")
     token = request.args.get('token')
     newPassword = request.args.get('password')
-    expiration_minutes = 15
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
@@ -928,9 +920,9 @@ def getUsername():
     
 @app.get('/getUserInfo')
 def getUser():
-    user = User.query.filter_by(gccEmail=session.get('customIdToken')).first()
-    if user:
-        userInfo = user.get_user_info()
+    userEmail = session.get('customIdToken')
+    if userEmail:
+        userInfo = User.query.get(userEmail).get_user_info()
         userInfo['loggedIn'] = True
 
         return userInfo

@@ -5,8 +5,6 @@ username = ""
 fetch('/getUserInfo')
 .then(response => response.json())
 .then(data => {
-    console.log(data)
-
     if(data.loggedIn) {
         account = data.gccEmail
         username = data.username
