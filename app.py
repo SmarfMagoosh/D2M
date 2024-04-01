@@ -705,8 +705,8 @@ def add_user():
     db.session.commit()
     return jsonify(returnVal)
 
-@app.get("/follow/<string:u1Email>/<string:u2Email>")
-def follow(u1Email, u2Email):
+@app.post("/follow/<string:u1Email>/<string:u2Email>")
+def create_follow_route(u1Email, u2Email):
     create_follow(u1Email, u2Email)
     return "success"
 
