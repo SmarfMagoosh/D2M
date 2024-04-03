@@ -395,14 +395,20 @@ def get_post(post_id):
 @app.get("/profile/")
 @app.get("/profile/<string:username>/")
 def get_profile(username = None):
-    if(username == None):
-         user = load_user(session.get('customIdToken'))
-         return render_template("profile.html", user = user)
-    else:
-        user = User.query.filter_by(username=username).first()
-        return render_template("profile.html", user = user)
-    # # load a different person's profile
-    
+    # if(username == None):
+    #      user = load_user(session.get('customIdToken'))
+    #      return render_template("profile.html", user = user)
+    # else:
+    #     user = User.query.filter_by(username=username).first()
+    #     return render_template("profile.html", user = user)
+    # 
+
+    loggedInUser = load_user(session.get('customIdToken'))
+    if username == None: # thus a user is loggedIn
+        profileUser = loggedInUser
+    else:  # load a different person's profile
+        profileUser = User.query.filter_by(username=username).first()
+    return render_template("profile.html", user = profileUser, loggedInUser = loggedInUser)
 
 
 # this method loads the settings page with settings updated for the current user
@@ -571,9 +577,11 @@ def sendResetEmail():
     # Email body
     body = f"""
     Dear {user.username},
+
     We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
     {resetLink}
     If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+
     Thank you,
     The D2M Team
     """
@@ -922,12 +930,13 @@ def getUsername():
 def getUser():
     userEmail = session.get('customIdToken')
     if userEmail:
-        userInfo = User.query.get(userEmail).get_user_info()
-        userInfo['loggedIn'] = True
-
-        return userInfo
-    else:
-        return {'loggedIn': False}
+        user = User.query.get(userEmail)
+        if user:
+            userInfo = user.get_user_info()
+            userInfo['loggedIn'] = True
+            return userInfo
+        
+    return {'loggedIn': False}
     
 @app.get('/login')
 def login():

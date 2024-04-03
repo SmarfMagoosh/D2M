@@ -20,15 +20,24 @@
         <div class="media align-items-end profile-head"> 
             <div class="profile mr-3">
                 <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80" alt="..." width="130" class="rounded mb-2 img-thumbnail">
-                
             </div>
             <div class="media-body mb-5 text-white"> 
-                <h2 class="mt-0 mb-0", id="username">{{user.username}}</h2>
-                <h2 class="mt-1", id="email">{{user.gccEmail}}</h2>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mt-0 mb-0" id="username">{{user.username}}</h2>
+                        <h2 class="mt-1" id="email">{{user.gccEmail}}</h2>
+                    </div>
+                    {% if loggedInUser and loggedInUser.gccEmail != user.gccEmail %}
+                    <div>
+                        <a href="#" class="btn btn-dark btn-sm">Follow</a>
+                    </div>
+                    {% endif %}
+                </div>
                 <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block">Edit profile</a>
-                    <p class="small mb-4">                  
+                <p class="small mb-4"></p>
             </div> 
-        </div> 
+        </div>
+        
     </div> 
     <div class="bg-light p-4 d-flex justify-content-end text-center"> 
         <!-- <ul class="list-inline mb-0"> 

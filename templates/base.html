@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} - D2M</title>
-    <link rel="stylesheet" href="../static/css/styling.css">
+    <link rel="stylesheet" href="/static/css/styling.css">
     <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
     <script src = "{{url_for('static', filename='js/notification.js')}}"></script>
@@ -24,7 +24,7 @@
 <body>
     <nav class="navbar">
         <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:2rem;height:2rem;"></a>
-        <script src="../static/js/search.js"></script>
+        <script src="{{ url_for('static', filename='js/search.js') }}"></script>
         <div class="navbar-items">
             <input type="text" id="searchInput" placeholder="Search by name">
             <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -84,7 +84,7 @@
     <script id="load-msal" src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.js"
     integrity="sha384-BO4qQ2RTxj2akCJc7t6IdU9aRg6do4LGIkVVa01Hm33jxM+v2G+4q+vZjmOCywYq"
     crossorigin="anonymous"></script>
-    <script type="text/javascript" src="./../static/js/authConfig.js"></script>
-    <script type="text/javascript" src="./../static/js/navBar.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/authConfig.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/navBar.js') }}"></script>
 </body>
 </html>
