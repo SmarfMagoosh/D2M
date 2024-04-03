@@ -566,10 +566,8 @@ def sendResetEmail():
     msg['To'] = receiver_email
     msg['Subject'] = 'D2M Password Reset Request'
     
-    # url_for("get_resetPassword")
 
-    resetLink = 'http://localhost/resetPassword?token=' + token
-    # resetLink = 'https://d2m.gcc.edu/resetPassword?token=' + token
+    resetLink = request.base_url.replace("sendResetEmail", "") + 'resetPassword?token=' + token
     # Email body
     body = f"""
     Dear {user.username},
