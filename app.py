@@ -207,6 +207,7 @@ class Bookmark(db.Model):
     
 class Follow(db.Model):
     __tablename__ = 'Follows'
+    # user1 follows user2
     user1 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     # advanced backref because of 2 foreign keys from same table
@@ -327,8 +328,8 @@ with app.app_context():
                  backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
-    follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
+    # follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
+    # follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
@@ -628,6 +629,49 @@ def setPassword():
     db.session.commit()
 
     return jsonify({'success': True, 'email': user.gccEmail})
+
+@app.route('/follow_user', methods=['POST'])
+def follow_user_route():
+    data = request.get_json()
+    otherUserEmail = data.get('otherUserEmail')
+    otherUser = load_user(otherUserEmail)
+    currUser = load_user(session.get('customIdToken'))
+
+    if currUser and otherUser:
+        # Check if user1 is already following user2
+        existing_follow = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUser.gccEmail).first()
+
+        if existing_follow:
+            print(f"{currUser.gccEmail} is already following {otherUser.gccEmail}.")
+        else:
+            # Create a new Follow object representing the follow relationship
+            new_follow = Follow(user1=currUser.gccEmail, user2=otherUser.gccEmail)
+            db.session.add(new_follow)
+            db.session.commit()
+            print(f"{currUser.gccEmail} is now following {otherUser.gccEmail}.")
+
+            # Reload user1 instance to update followList
+            currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
+    else:
+        print("One or both users do not exist.")
+    # result = follow_user(user1_email, user2_email)
+    print_following(currUser.gccEmail)
+
+    return jsonify({'message': "result"})
+
+def print_following(user_email):
+    # Query the User object corresponding to the user_email
+    user = User.query.filter_by(gccEmail=user_email).first()
+
+    if user:
+        # Access the followList attribute to get all followers
+        followers = user.followList
+        print(f"{user_email} follows:")
+        for follower in followers:
+            print(load_user(follower.user2).username)
+    else:
+        print(f"No user found with email: {user_email}")
+
 
 # def create_comment(commentData, u2Email):
 #     with app.app_context():

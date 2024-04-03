@@ -29,7 +29,7 @@
                     </div>
                     {% if loggedInUser and loggedInUser.gccEmail != user.gccEmail %}
                     <div>
-                        <a href="#" class="btn btn-dark btn-sm">Follow</a>
+                        <button id="followButton" href="#" class="btn btn-dark btn-sm">Follow</button>
                     </div>
                     {% endif %}
                 </div>
@@ -120,6 +120,33 @@
                            
         </div>
     </div>
+    <script>
+        // Function to execute when the follow button is clicked
+        document.getElementById('followButton').addEventListener('click', function() {
+            // Data to send to the server
+            var data = {
+                otherUserEmail: document.getElementById("email").innerText,  // Replace with actual value
+            };
+
+            // Make an AJAX request to the Flask endpoint
+            fetch('/follow_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Message:', data.message);
+                // Do something with the message
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
     </div>
 </div>
 {% endblock %}
