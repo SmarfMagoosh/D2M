@@ -5,10 +5,7 @@ username = ""
 fetch('/getUserInfo')
 .then(response => response.json())
 .then(data => {
-    console.log(data)
-
     if(data.loggedIn) {
-        console.log("asdksjfdhsdkfjhsdkjfh")
         account = data.gccEmail
         username = data.username
         fetch(`/getUsername?gccEmail=${account}`)
@@ -21,19 +18,12 @@ fetch('/getUserInfo')
         })
     }
     else {
-        document.getElementById('settingsButton').style.display = 'none'
-    }
-    if(account !== "") {
-
-    }
-    
-    if(account == null) {
+        settingsButton = document.getElementById('settingsButton')
+        if (settingsButton) settingsButton.style.display = 'none'
     }
     
     dynamicLogin()
 })
-
-const myMSALObj = new msal.PublicClientApplication(msalConfig);
 
 function signOut() {
     /**
@@ -43,38 +33,33 @@ function signOut() {
 
     fetch(`/logout`)
     sessionStorage.removeItem("customIdToken");
-
-    const currentAccounts = myMSALObj.getAllAccounts();
-    if(currentAccounts && currentAccounts.length == 1) {
-        // Choose which account to logout from by passing a username.
-        const logoutRequest = {
-            account: myMSALObj.getAllAccounts()[0]//getAccountByUsername(username),
-            // postLogoutRedirectUri: 'http://localhost', // Simply remove this line if you would like navigate to index page after logout.
-        };
-
-        myMSALObj.logoutRedirect(logoutRequest);
-    }
-
+    logout()
     window.location.href = "../home";
 }
 
 function dynamicLogin() {
     var loginButton = document.getElementById("loginButton");
     var logoutButton = document.getElementById("logoutButton");
+    var profileButton = document.getElementById("profileButton");
 
-    if (account !== "") {
-        loginButton.style.display = "none";
-        logoutButton.style.display = "block";
-    } else {
-        loginButton.style.display = "block";
-        logoutButton.style.display = "none";
+    if (loginButton && logoutButton && profileButton){
+        if (account !== "") {
+            loginButton.style.display = "none";
+            logoutButton.style.display = "block";
+            profileButton.style.display = "block";
+        } else {
+            loginButton.style.display = "block";
+            logoutButton.style.display = "none";
+            profileButton.style.display = "none";
+        }
     }
 }
 
 function setUsername(username) {
-    document.getElementById("username").textContent = username
+    usernameElem = document.getElementById("username")
+    if (usernameElem) usernameElem.textContent = username
 }
 
 function goToSettings() {
-    window.location.href = `/settings?email=${account}`
+    window.location.href = `/settings`
 }

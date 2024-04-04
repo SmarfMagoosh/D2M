@@ -8,7 +8,7 @@
         <title> Responsive Login and Signup Form </title>
 
         <!-- CSS -->
-        <link rel="stylesheet" href="../static/css/signin-oidc.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/signin-oidc.css') }}">
 
         <!-- Boxicons CSS -->
         <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
@@ -54,7 +54,7 @@
                     </form>
 
                     <div class="form-link">
-                        <span>Don't have an account? <a href="#" class="link signup-link">Signup</a></span>
+                        <span>Don't have an account? <a onclick="signIn()" class="signup-link">Signup</a></span>
                     </div>
                 </div>
 
@@ -145,7 +145,7 @@
                     </form>
 
                     <div class="form-link">
-                        <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
+                        <span>Already have an account? <a onclick="signOut()" class="link login-link">Login</a></span>
                     </div>
                 </div>
             </div>
@@ -208,8 +208,8 @@
 
         <!-- JavaScript -->
         <!-- importing app scripts (load order is important) -->
-        <script type="text/javascript" src="./../static/js/authConfig.js"></script>
-        <script type="text/javascript" src="./../static/js/authRedirect.js"></script>
-        <script type="text/javascript" src="./../static/js/signin-oidc.js"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/authConfig.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/authRedirect.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/signin-oidc.js') }}"></script>
     </body>
 </html>

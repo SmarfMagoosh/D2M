@@ -1,18 +1,16 @@
 from datetime import datetime, timedelta
 from flask import session
-import os, sys, hashlib, json
+import os, sys, json
 import string
 import secrets
 import re
 
-from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from forms import SettingsForm
-from sqlalchemy import Integer, String, JSON, Boolean
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
-from io import BytesIO
 import base64
 import atexit
 import time
@@ -66,12 +64,6 @@ def update_like_backend():
     update_times.pop(0)
     print(update_times)
 
-def create_follow(u1Email, u2Email):
-    with app.app_context():
-        follow = Follow(user1 = u1Email, user2 = u2Email)
-        db.session.add(follow)
-        db.session.commit()
-
 def create_like(email, post, up):
     with app.app_context():
         like = Like(userEmail = email, postID = post, positive=up)
@@ -89,6 +81,7 @@ def delete_notification(notif):
     with app.app_context():
         db.session.delete(notif)
         db.session.commit()
+        
 # takes in a Pillow Image object and returns the thumbnail version
 def create_thumbnail(image_path, dimensions = (400, 400)):
     img = Image.open(image_path)
@@ -125,7 +118,7 @@ class User(db.Model) :
     
     bio = db.Column(db.String, nullable = True)
     
-    backupEmail = db.Column(db.String, default = "")#nullable = True)
+    backupEmail = db.Column(db.String, default = "")
     backupPasswordHash = db.Column(db.String, nullable = True)
     passwordResetToken = db.Column(db.String, nullable = True)
     timesReported = db.Column(db.Integer, default = 0)
@@ -208,6 +201,7 @@ class Bookmark(db.Model):
     
 class Follow(db.Model):
     __tablename__ = 'Follows'
+    # user1 follows user2
     user1 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     # advanced backref because of 2 foreign keys from same table
@@ -328,8 +322,8 @@ with app.app_context():
                  backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
-    follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
+    # follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
+    # follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
@@ -380,6 +374,7 @@ def get_home():
                         .all()
     return render_template("home.html", posts=[p.render_json() for p in recent])
 
+# render the signin page html
 @app.get("/signin-oidc/")
 def get_login():
     return render_template("signin-oidc.html")
@@ -429,48 +424,56 @@ def getCurrentSettings():
 # @login_required
 def get_settings():
     form = SettingsForm()
-    email = request.args.get('email')
-
-    if email == None:
-        redirect(url_for("get_home"))
-        return {'loggedout': True}
-
-    user = load_user(session['customIdToken'])
-    if user != None:
+    #get curr user
+    user = load_user(session.get('customIdToken'))
+    if user:
         form.username.data = user.username
         form.bio.data = user.bio
         form.backup_email.data = user.backupEmail
         return render_template('settings.html', form=form)
     else:
-        return None
+        redirect(url_for("get_home"))
+        return {'loggedout': True}
+    
 
+# this method gettings the new settings entered on the settings page and validates them
+# returns a json indicating which entries are valid
 @app.get("/checkNewSettings/")
 def checkNewSettings():
     info = json.loads(request.args.get('info'))
-    email = request.args.get('email')
     user = load_user(session.get('customIdToken'))
 
     returnVal = {}
 
+    # indicate if username was updated
     returnVal['usernameUpdate'] = info['username'] != user.username
+
+    # indicate if new username already exists or not
     if User.query.filter_by(username=info['username']).first():
         returnVal['usernameUnique'] = False
     else:
         returnVal['usernameUnique'] = True
 
+
     backupEmail = info['backup_email']
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 
+    # indicate if backup email is being updated
     returnVal['emailUpdate'] = str(backupEmail) != str(user.backupEmail)
+    # indicate is new backup email is of valid email form
     returnVal['validEmail'] = True if re.fullmatch(regex, backupEmail) else False
 
+    # indicate if the password is being updated
     returnVal['passwordUpdate'] = info['old_password'] != "" or info['change_password'] != "" or info['confirm_password'] != ""
+    # indicate the current passwords match
     returnVal['oldPasswordMatch'] = bcrypt.checkpw(info['old_password'].encode('utf-8'), user.backupPasswordHash)
+    # indicate if the new password is valid
     returnVal['newPasswordValid'] = len(info['change_password']) >= 8
+    # indicate if the new passwords match
     returnVal['newPasswordMatch'] = info['change_password'] == info['confirm_password']
 
+    # indicate if info was successfully updated
     success = True
-
     if returnVal['usernameUpdate'] and not returnVal['usernameUnique']:
         success = False
     if returnVal['emailUpdate'] and not returnVal['validEmail']:
@@ -482,21 +485,14 @@ def checkNewSettings():
     
     return jsonify(returnVal)
 
+# this post route updates the user settings based on the inputed values on the settings page
 @app.route("/settings/", methods=["POST"])
 def post_settings():
     json_data = request.json
     user = load_user(session.get('customIdToken'))
     user.username = json_data.get('username')
     user.bio = json_data.get('bio')
-    backupEmail = json_data.get('backup_email')
-
-
-
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-    if(re.fullmatch(regex, backupEmail)):
-        user.backupEmail = backupEmail
-    else:
-        print("Invalid Email")
+    user.backupEmail = json_data.get('backup_email')
 
     oldPassword = json_data.get('old_password')
     newPassword = json_data.get('change_password')
@@ -508,6 +504,7 @@ def post_settings():
     db.session.commit()
     return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
 
+# get a user object
 def load_user(userEmail):
     if userEmail != None:
         return User.query.get(userEmail)
@@ -520,7 +517,7 @@ def genResetToken():
     self = User.query.filter_by(username=name).first()
     if self:
         token_length = 32
-        expiration_minutes = 60
+        expiration_minutes = 15
 
         user_info = f"{self.username}~"
 
@@ -534,8 +531,6 @@ def genResetToken():
         expiration_time = datetime.utcnow() + timedelta(minutes=expiration_minutes)
         expiration_timestamp = expiration_time.timestamp()
 
-# def create_comment(commentData, u2Email):
-#     with app.app_context():
         # Append expiration timestamp to the token
         token_with_expiration = f"{token}~{expiration_timestamp}"
 
@@ -546,7 +541,6 @@ def genResetToken():
 @app.get('/validate_reset_token')
 def validate_reset_token():
     token = request.args.get('token')
-    expiration_minutes = 60
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
@@ -557,7 +551,7 @@ def validate_reset_token():
     expiration_time = datetime.fromtimestamp(float(expiration_timestamp))
 
     # Check if token has expired
-    if datetime.utcnow() > expiration_time:
+    if  datetime.utcnow() > expiration_time:
         return jsonify({'valid': False})
 
     return jsonify({'valid': True})
@@ -583,18 +577,20 @@ def sendResetEmail():
     msg['From'] = sender_email
     msg['To'] = receiver_email
     msg['Subject'] = 'D2M Password Reset Request'
+    
 
-    resetLink = 'http://localhost/resetPassword?token=' + token
-    # resetLink = 'https://d2m.gcc.edu/resetPassword?token=' + token
+    resetLink = request.base_url.replace("sendResetEmail", "") + 'resetPassword?token=' + token
     # Email body
     body = f"""
-Dear {user.username},
-We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
-{resetLink}
-If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
-Thank you,
-The D2M Team
-"""
+    Dear {user.username},
+
+    We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
+    {resetLink}
+    If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+
+    Thank you,
+    The D2M Team
+    """
 
     msg.attach(MIMEText(body, 'plain'))
 
@@ -622,7 +618,6 @@ The D2M Team
 def setPassword():
     token = request.args.get('token')
     newPassword = request.args.get('password')
-    expiration_minutes = 60
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
@@ -638,6 +633,57 @@ def setPassword():
     db.session.commit()
 
     return jsonify({'success': True, 'email': user.gccEmail})
+
+@app.route('/toggle_follow_status', methods=['POST'])
+def toggle_follow_status():
+    data = request.get_json()
+    otherUserEmail = data.get('otherUserEmail')
+    otherUser = load_user(otherUserEmail)
+    currUser = load_user(session.get('customIdToken'))
+
+    if currUser and otherUser:
+        # Check if user1 is already following user2
+        existing_follow = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUser.gccEmail).first()
+
+        if existing_follow:
+            # If already following, unfollow
+            db.session.delete(existing_follow)
+            db.session.commit()
+            is_following = False
+        else:
+            # If not following, follow
+            new_follow = Follow(user1=currUser.gccEmail, user2=otherUser.gccEmail)
+            db.session.add(new_follow)
+            db.session.commit()
+            is_following = True
+
+        # Reload user1 instance to update followList
+        currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
+        result_message = "Followed" if is_following else "Unfollowed"
+        return jsonify({'message': result_message})
+    else:
+        print("One or both users do not exist.")
+        return jsonify({'message': "Error: One or both users do not exist."})
+    
+@app.route('/check_follow_status', methods=['POST'])
+def check_follow_status():
+    data = request.get_json()
+    otherUserEmail = data.get('otherUserEmail')
+    currUserEmail = session.get('customIdToken')
+
+    if currUserEmail:
+        # Get the current user
+        currUser = load_user(currUserEmail)
+        if currUser:
+            # Check if the current user is following the other user
+            is_following = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUserEmail).first() is not None
+            return jsonify({'is_following': is_following})
+        else:
+            return jsonify({'error': 'Current user not found'}), 404
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+
 
 # def create_comment(commentData, u2Email):
 #     with app.app_context():
@@ -714,11 +760,6 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
     return jsonify(returnVal)
-
-@app.get("/follow/<string:u1Email>/<string:u2Email>")
-def follow(u1Email, u2Email):
-    create_follow(u1Email, u2Email)
-    return "success"
 
 # Define a route to handle AJAX requests for creating comments
 @app.post('/create_comment')
@@ -938,14 +979,15 @@ def getUsername():
     
 @app.get('/getUserInfo')
 def getUser():
-    user = User.query.filter_by(gccEmail=session.get('customIdToken')).first()
-    if user:
-        userInfo = user.get_user_info()
-        userInfo['loggedIn'] = True
-
-        return userInfo
-    else:
-        return {'loggedIn': False}
+    userEmail = session.get('customIdToken')
+    if userEmail:
+        user = User.query.get(userEmail)
+        if user:
+            userInfo = user.get_user_info()
+            userInfo['loggedIn'] = True
+            return userInfo
+        
+    return {'loggedIn': False}
     
 @app.get('/login')
 def login():

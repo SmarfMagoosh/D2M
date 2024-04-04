@@ -1,5 +1,9 @@
-account = sessionStorage.getItem("customIdToken")
-
+// account = sessionStorage.getItem("customIdToken")
+/* FYI this ^^^^ is outdated. To get the current user you now how to make a fetch
+ request to fetch('/getUserInfo'). This responds with a json. The json contains 
+ a 'loggedIn' field that contains a boolean to see if there's a logged in user. If
+ there is a logged in user the json contains basic user info.
+ ~Bryce */
 
 
 
