@@ -60,17 +60,24 @@
             <div class="dropdown">
                 <button class="dropbtn"><i class="fa-solid fa-bars"></i></button>
                 <div class="dropdown-content">
+                    {% if loggedInUser %}
                     <a id="profileButton" href="{{ url_for('get_profile') }}">Profile</a>
                     <a id="settingsButton" onclick="goToSettings()">Settings</a>
-                    <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
                     <a id="logoutButton" onclick="signOut()">Logout</a>
+                    {% else %}
+                    <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
+                    {% endif %}
                     <div class="form-check form-switch">
                         <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
                         <input class="form-check-input pull-right" type="checkbox" role="switch" id="darkModeToggle" onclick="dmToggleFlip()">
                     </div>
                 </div>
             </div>
-            <h4 class="bold-text white-text"><span id="username" class="text-light"></span></h4>
+
+            <!-- {% if loggedInUser %} -->
+            <h4 class="bold-text white-text"><span id="username" class="text-light"></span>{{loggedInUser.username}}</h4>
+            <!-- {% endif %} -->
+
             <a href="{{ url_for('get_create') }}" class="circular-button-link">
                 <button class="circular-button">+</button>
             </a>

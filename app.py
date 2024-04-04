@@ -364,7 +364,7 @@ def get_resetPassword():
 
 @app.get("/create/")
 def get_create():
-    return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")])
+    return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], loggedInUser = load_user(session.get('customIdToken')))
 
 @app.get("/home/")
 def get_home():
@@ -372,7 +372,7 @@ def get_home():
     recent = Post.query.order_by(Post.postID.desc()) \
                         .limit(DEFAULT_POSTS_LOADED) \
                         .all()
-    return render_template("home.html", posts=[p.render_json() for p in recent])
+    return render_template("home.html", posts=[p.render_json() for p in recent], loggedInUser = load_user(session.get('customIdToken')))
 
 # render the signin page html
 @app.get("/signin-oidc/")
@@ -385,7 +385,7 @@ def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
     # just plain get might work better, not sure, but it would return None with a failure rather than aborting
     post = Post.query.get_or_404(post_id)
-    return render_template("post.html", post=post.to_json())
+    return render_template("post.html", post=post.to_json(), loggedInUser = load_user(session.get('customIdToken')))
 
 @app.get("/profile/")
 @app.get("/profile/<string:username>/")
@@ -419,7 +419,7 @@ def get_settings():
         form.username.data = user.username
         form.bio.data = user.bio
         form.backup_email.data = user.backupEmail
-        return render_template('settings.html', form=form)
+        return render_template('settings.html', form=form, loggedInUser = load_user(session.get('customIdToken')))
     else:
         redirect(url_for("get_home"))
         return {'loggedout': True}
