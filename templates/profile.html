@@ -179,7 +179,6 @@
                     .then(data => {
                         // After following/unfollowing, update button status
                         updateFollowButton(followButton);
-                        console.log('Message:', data.message);
                     })
                     .catch(error => {
                         console.error('Error:', error);

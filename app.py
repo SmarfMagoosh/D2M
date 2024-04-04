@@ -605,7 +605,6 @@ def sendResetEmail():
 
 @app.get('/setPassword')
 def setPassword():
-    print("hello")
     token = request.args.get('token')
     newPassword = request.args.get('password')
 
@@ -639,14 +638,12 @@ def toggle_follow_status():
             # If already following, unfollow
             db.session.delete(existing_follow)
             db.session.commit()
-            print(f"{currUser.gccEmail} unfollowed {otherUser.gccEmail}.")
             is_following = False
         else:
             # If not following, follow
             new_follow = Follow(user1=currUser.gccEmail, user2=otherUser.gccEmail)
             db.session.add(new_follow)
             db.session.commit()
-            print(f"{currUser.gccEmail} followed {otherUser.gccEmail}.")
             is_following = True
 
         # Reload user1 instance to update followList
@@ -656,19 +653,6 @@ def toggle_follow_status():
     else:
         print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
-
-# def print_following(user_email):
-#     # Query the User object corresponding to the user_email
-#     user = User.query.filter_by(gccEmail=user_email).first()
-
-#     if user:
-#         # Access the followList attribute to get all followers
-#         followers = user.followList
-#         print(f"{user_email} follows:")
-#         for follower in followers:
-#             print(load_user(follower.user2).username)
-#     else:
-#         print(f"No user found with email: {user_email}")
     
 @app.route('/check_follow_status', methods=['POST'])
 def check_follow_status():
