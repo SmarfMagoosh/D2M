@@ -77,34 +77,22 @@
                   </div>
                               
                   <div id="Liked" class="tabcontent">
-                   
-                   PUT LIKED STUFFS HERE
-
-                   <!-- {% for post in liked_posts %}
-                   <div class="post">
-                       <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                           <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
-                       </a>
-                       <p>{{ post.title }}</p>
-                   </div>
-               {% endfor %} -->
-
-                    {% for like in user.likeList %}
-                        {{ like.postID }}
+                   {% for post in liked_posts %}
+                   <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   </a>
+                   {{post.title}}
+                   <br>
                     {% endfor %}
                   </div>
                               
                   <div id="Bookmarked" class="tabcontent">
-                    <!-- {% for post in user.bookmarkList.postID %}
-                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                    <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
-                    </a>
-                    {{post.title}} 
-                   {% endfor %}-->
-                   PUT BOOKMARK STUFFS HERE
-
-                    {% for bookmark in user.bookmarkList %}
-                        {{ bookmark.postID }}
+                    {% for post in bookmarked_posts %}
+                   <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   </a>
+                   {{post.title}}
+                   <br>
                     {% endfor %}
 
                   </div>
