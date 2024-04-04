@@ -1,18 +1,16 @@
 from datetime import datetime, timedelta
 from flask import session
-import os, sys, hashlib, json
+import os, sys, json
 import string
 import secrets
 import re
 
-from flask import Flask, session, render_template, url_for, redirect, request, jsonify, send_file
+from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from forms import SettingsForm
-from sqlalchemy import Integer, String, JSON, Boolean
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from PIL import Image
-from io import BytesIO
 import base64
 import atexit
 import time
@@ -65,12 +63,6 @@ def update_like_backend():
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
     print(update_times)
-
-def create_follow(u1Email, u2Email):
-    with app.app_context():
-        follow = Follow(user1 = u1Email, user2 = u2Email)
-        db.session.add(follow)
-        db.session.commit()
 
 def create_like(email, post, up):
     with app.app_context():
@@ -209,6 +201,7 @@ class Bookmark(db.Model):
     
 class Follow(db.Model):
     __tablename__ = 'Follows'
+    # user1 follows user2
     user1 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     # advanced backref because of 2 foreign keys from same table
@@ -329,8 +322,8 @@ with app.app_context():
                  backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
-    follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
+    # follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
+    # follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
@@ -397,20 +390,21 @@ def get_post(post_id):
 @app.get("/profile/")
 @app.get("/profile/<string:username>/")
 def get_profile(username = None):
-    if(username == None):
-         user = load_user(session.get('customIdToken'))
-         return render_template("profile.html", user = user)
-    else:
-        user = User.query.filter_by(username=username).first()
-        return render_template("profile.html", user = user)
-    # # load a different person's profile
-    
+    # if(username == None):
+    #      user = load_user(session.get('customIdToken'))
+    #      return render_template("profile.html", user = user)
+    # else:
+    #     user = User.query.filter_by(username=username).first()
+    #     return render_template("profile.html", user = user)
+    # 
 
+    loggedInUser = load_user(session.get('customIdToken'))
+    if username == None: # thus a user is loggedIn
+        profileUser = loggedInUser
+    else:  # load a different person's profile
+        profileUser = User.query.filter_by(username=username).first()
+    return render_template("profile.html", user = profileUser, loggedInUser = loggedInUser)
 
-# @app.get('/getCurrentSettings')
-# def getCurrentSettings():
-#     email = request.args.get('email')
-#     return redirect(url_for('get_settings')+ "email=" + str(email))
 
 # this method loads the settings page with settings updated for the current user
 # return back to home if there is no user signed in
@@ -572,15 +566,17 @@ def sendResetEmail():
     msg['From'] = sender_email
     msg['To'] = receiver_email
     msg['Subject'] = 'D2M Password Reset Request'
+    
 
-    resetLink = 'http://localhost/resetPassword?token=' + token
-    # resetLink = 'https://d2m.gcc.edu/resetPassword?token=' + token
+    resetLink = request.base_url.replace("sendResetEmail", "") + 'resetPassword?token=' + token
     # Email body
     body = f"""
     Dear {user.username},
+
     We have received a request to reset your password for your account at D2M. To reset your password, please click on the following link:
     {resetLink}
     If you did not request this password reset, you can safely ignore this email. Your password will remain unchanged.
+
     Thank you,
     The D2M Team
     """
@@ -609,10 +605,8 @@ def sendResetEmail():
 
 @app.get('/setPassword')
 def setPassword():
-    print("hello")
     token = request.args.get('token')
     newPassword = request.args.get('password')
-    expiration_minutes = 15
 
     # Split token and expiration timestamp
     token_parts = token.split('~')
@@ -628,6 +622,57 @@ def setPassword():
     db.session.commit()
 
     return jsonify({'success': True, 'email': user.gccEmail})
+
+@app.route('/toggle_follow_status', methods=['POST'])
+def toggle_follow_status():
+    data = request.get_json()
+    otherUserEmail = data.get('otherUserEmail')
+    otherUser = load_user(otherUserEmail)
+    currUser = load_user(session.get('customIdToken'))
+
+    if currUser and otherUser:
+        # Check if user1 is already following user2
+        existing_follow = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUser.gccEmail).first()
+
+        if existing_follow:
+            # If already following, unfollow
+            db.session.delete(existing_follow)
+            db.session.commit()
+            is_following = False
+        else:
+            # If not following, follow
+            new_follow = Follow(user1=currUser.gccEmail, user2=otherUser.gccEmail)
+            db.session.add(new_follow)
+            db.session.commit()
+            is_following = True
+
+        # Reload user1 instance to update followList
+        currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
+        result_message = "Followed" if is_following else "Unfollowed"
+        return jsonify({'message': result_message})
+    else:
+        print("One or both users do not exist.")
+        return jsonify({'message': "Error: One or both users do not exist."})
+    
+@app.route('/check_follow_status', methods=['POST'])
+def check_follow_status():
+    data = request.get_json()
+    otherUserEmail = data.get('otherUserEmail')
+    currUserEmail = session.get('customIdToken')
+
+    if currUserEmail:
+        # Get the current user
+        currUser = load_user(currUserEmail)
+        if currUser:
+            # Check if the current user is following the other user
+            is_following = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUserEmail).first() is not None
+            return jsonify({'is_following': is_following})
+        else:
+            return jsonify({'error': 'Current user not found'}), 404
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+
 
 # def create_comment(commentData, u2Email):
 #     with app.app_context():
@@ -704,11 +749,6 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
     return jsonify(returnVal)
-
-@app.post("/follow/<string:u1Email>/<string:u2Email>")
-def create_follow_route(u1Email, u2Email):
-    create_follow(u1Email, u2Email)
-    return "success"
 
 # Define a route to handle AJAX requests for creating comments
 @app.post('/create_comment')
@@ -928,14 +968,15 @@ def getUsername():
     
 @app.get('/getUserInfo')
 def getUser():
-    user = User.query.filter_by(gccEmail=session.get('customIdToken')).first()
-    if user:
-        userInfo = user.get_user_info()
-        userInfo['loggedIn'] = True
-
-        return userInfo
-    else:
-        return {'loggedIn': False}
+    userEmail = session.get('customIdToken')
+    if userEmail:
+        user = User.query.get(userEmail)
+        if user:
+            userInfo = user.get_user_info()
+            userInfo['loggedIn'] = True
+            return userInfo
+        
+    return {'loggedIn': False}
     
 @app.get('/login')
 def login():

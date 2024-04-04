@@ -11,8 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} - D2M</title>
-    <link rel="stylesheet" href="../static/css/styling.css">
-    <script src = "../static/js/scripting.js"></script>
+    <link rel="stylesheet" href="/static/css/styling.css">
     <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
     <script src = "{{url_for('static', filename='js/notification.js')}}"></script>
@@ -25,7 +24,7 @@
 <body>
     <nav class="navbar">
         <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:2rem;height:2rem;"></a>
-        <script src="../static/js/search.js"></script>
+        <script src="{{ url_for('static', filename='js/search.js') }}"></script>
         <div class="navbar-items">
             <input type="text" id="searchInput" placeholder="Search by name">
             <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -61,7 +60,7 @@
             <div class="dropdown">
                 <button class="dropbtn"><i class="fa-solid fa-bars"></i></button>
                 <div class="dropdown-content">
-                    <a href="{{ url_for('get_profile') }}">Profile</a>
+                    <a id="profileButton" href="{{ url_for('get_profile') }}">Profile</a>
                     <a id="settingsButton" onclick="goToSettings()">Settings</a>
                     <a id="loginButton" href="{{ url_for('get_login') }}">Login</a>
                     <a id="logoutButton" onclick="signOut()">Logout</a>
@@ -71,7 +70,7 @@
                     </div>
                 </div>
             </div>
-            <h4 class="bold-text white-text">__<span id="username" class="text-light"></span>__</h4>
+            <h4 class="bold-text white-text"><span id="username" class="text-light"></span></h4>
             <a href="{{ url_for('get_create') }}" class="circular-button-link">
                 <button class="circular-button">+</button>
             </a>
@@ -85,7 +84,7 @@
     <script id="load-msal" src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.js"
     integrity="sha384-BO4qQ2RTxj2akCJc7t6IdU9aRg6do4LGIkVVa01Hm33jxM+v2G+4q+vZjmOCywYq"
     crossorigin="anonymous"></script>
-    <script type="text/javascript" src="./../static/js/authConfig.js"></script>
-    <script type="text/javascript" src="./../static/js/navBar.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/authConfig.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/navBar.js') }}"></script>
 </body>
 </html>
