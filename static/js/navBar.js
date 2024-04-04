@@ -38,7 +38,6 @@ function signOut() {
 }
 
 function dynamicLogin() {
-    console.log("navbar options should be updating")
     var loginButton = document.getElementById("loginButton");
     var logoutButton = document.getElementById("logoutButton");
     var profileButton = document.getElementById("profileButton");
