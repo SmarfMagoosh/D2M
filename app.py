@@ -64,12 +64,6 @@ def update_like_backend():
     update_times.pop(0)
     print(update_times)
 
-def create_follow(u1Email, u2Email):
-    with app.app_context():
-        follow = Follow(user1 = u1Email, user2 = u2Email)
-        db.session.add(follow)
-        db.session.commit()
-
 def create_like(email, post, up):
     with app.app_context():
         like = Like(userEmail = email, postID = post, positive=up)
@@ -771,11 +765,6 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
     return jsonify(returnVal)
-
-@app.get("/follow/<string:u1Email>/<string:u2Email>")
-def follow(u1Email, u2Email):
-    create_follow(u1Email, u2Email)
-    return "success"
 
 # Define a route to handle AJAX requests for creating comments
 @app.post('/create_comment')
