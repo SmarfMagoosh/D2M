@@ -630,8 +630,8 @@ def setPassword():
 
     return jsonify({'success': True, 'email': user.gccEmail})
 
-@app.route('/follow_user', methods=['POST'])
-def follow_user_route():
+@app.route('/toggle_follow_status', methods=['POST'])
+def toggle_follow_status():
     data = request.get_json()
     otherUserEmail = data.get('otherUserEmail')
     otherUser = load_user(otherUserEmail)
@@ -642,35 +642,58 @@ def follow_user_route():
         existing_follow = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUser.gccEmail).first()
 
         if existing_follow:
-            print(f"{currUser.gccEmail} is already following {otherUser.gccEmail}.")
+            # If already following, unfollow
+            db.session.delete(existing_follow)
+            db.session.commit()
+            print(f"{currUser.gccEmail} unfollowed {otherUser.gccEmail}.")
+            is_following = False
         else:
-            # Create a new Follow object representing the follow relationship
+            # If not following, follow
             new_follow = Follow(user1=currUser.gccEmail, user2=otherUser.gccEmail)
             db.session.add(new_follow)
             db.session.commit()
-            print(f"{currUser.gccEmail} is now following {otherUser.gccEmail}.")
+            print(f"{currUser.gccEmail} followed {otherUser.gccEmail}.")
+            is_following = True
 
-            # Reload user1 instance to update followList
-            currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
+        # Reload user1 instance to update followList
+        currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
+        result_message = "Followed" if is_following else "Unfollowed"
+        return jsonify({'message': result_message})
     else:
         print("One or both users do not exist.")
-    # result = follow_user(user1_email, user2_email)
-    print_following(currUser.gccEmail)
+        return jsonify({'message': "Error: One or both users do not exist."})
 
-    return jsonify({'message': "result"})
+# def print_following(user_email):
+#     # Query the User object corresponding to the user_email
+#     user = User.query.filter_by(gccEmail=user_email).first()
 
-def print_following(user_email):
-    # Query the User object corresponding to the user_email
-    user = User.query.filter_by(gccEmail=user_email).first()
+#     if user:
+#         # Access the followList attribute to get all followers
+#         followers = user.followList
+#         print(f"{user_email} follows:")
+#         for follower in followers:
+#             print(load_user(follower.user2).username)
+#     else:
+#         print(f"No user found with email: {user_email}")
+    
+@app.route('/check_follow_status', methods=['POST'])
+def check_follow_status():
+    data = request.get_json()
+    otherUserEmail = data.get('otherUserEmail')
+    currUserEmail = session.get('customIdToken')
 
-    if user:
-        # Access the followList attribute to get all followers
-        followers = user.followList
-        print(f"{user_email} follows:")
-        for follower in followers:
-            print(load_user(follower.user2).username)
+    if currUserEmail:
+        # Get the current user
+        currUser = load_user(currUserEmail)
+        if currUser:
+            # Check if the current user is following the other user
+            is_following = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUserEmail).first() is not None
+            return jsonify({'is_following': is_following})
+        else:
+            return jsonify({'error': 'Current user not found'}), 404
     else:
-        print(f"No user found with email: {user_email}")
+        return jsonify({'error': 'User not logged in'}), 401
+
 
 
 # def create_comment(commentData, u2Email):
