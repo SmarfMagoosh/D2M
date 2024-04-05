@@ -54,8 +54,10 @@ function loginExisting() {
     .then(data => {
         if (data.exists) {
             fetch(`/login?email=${data.email}`)
-            // sessionStorage.setItem("customIdToken", data.email)
-            window.location.href = "../home";
+            .then(response => {
+                // sessionStorage.setItem("customIdToken", data.email)
+                window.location.href = "../home";
+            })
         } else {
             document.getElementById("incorrectCredentials").style.display = "inline";
             usernameField.value = ""
@@ -113,8 +115,10 @@ function register() {
     .then(data => {
         if ((data.uniqueUsername) && (data.goodPassword)) {
             fetch(`/login?email=${email}`)
+            .then(response => {
             // sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
+            })
         }
         else {
             invalidUsername = document.getElementById("invalidUsername")

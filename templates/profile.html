@@ -29,7 +29,31 @@
                     </div>
                     {% if loggedInUser and loggedInUser.gccEmail != user.gccEmail %}
                     <div>
-                        <button id="followButton" href="#" class="btn btn-dark btn-sm">Follow</button>
+                        <button id="blockButton" href="#" class="btn btn-dark btn-sm">
+                            {% if blocked %}
+                                Unblock
+                            {% else %}
+                                Block
+                            {% endif %}
+                        </button>
+
+                        {% if not blocked %}
+                            <button id="followButton" href="#" class="btn btn-dark btn-sm">
+                                {% if following %}
+                                    Unfollow
+                                {% else %}
+                                    Follow
+                                {% endif %}
+                            </button>
+                        {% else %}
+                            <button id="followButton" href="#" style="display: none;" class="btn btn-dark btn-sm">
+                                {% if following %}
+                                    Unfollow
+                                {% else %}
+                                    Follow
+                                {% endif %}
+                            </button>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
@@ -124,42 +148,10 @@
         // Function to execute when the follow button is clicked
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Function to check follow status and update button
-            function updateFollowButton(followButton) {
-                // Data to send to the server
-                var data = {
-                    otherUserEmail: document.getElementById("email").innerText,  // Replace with actual value
-                };
-
-                // Make an AJAX request to check follow status
-                fetch('/check_follow_status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.is_following) {
-                        // If already following, change button to unfollow
-                        followButton.innerText = 'Unfollow';
-                    } else {
-                        // If not following, keep button as follow
-                        followButton.innerText = 'Follow';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
-
             followButton = document.getElementById('followButton')
+            blockButton = document.getElementById('blockButton')
 
-            // Call the function to update button status when page loads
             if(followButton) {
-                updateFollowButton(followButton);
-
                 // Function to execute when the follow button is clicked
                 followButton.addEventListener('click', function() {
                     // Data to send to the server
@@ -176,13 +168,49 @@
                         body: JSON.stringify(data)
                     })
                     .then(response => response.json())
-                    .then(data => {
-                        // After following/unfollowing, update button status
-                        updateFollowButton(followButton);
+                    .then(data => followButton.innerText = data.is_following ? 'Unfollow' : 'Follow')
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+
+            if(blockButton) {
+                // Function to execute when the follow button is clicked
+                blockButton.addEventListener('click', function() {
+                    // Data to send to the server
+                    var data = {
+                        otherUserEmail: document.getElementById("email").innerText,
+                    };
+
+                    // Make an AJAX request to toggle follow status
+                    fetch('/toggle_block_status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
                     })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
+                    .then(response => response.json())
+                    .then(ret => {
+                        if(ret.is_blocked) {
+                            blockButton.innerText = 'Unblock';
+                            if(followButton)
+                                followButton.style.display = 'none';
+                                fetch('/unfollow', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(data)
+                                })
+                                .then(followButton.innerText = "Follow")
+                        }
+                        else {
+                            blockButton.innerText = 'Block';
+                            if(followButton)
+                                followButton.style.display = '';
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
                 });
             }
         });
