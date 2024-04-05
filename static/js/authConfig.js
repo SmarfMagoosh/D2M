@@ -8,9 +8,8 @@ const msalConfig = {
     auth: {
         clientId: '1a216859-dca0-4c6a-9d27-4eb96dd00ab3', // This is the ONLY mandatory field that you need to supply.
         authority: 'https://login.microsoftonline.com/83918960-2218-4cd3-81fe-302a8e771da9', // Defaults to "https://login.microsoftonline.com/common"
-        // redirectUri: 'https://d2m.gcc.edu/signin-oidc', // You must register this URI on Azure Portal/App Registration. Defaults to window.location.href e.g. http://localhost:3000/
-        redirectUri: 'http://localhost/signin-oidc', // You must register this URI on Azure Portal/App Registration. Defaults to window.location.href e.g. http://localhost:3000/
-        navigateToLoginRequestUrl: true, // If "true", will navigate back to the original request location before processing the auth code response.
+        redirectUri:  window.location.origin + '/signin-oidc', // You must register this URI on Azure Portal/App Registration. Defaults to window.location.href e.g. http://localhost:3000/
+        navigateToLoginRequestUrl: false, // If "true", will navigate back to the original request location before processing the auth code response.
     },
     cache: {
         cacheLocation: 'sessionStorage', // Configures cache location. "sessionStorage" is more secure, but "localStorage" gives you SSO.
@@ -67,4 +66,19 @@ if (typeof exports !== 'undefined') {
       msalConfig: msalConfig,
       loginRequest: loginRequest,
   };
+}
+
+
+function logout() {
+    const myMSALObj = new msal.PublicClientApplication(msalConfig);
+    const currentAccounts = myMSALObj.getAllAccounts();
+    if(currentAccounts && currentAccounts.length == 1) {
+        // Choose which account to logout from by passing a username.
+        const logoutRequest = {
+            account: myMSALObj.getAllAccounts()[0]//getAccountByUsername(username),
+            // postLogoutRedirectUri: 'http://localhost', // Simply remove this line if you would like navigate to index page after logout.
+        };
+
+        myMSALObj.logoutRedirect(logoutRequest);
+    }
 }
