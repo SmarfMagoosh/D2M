@@ -45,6 +45,16 @@ body {
     cursor: move;
 }
 
+.extra-img {
+    border: solid black 1px;
+    cursor: move;
+}
+
+.extra-img > img {
+    width: 100%;
+    height: 100%;
+}
+
 .bold {font-weight: bold;}
 .italics {font-style: italic;}
 .strike {text-decoration: line-through;}
@@ -89,13 +99,13 @@ body {
     height: 15px;
 }
 
-.text-box-container, #drawing {
+.text-box-container, #drawing, .image-container {
     top: 0;
     position: absolute;
     left: 0;
     right: 0;
     margin: auto;
-    max-width: calc(100% - 20px);
+    max-width: calc(100% - 12px);
     text-align: center;
     overflow: hidden;
     height: 100%;

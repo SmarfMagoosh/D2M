@@ -5,6 +5,7 @@ $("document").ready(() => {
     textbox_init()
     add_image_init()
     $("#image-tool-bar").hide()
+    $("#fileInputBtn").click(e => $("#fileInput").click())
 
     // no creating or viewing text boxes until image selected
     $("#new-box-btn").attr("disabled", true)
@@ -24,12 +25,10 @@ $("document").ready(() => {
     $("#post-btn").click(post)
     $("#cancel-btn").click(cancel_post)
     $("#new-box-btn").click(add_text_box)
-    $("#list-opener").click(e => $("#template-list").modal())
-    $("#fileInputBtn, #fileInputBtn2").click(e => $("#fileInput").click())
     $(".image-tool").click(e => update_tools(e.target.innerText))
 
     // event listeners for adding the base image
-    $("#fileInput").change(e => upload_base_image($("#fileInput")[0]))
+    $("#fileInput").change(e => upload_base_image(e.target))
     $(".template-card").click(e => init_meme(e.target.src.replace("/template-thumbnails", "/meme-templates")))
 })
 
@@ -50,14 +49,7 @@ function adjust_spacing(value, position) {
         window.create.dimensions.height
     )
 
-    drawings.onload = function() {
-        window.drawing.ctx.drawImage(
-            drawings, 0,
-            window.create.dimensions.height * value * position,
-            drawings.naturalWidth,
-            drawings.naturalHeight
-        )
-    }
+    // TODO: redraw drawings translated correctly
 }
 
 function init_meme(src) {
@@ -156,20 +148,17 @@ function update_tools(tool_bar) {
     $("#image-tools").children().hide()
     if (tool_bar == "Adjust Spacing") {
         $("#spacing-tools").show()
-        $(".text-box-container").each((i, elem) => {
-            let meme = $(elem).parent()
-            $(elem).detach()
-            meme.append(elem)
-        })
+        $(".text-box-container").each((i, elem) => bring_to_front($(elem)))
         enable_textboxes()
     } else if (tool_bar == "Draw") {
         $("#drawing-tools").show()
         disable_textboxes()
-        let x = $("#drawing")
-        let meme = x.parent()
-        x.detach()
-        meme.append(x)
-    } else if (tool_bar == "Add Image") {
-        $("#add-image").modal()
+        bring_to_front($("#drawing"))
     }
+}
+
+function bring_to_front(elem) {
+    let p = elem.parent()
+    elem.detach()
+    p.append(elem)
 }

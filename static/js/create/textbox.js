@@ -38,12 +38,7 @@ function add_text_box() {
     $(".meme-text")
         .draggable({containment: "parent"})
         .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
-        .mouseover(e => {
-            let x = $(e.target).parents(".text-box-container")
-            let meme = x.parent()
-            x.detach()
-            meme.append(x)
-        })
+        .mouseover(e => bring_to_front($(e.target).parents(".text-box-container")))
 
     // update meme-text when text is entered
     $(".text-box").on("input", e => {
