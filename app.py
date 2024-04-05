@@ -594,8 +594,8 @@ def sendResetEmail():
 
     # Connect to SMTP server
     try:
-        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
-            server = smtplib.SMTP('smtp.office365.com', 587)
+        with smtplib.SMTP('webmail.gcc.edu', 587, timeout=10) as server:
+            server = smtplib.SMTP('webmail.gcc.edu', 587)
             server.starttls()  # Secure the connection
             server.login(sender_email, password)
             text = msg.as_string()
