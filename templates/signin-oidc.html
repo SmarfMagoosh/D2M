@@ -17,9 +17,16 @@
         <script id="load-msal" src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.js"
         integrity="sha384-BO4qQ2RTxj2akCJc7t6IdU9aRg6do4LGIkVVa01Hm33jxM+v2G+4q+vZjmOCywYq"
         crossorigin="anonymous"></script>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styling.css') }}">
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+
                         
     </head>
     <body>
+        <nav class="navbar">
+            <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:3rem;height:3rem;"></a>
+        </nav>
         <section id="formMode" class="container forms">
             <div class="form login">
                 <div class="form-content">
