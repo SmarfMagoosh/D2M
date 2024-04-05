@@ -784,6 +784,28 @@ def create_comment_route():
     # Return a response indicating success
     return {'message': 'Comment created successfully'}, 200
 
+# Define a route to handle AJAX requests for creating comments
+@app.post('/create_report')
+def create_report_route():
+    # Get the data from the AJAX request
+    data = request.json
+    reason = data.get('reason')
+    username = data.get('username')
+    postID = data.get('postID')
+
+    new_report = Report(
+        postID=postID,
+        reason = reason,
+        username=username
+        # The reportID will be automatically generated due to autoincrement=True
+    )
+    db.session.add(new_report)
+    db.session.commit()
+    print("HEY! IT DOES A THING!!")
+
+    # Return a response indicating success
+    return {'message': 'Report created successfully'}, 200
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,15 +1,59 @@
 // post.js
-
 document.addEventListener('DOMContentLoaded', function () {
     // Assuming you have a script tag somewhere in your HTML where you can embed JavaScript
     window.post = {}
-
+    
+    
     
 //THE REPORT BUTTON
 
 // Get references to elements
-const reportButton = document.getElementById('report-btn');
+// Get the report button and report popup elements
 const reportPopup = document.getElementById('report-popup');
+reportPopup.style.display = 'none'; 
+
+$("#report-btn").click(e => {
+    reportPopup.style.display = 'block';
+});
+
+$("#cancel-btn").click(e => {
+    reportPopup.style.display = 'none';    
+});
+
+$("#submit-btn").click(e => {
+    e.preventDefault();
+
+    // Get the value of the comment input field
+    const reportValue = document.getElementById('report-text').value;
+
+    // You also need to retrieve the username and postID from somewhere
+    const user = getCurrentUser();  // Assuming you have a function to get the current user
+    const postID = $(e.target).attr('data-postId');
+    console.log(reportValue)
+    console.log(getCurrentUser().username)
+    console.log(postID)
+
+    // Call the createReport function to create a new comment
+    createReport(reportValue, "u1", postID)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Handle successful response
+            console.log('New report created successfully');
+            // Optionally, update the UI or perform other actions
+            window.location.reload();  // Reload the page to display the new comment
+        })
+        .catch(error => {
+            // Handle fetch errors
+            console.error('Fetch error:', error);
+        });
+        window.location.reload();  
+});
+
+
+
+
 
 
 // Event listener for click event on copy button
@@ -150,6 +194,34 @@ function createLike(email, postId, isPositive) {
         headers: {
             'Content-Type': 'application/json'
         }
+    });
+}
+
+function createReport(reason, username, postID) {
+
+    // Make a POST request to the Flask route
+    fetch('/create_report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            reason: reason,
+            username: username,
+            postID: postID
+        }) // Convert data to JSON format
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        // Handle successful response
+        console.log('Okay I built the report');b
+        // Optionally, update the UI or perform other actions
+    })
+    .catch(error => {
+        // Handle fetch errors
+        console.error('Fetch error:', error);
     });
 }
 

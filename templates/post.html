@@ -41,20 +41,19 @@
         <button id="like-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-up"></i></button>  
         <button id="dislike-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-down"></i></button>   
         <button id="bookmark-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-bookmark"></i></button>
-        <!-- <button id="report-btn"><i class="fa-solid fa-flag"></i></button> -->
+        <button id="report-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-flag"></i></button>
         <button id="copy-link-btn"><i class="fa-solid fa-link"></i></button>
         <button id="remix-btn"><i class="fa-solid fa-file-pen"></i></button>
     </div>
     
-    <!-- <div id="report-popup" class="popup">
+    <div id="report-popup" class="comment-box">
         <div class="popup-content">
-            <span class="close-btn" onclick="closePopup()">&times;</span>
-            <label for="comment">Reason for Report:</label>
-            <textarea id="report-text" placeholder="Enter your report"></textarea>
-            <button onclick="submitReport()">Submit</button>
-            <button onclick="closePopup()">Cancel</button>
+            <label for="comment">Reason for Report:</label><br>
+            <textarea id="report-text" placeholder="Enter your report"></textarea><br>
+            <button id="submit-btn" data-postId="{{ post['id'] }}">Submit</button>
+            <button id="cancel-btn">Cancel</button>
         </div>
-    </div> -->
+    </div>
 
     <form id="comment-form" data-postId="{{ post['id'] }}">
         <label for="comment">Leave a Comment:</label><br>
