@@ -739,14 +739,15 @@ def post_meme():
         title = body['title'],
         backImage = "",
         timePosted = 0, # TODO
-        username = "Carnegie Mellon Baller", # TODO
+        username = body["user"],
         numLikes = 0,
         numLikesD1 = 0,
         numLikesD2 = 0,
         numLikesD3 = 0,
     )
-    post_inst.backImage = f"./static/images/{post_inst.postID}.png"
     db.session.add(post_inst)
+    db.session.commit()
+    post_inst.backImage = f"{post_inst.postID}.png"
     db.session.commit()
     for box in body["textboxes"]:
         tb_inst = TextBox(

@@ -2,17 +2,13 @@ $("document").ready(() => {
     //namespace for page
     const create = {}
     fetch("/getUserInfo")
-        .then(response => {
-            if (response.ok) {
-                return response.json()
-            } else {
-                return Promise.reject(response)
-            }
-        })
-        .then(data => console.log(data))
+        .then(response => response.ok ? response.json() : Promise.reject(response))
+        .then(data => create.user = data)
     drawing_init(create)
     textbox_init(create)
     add_image_init(create)
+
+    window.get_create = () => create
     $("#image-tool-bar").hide()
     $("#fileInputBtn").click(e => $("#fileInput").click())
 
@@ -111,7 +107,8 @@ function post(create) {
             space_arrangement: $("#space-arrangement").val(),
             textboxes: $.map($(".text-box"), elem => new MemeTextBox(create, elem)),
             imgData: create.canvas.toDataURL(),
-            title: $("#post-title").val()
+            title: $("#post-title").val(),
+            user: create.user.username
         }
         fetch("/create", {
             method: "POST",
@@ -134,16 +131,16 @@ class MemeTextBox {
         this.id = tb.id.split("-")[1]
         this.settings = {
             alignment: $(`#alignment-${this.id}`).val(),
-            font_size: $(`#font-size-${this.id}`).val(),
+            font_size: $(`#fontsize-${this.id}`).val(),
             font: $(`#font-${this.id}`).val(),
-            font_color: $(`#font-color-${this.id}`).val(),
-            font_shadow: $(`#font-shadow-${this.id}`).val(),
-            is_bold: $(`#bold-${this.id}`).val(),
-            is_italic: $(`#italics-${this.id}`).val(),
-            underlined: $(`#underline-${this.id}`).val(),
-            is_struckthrough: $(`#strikethrough-${this.id}`).val(),
-            has_shadow: $(`#shadow-${this.id}`).val(),
-            is_capitalized: $(`#capitals-${this.id}`).val(),
+            font_color: $(`#fontcolor-${this.id}`).val(),
+            font_shadow: $(`#fontshadow-${this.id}`).val(),
+            is_bold: $(`#bold-${this.id}`).val() == "on" ? true : false,
+            is_italic: $(`#italics-${this.id}`).val() == "on" ? true : false,
+            underlined: $(`#underline-${this.id}`).val() == "on" ? true : false,
+            is_struckthrough: $(`#strikethrough-${this.id}`).val() == "on" ? true : false,
+            has_shadow: $(`#shadow-${this.id}`).val() == "on" ? true : false,
+            is_capitalized: $(`#capitals-${this.id}`).val() == "on" ? true : false,
         }
     }
 }
