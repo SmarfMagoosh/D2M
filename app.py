@@ -64,9 +64,9 @@ def update_like_backend():
     update_times.pop(0)
     print(update_times)
 
-def create_like(email, post, up):
+def create_like(username, post, up):
     with app.app_context():
-        like = Like(userEmail = email, postID = post, positive=up)
+        like = Like(username = username, postID = post, positive=up)
         db.session.add(like)
         db.session.commit()
         
@@ -833,13 +833,13 @@ def create_report_route():
     # Get the data from the AJAX request
     data = request.json
     reason = data.get('reason')
-    username = data.get('username')
+    userEmail = data.get('userEmail')
     postID = data.get('postID')
 
     new_report = Report(
         postID=postID,
         reason = reason,
-        username=username
+        userEmail= userEmail
         # The reportID will be automatically generated due to autoincrement=True
     )
     db.session.add(new_report)
@@ -848,6 +848,45 @@ def create_report_route():
 
     # Return a response indicating success
     return {'message': 'Report created successfully'}, 200
+
+# Define a route to handle AJAX requests for creating comments
+@app.post('/create_like')
+def create_like_route():
+    # Get the data from the AJAX request
+    data = request.json
+    userEmail = data.get('userEmail')
+    positive = data.get('positive')
+    postID = data.get('postID')
+
+    new_like = Like(
+        postID=postID,
+        userEmail = userEmail,
+        positive = positive
+    )
+    db.session.add(new_like)
+    db.session.commit()
+    print("HEY! IT DOES A THING!!")
+
+    # Return a response indicating success
+    return {'message': 'Like created successfully'}, 200
+
+@app.post('/create_bookmark')
+def create_bookmark_route():
+    # Get the data from the AJAX request
+    data = request.json
+    userEmail = data.get('userEmail')
+    postID = data.get('postID')
+
+    new_like = Bookmark(
+        postID=postID,
+        userEmail = userEmail,
+    )
+    db.session.add(new_like)
+    db.session.commit()
+    print("HEY! IT DOES A THING!!")
+
+    # Return a response indicating success
+    return {'message': 'Bookmark created successfully'}, 200
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)

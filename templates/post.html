@@ -60,6 +60,19 @@
         <textarea id="comment-box" placeholder="Enter your comment"></textarea><br>
         <input type="submit" value="Submit!">
     </form>
+
+    {% if loggedInUser %}
+        {% for report in post.reportsList %}
+        <div class="comment-box">
+            <div class="comment">
+                <div class="comment-content">
+                    <p>your post was reported: {{ report.reason }}</p>
+                </div>
+            </div>
+        </div>
+        <p>hello!</p>
+        {% endfor %}
+    {% endif %}
 </div>
 
 <div id = "comment-content">
