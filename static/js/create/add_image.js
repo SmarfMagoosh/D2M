@@ -1,5 +1,5 @@
-function add_image_init() {
-    window.images = []
+function add_image_init(create) {
+    create.images = []
     $("#addImgInput").change(e => add_image(e))
     $("#addImgBtn").click(e => $("#fileInput").click())
     $("#uploadImgBtn").hide()
@@ -8,7 +8,7 @@ function add_image_init() {
 function add_image(e) {
     const MAX_FILE_SIZE = 2_000_000
     if (FileReader && e.target.files && e.target.files.length) {
-        let base = e.target.files[0]
+        const base = e.target.files[0]
         if (base.size < MAX_FILE_SIZE) {
             const reader = new FileReader();
             reader.onload = () => {
@@ -17,7 +17,7 @@ function add_image(e) {
                 newImg.onload = () => {
                     const canv = $("#added-image-preview")[0]
                     const ctx = canv.getContext("2d")
-                    let aspectRatio = newImg.naturalHeight / newImg.naturalWidth
+                    const aspectRatio = newImg.naturalHeight / newImg.naturalWidth
 
                     canv.height = aspectRatio * canv.width;
                     ctx.drawImage(newImg, 0, 0, canv.width, canv.height)
@@ -31,7 +31,7 @@ function add_image(e) {
                             .mouseover(e => bring_to_front($(e.target)))
                             .append($(newImg))
                         cont.append(widget)
-                        window.images.push($(newImg))
+                        create.images.push($(newImg))
                         $("#meme").append(cont)
                     })
                 }

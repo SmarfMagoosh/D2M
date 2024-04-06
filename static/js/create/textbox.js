@@ -1,37 +1,37 @@
-function textbox_init() {
-    window.textboxes = {};
-    window.textboxes.boxes = []
-    window.textboxes.numboxes = 0;
+function textbox_init(create) {
+    create.textboxes = {};
+    create.textboxes.boxes = []
+    create.textboxes.numboxes = 0;
 
     $(".meme-text").hide()
     $(".meme-text").mouseover(e => {
-        let x = $(e.target).parents(".text-box-container")
-        let meme = x.parent()
+        const x = $(e.target).parents(".text-box-container")
+        const meme = x.parent()
         x.detach()
         meme.append(x)
     })
 }
 
-function add_text_box() {
-    window.textboxes.numboxes += 1;
+function add_text_box(create) {
+    create.textboxes.numboxes += 1;
 
     // show new textbox on rightside panel
-    let textbox = $(`
+    const textbox = $(`
     <div>
-        <textarea placeholder = "Enter Text" id = "text-${window.textboxes.numboxes}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
+        <textarea placeholder = "Enter Text" id = "text-${create.textboxes.numboxes}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
         <div class = "dropdown">
             <button class = "btn settings-menu" type = "button"><i class = "fa fa-gear"></i></button>
-            <div class = "dropdown-menu">${settings_menu(window.textboxes.numboxes)}</div>
+            <div class = "dropdown-menu">${settings_menu(create.textboxes.numboxes)}</div>
         </div>
         <button class = "btn trash-btn"><i class = "fa fa-trash"></i></button>
     </div>
     `)
     $("#right-content").children()[0].append(textbox[0]);
 
-    // overlay new text window over meme
+    // overlay new text create.over meme
     $("#meme").append($(`
         <div class = 'text-box-container' style = 'top: 0'>
-            <div class = 'meme-text' id = 'meme-text-${window.textboxes.numboxes}'></div>
+            <div class = 'meme-text' id = 'meme-text-${create.textboxes.numboxes}'></div>
         </div>`))
 
     // make new text box draggable and resizable
@@ -42,7 +42,7 @@ function add_text_box() {
 
     // update meme-text when text is entered
     $(".text-box").on("input", e => {
-        let x = $(`#meme-${e.target.id}`)
+        const x = $(`#meme-${e.target.id}`)
         x.resizable("destroy")
         x.text(e.target.value)
         x.resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
@@ -73,8 +73,9 @@ function add_text_box() {
 }
 
 function delete_box(btn) {
-    while (btn.tagName != "DIV") { btn = btn.parentNode }
-    let id = btn.children[0].id
+    btn = $(btn).closest("div")
+    //while (btn.tagName != "DIV") { btn = btn.parentNode }
+    const id = btn[0].children[0].id
     btn.remove()
     $(`#meme-${id}`).remove()
 }
@@ -157,8 +158,7 @@ function settings_menu(x) {
         <input type = "checkbox" id = "capitals-${x}" class = "form-check-input settings-capitals" checked>
         <label for = "capitals-${x}">All Caps</label>
     </div>
-</div>
-`
+</div>`
 }
 
 function disable_textboxes() {
@@ -170,8 +170,8 @@ function enable_textboxes() {
         .draggable({containment: "parent"})
         .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
         .mouseover(e => {
-            let x = $(e.target).parents(".text-box-container")
-            let meme = x.parent()
+            const x = $(e.target).parents(".text-box-container")
+            const meme = x.parent()
             x.detach()
             meme.append(x)
         })
