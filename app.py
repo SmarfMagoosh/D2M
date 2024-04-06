@@ -364,7 +364,11 @@ def get_resetPassword():
 
 @app.get("/create/")
 def get_create():
-    return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")])
+    user = load_user(session.get("customIdToken"))
+    return render_template(
+        "create.html", 
+        templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], 
+        user = user)
 
 @app.get("/home/")
 def get_home():
@@ -968,6 +972,7 @@ def getUsername():
     
 @app.get('/getUserInfo')
 def getUser():
+    print(f"Session: {session}")
     userEmail = session.get('customIdToken')
     if userEmail:
         user = User.query.get(userEmail)

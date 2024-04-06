@@ -1,6 +1,15 @@
 $("document").ready(() => {
     //namespace for page
     const create = {}
+    fetch("/getUserInfo")
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else {
+                return Promise.reject(response)
+            }
+        })
+        .then(data => console.log(data))
     drawing_init(create)
     textbox_init(create)
     add_image_init(create)
@@ -96,18 +105,20 @@ function upload_base_image(create, input) {
 }
 
 function post(create) {
-    meme = {
-        spacing: $("#spacer").val(),
-        space_arrangement: $("#space-arrangement").val(),
-        textboxes: $.map($(".text-box"), elem => new MemeTextBox(create, elem)),
-        imgData: create.canvas.toDataURL(),
-        title: $("#post-title").val()
+    return function() {
+        meme = {
+            spacing: $("#spacer").val(),
+            space_arrangement: $("#space-arrangement").val(),
+            textboxes: $.map($(".text-box"), elem => new MemeTextBox(create, elem)),
+            imgData: create.canvas.toDataURL(),
+            title: $("#post-title").val()
+        }
+        fetch("/create", {
+            method: "POST",
+            body: JSON.stringify(meme),
+            headers: { "Content-type": "application/json; charset=UTF-8" }
+        }).then(response => window.location.href = "/profile")
     }
-    fetch("/create", {
-        method: "POST",
-        body: JSON.stringify(meme),
-        headers: { "Content-type": "application/json; charset=UTF-8" }
-    }).then(response => window.location.href = "/profile")
 }
 
 class MemeTextBox {
