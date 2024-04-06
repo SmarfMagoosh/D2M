@@ -294,15 +294,27 @@ function post() {
         imgData: window.canvas.toDataURL(),
         title: $("#post-title")[0].value
     }
-    for (let textarea of $(".text-box")) {
+    let boxes = $(".text-box")
+    for (let textarea of boxes) {
         let tb = new MemeTextBox(textarea)
         meme.textboxes.push(tb)
+        // hijack this part, then make another later
+        textarea.style.border = "none"
+    }
+    // take screenshot
+    html2canvas(window.canvas).then(canvas => {
+        meme.thumbnailData = canvas.toDataURL('image/png');
+    })
+    // restore the textboxes
+    for (let textarea of boxes) {
+        textarea.style.border = ""
     }
     fetch(window.location.href, {
         method: "POST",
         body: JSON.stringify(meme),
         headers: { "Content-type": "application/json; charset=UTF-8" }
     }).then(response => window.location.href = "../profile");
+    
 }
 
 function cancel_post() {
