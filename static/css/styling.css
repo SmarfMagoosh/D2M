@@ -46,7 +46,6 @@
   justify-content: space-between;
   align-items: center;
   background-color: #9e363a; /* Dark background for the navbar */
-  position: fixed; /* Use fixed positioning */
   width: 100%; /* Full width of the viewport */
   top: 0; /* Align the navbar at the top */
   padding: 10px 20px; /* Adjust padding as needed */

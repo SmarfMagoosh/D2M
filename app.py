@@ -133,7 +133,8 @@ class User(db.Model) :
     notificationList = db.relationship('Notification', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
-    
+    blockList = db.relationship('Block', back_populates='blocker', foreign_keys='Block.user1')
+
     def postlist_to_json(self):
         return {
             "posts": [p.render_json() for p in self.postList]
@@ -206,6 +207,14 @@ class Follow(db.Model):
     user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     # advanced backref because of 2 foreign keys from same table
     follower = db.relationship('User', back_populates='followList', foreign_keys=[user1])
+
+class Block(db.Model):
+    __tablename__ = 'Blocks'
+    # user1 blocks user2
+    user1 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
+    user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
+    # advanced backref because of 2 foreign keys from same table
+    blocker = db.relationship('User', back_populates='blockList', foreign_keys=[user1])
 
 class Post(db.Model) :
     __tablename__ = 'Posts'
@@ -368,7 +377,8 @@ def get_create():
     return render_template(
         "create.html", 
         templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], 
-        user = user)
+        loggedInUser = user)
+
 
 @app.get("/home/")
 def get_home():
@@ -376,7 +386,7 @@ def get_home():
     recent = Post.query.order_by(Post.postID.desc()) \
                         .limit(DEFAULT_POSTS_LOADED) \
                         .all()
-    return render_template("home.html", posts=[p.render_json() for p in recent])
+    return render_template("home.html", posts=[p.render_json() for p in recent], loggedInUser = load_user(session.get('customIdToken')))
 
 # render the signin page html
 @app.get("/signin-oidc/")
@@ -389,25 +399,25 @@ def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
     # just plain get might work better, not sure, but it would return None with a failure rather than aborting
     post = Post.query.get_or_404(post_id)
-    return render_template("post.html", post=post.to_json())
+    return render_template("post.html", post=post.to_json(), loggedInUser = load_user(session.get('customIdToken')))
 
 @app.get("/profile/")
 @app.get("/profile/<string:username>/")
 def get_profile(username = None):
-    # if(username == None):
-    #      user = load_user(session.get('customIdToken'))
-    #      return render_template("profile.html", user = user)
-    # else:
-    #     user = User.query.filter_by(username=username).first()
-    #     return render_template("profile.html", user = user)
-    # 
-
     loggedInUser = load_user(session.get('customIdToken'))
+    following = False
+    blocked = False
     if username == None: # thus a user is loggedIn
-        profileUser = loggedInUser
+        profileOwner = loggedInUser
     else:  # load a different person's profile
-        profileUser = User.query.filter_by(username=username).first()
-    return render_template("profile.html", user = profileUser, loggedInUser = loggedInUser)
+        profileOwner = User.query.filter_by(username=username).first()
+        if loggedInUser:
+            if Follow.query.filter_by(user1=loggedInUser.gccEmail, user2=profileOwner.gccEmail).first():
+                following = True
+            if Block.query.filter_by(user1=loggedInUser.gccEmail, user2=profileOwner.gccEmail).first():
+                blocked = True
+
+    return render_template("profile.html", user = profileOwner, loggedInUser = loggedInUser, following = following, blocked = blocked)
 
 
 # this method loads the settings page with settings updated for the current user
@@ -423,7 +433,7 @@ def get_settings():
         form.username.data = user.username
         form.bio.data = user.bio
         form.backup_email.data = user.backupEmail
-        return render_template('settings.html', form=form)
+        return render_template('settings.html', form=form, loggedInUser = load_user(session.get('customIdToken')))
     else:
         redirect(url_for("get_home"))
         return {'loggedout': True}
@@ -589,8 +599,8 @@ def sendResetEmail():
 
     # Connect to SMTP server
     try:
-        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
-            server = smtplib.SMTP('smtp.office365.com', 587)
+        with smtplib.SMTP('webmail.gcc.edu', 587, timeout=10) as server:
+            server = smtplib.SMTP('webmail.gcc.edu', 587)
             server.starttls()  # Secure the connection
             server.login(sender_email, password)
             text = msg.as_string()
@@ -627,6 +637,7 @@ def setPassword():
 
     return jsonify({'success': True, 'email': user.gccEmail})
 
+# this route corresponds to the follow button
 @app.route('/toggle_follow_status', methods=['POST'])
 def toggle_follow_status():
     data = request.get_json()
@@ -652,30 +663,63 @@ def toggle_follow_status():
 
         # Reload user1 instance to update followList
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
-        result_message = "Followed" if is_following else "Unfollowed"
-        return jsonify({'message': result_message})
+        return jsonify({'is_following': is_following})
     else:
         print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
     
-@app.route('/check_follow_status', methods=['POST'])
-def check_follow_status():
+# This route is used exclusively when the user blocks someone they were following
+@app.route('/unfollow', methods=['POST'])
+def unfollow():
     data = request.get_json()
     otherUserEmail = data.get('otherUserEmail')
-    currUserEmail = session.get('customIdToken')
+    otherUser = load_user(otherUserEmail)
+    currUser = load_user(session.get('customIdToken'))
 
-    if currUserEmail:
-        # Get the current user
-        currUser = load_user(currUserEmail)
-        if currUser:
-            # Check if the current user is following the other user
-            is_following = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUserEmail).first() is not None
-            return jsonify({'is_following': is_following})
-        else:
-            return jsonify({'error': 'Current user not found'}), 404
+    if currUser and otherUser:
+        # Check if user1 is already following user2
+        existing_follow = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUser.gccEmail).first()
+        if existing_follow:
+            db.session.delete(existing_follow)
+            db.session.commit()
+
+        # Reload user1 instance to update followList
+        currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
+        return jsonify({'is_following': False})
     else:
-        return jsonify({'error': 'User not logged in'}), 401
+        print("One or both users do not exist.")
+        return jsonify({'message': "Error: One or both users do not exist."})
 
+# this route corresponds to the block button
+@app.route('/toggle_block_status', methods=['POST'])
+def toggle_block_status():
+    data = request.get_json()
+    otherUserEmail = data.get('otherUserEmail')
+    otherUser = load_user(otherUserEmail)
+    currUser = load_user(session.get('customIdToken'))
+
+    if currUser and otherUser:
+        # Check if user1 is already following user2
+        existing_block = Block.query.filter_by(user1=currUser.gccEmail, user2=otherUser.gccEmail).first()
+
+        if existing_block:
+            # If already following, unfollow
+            db.session.delete(existing_block)
+            db.session.commit()
+            is_blocked = False
+        else:
+            # If not following, follow
+            new_block = Block(user1=currUser.gccEmail, user2=otherUser.gccEmail)
+            db.session.add(new_block)
+            db.session.commit()
+            is_blocked = True
+
+        # Reload user1 instance to update followList
+        currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
+        return jsonify({'is_blocked': is_blocked})
+    else:
+        print("One or both users do not exist.")
+        return jsonify({'message': "Error: One or both users do not exist."})
 
 
 # def create_comment(commentData, u2Email):
