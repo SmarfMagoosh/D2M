@@ -982,7 +982,7 @@ def get_likes():
 @app.route('/search', methods=['GET'])
 def search():
     search_query = request.args.get('query')
-
+    tag = request.args['tag']
     # Search for users by username
     matching_users = User.query.filter(User.username.ilike(f'%{search_query}%')).all()
 

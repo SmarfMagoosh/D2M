@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 break;
                             }
                         }
-                        tagDropdownBtn.innerText = tag
+                        tagDropdownBtn.innerText = `#${tag}`
                     })
 
                     tagTemplate.parentElement.appendChild(new_tag);
@@ -78,9 +78,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function search() {
     const searchInput = document.getElementById('searchInput').value;
-    
+    let tag = null;
+    if (tagDropdownBtn.innerText != "no tag") tag = tagDropdownBtn.innerText.substring(1);
     // Make an AJAX request to your Flask route
-    fetch(`/search?query=${searchInput}`)
+    fetch(`/search?query=${searchInput}${tag != null ? `&tag=${tag}`:``}`)
         .then(response => response.json())
         .then(data => {
             displaySearchResults(data);
