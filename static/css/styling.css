@@ -148,13 +148,13 @@ body{
 }
 
 /* Style for the input field */
-#searchInput {
+/* #searchInput {
     padding: 8px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    margin-right: 8px; /* Add some spacing between input and button */
-}
+    margin-right: 8px; Add some spacing between input and button
+}*/
 
 /* Style for the search button */
 #searchButton {
@@ -195,4 +195,9 @@ body{
   display: flex;
   align-items: center; /* Align items vertically in the center */
   gap: 10px; /* Add space between items */
+}
+
+
+.tag-badge {
+  margin-right: .4em;
 }

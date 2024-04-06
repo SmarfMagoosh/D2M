@@ -26,7 +26,19 @@
         <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:3rem;height:3rem;border-radius: 10px;"></a>
         <script src="{{ url_for('static', filename='js/search.js') }}"></script>
         <div class="navbar-items">
-            <input type="text" id="searchInput" placeholder="Search by name">
+            <div class="input-group dropdown-center">
+                <input type="text" id="searchInput" placeholder="Search by name" class="form-control">
+                <button id="tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">no tag</button>
+                <ul class="dropdown-menu px-3" style="width: 20rem;">
+                    <li>
+                        <input type="text" id="tagInput" placeholder="Enter tag..." class="form-control"> <!-- style="padding-left: .25rem;"-->
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <div id="taglist">
+                        <button class="btn badge mb-1 tag-badge" hidden>template</button>
+                    </div>
+                </ul>
+            </div>
             <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
             <div class="dropdown-content" id="searchResultsDropdown">
                 <!-- Content for search results dropdown goes here -->

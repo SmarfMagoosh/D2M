@@ -216,6 +216,10 @@ class Block(db.Model):
     # advanced backref because of 2 foreign keys from same table
     blocker = db.relationship('User', back_populates='blockList', foreign_keys=[user1])
 
+class Tag(db.Model):
+    __tablename__ = 'Tags'
+    tag = db.Column(db.String, primary_key=True)
+
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
@@ -228,6 +232,7 @@ class Post(db.Model) :
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
     numLikesD3 = db.Column(db.Integer) # [20,30) min ago
+    tag = db.Column(db.String, db.ForeignKey('Tags.tag'))
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -340,6 +345,12 @@ with app.app_context():
     bm12 = Bookmark(user=u1, postID=30)
     bm13 = Bookmark(user=u1, postID=20)
     notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
+    tag1 = Tag(tag="tag1")
+    tag2 = Tag(tag="tag2")
+    tag3 = Tag(tag="tag3")
+    tag4 = Tag(tag="tag4")
+    tag5 = Tag(tag="tag5")
+    tag6 = Tag(tag="tag6")
 
     # Add all of these records to the session and commit changes
     db.session.add_all((u1,u2,u3))
@@ -347,6 +358,7 @@ with app.app_context():
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
     db.session.add(notif)
+    db.session.add_all((tag1,tag2,tag3,tag4,tag5,tag6))
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -843,6 +855,11 @@ def get_recent():
                         .all()
     
     return [p.render_json() for p in recent]
+
+@app.get("/API/taglist/")
+def get_taglist():
+    ret = Tag.query.all()
+    return [t.tag for t in ret]
 
 @app.get("/API/get_followed_posts/<string:gccEmail>")
 def get_followed_posts(gccEmail):
