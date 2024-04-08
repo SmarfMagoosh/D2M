@@ -375,6 +375,16 @@ def get_resetPassword():
 def get_create():
     return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], loggedInUser = load_user(session.get('customIdToken')))
 
+@app.get("/create/<int:post_id>")
+def get_remix(post_id):
+    # Get the post from the database
+    # TODO
+    post = Post.query.filter_by(postID=post_id).first()
+    # post_image = <somehow get the image from your DB result>
+    # Return a response indicating success
+    return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], loggedInUser = load_user(session.get('customIdToken')), post = post)
+
+
 @app.get("/home/")
 def get_home():
     # gets the most recent posts and sends them to the frontend
@@ -887,6 +897,7 @@ def create_bookmark_route():
 
     # Return a response indicating success
     return {'message': 'Bookmark created successfully'}, 200
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
