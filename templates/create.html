@@ -24,7 +24,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!--Local Files-->
-    <script src = "../static/js/create.js" type = "module"></script>
+    <script src = "../static/js/create/textbox.js"></script>
+    <script src = "../static/js/create/drawing.js"></script>
+    <script src = "../static/js/create/add_image.js"></script>
+    <script src = "../static/js/create.js"></script>
     <link rel = "stylesheet" href = "../static/css/create.css">
 {% endblock %}
 
@@ -67,17 +70,49 @@
             </div>
         </div>
     </div>
-    <a href = "#" rel = "modal:close"></a>
-    <input type = "text">
+</div>
+<div id = "add-image" class = "modal fade" tabindex = "-1" role = "dialog">
+    <div class = "modal-dialog" role = "document">
+        <div class = "modal-content">
+            <div class = "modal-header">
+                <h3 class = "modal-title">Insert Additional Image</h3>
+                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">Close</span>
+                </button>
+            </div>
+            <div class = "modal-body">
+                <div style = "margin-top: 1rem;">
+                    <button id = "addImgBtn" class = "btn btn-primary" style = "margin: auto; width: 60%; display: block;">
+                        Upload an Image
+                    </button>
+                </div>
+                <canvas
+                    style = "margin: 1rem auto; display: block;"
+                    id = "added-image-preview" 
+                    style = "display: block; margin: auto; border: solid black 1px;"
+                    height = "0">
+                </canvas>
+            </div>
+            <div class = "modal-footer">
+                <button id = "uploadImgBtn" class = "btn btn-primary" style = "margin: auto; width: 60%; display: block;" data-dismiss = "modal" aria-label = "Close">
+                    <span aria-hidden = "true">Add to Canvas</span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 <div id = "left-content">
     <div id = "image-tool-bar">
         <span>
             <button class = "btn btn-dark image-tool">Adjust Spacing</button>
         </span>
-        <!-- <span>
-            <button onclick="//TODO" class = "btn btn-dark">Add Image</button>
-        </span> -->
+        <span>
+            <button 
+                class = "btn btn-dark image-tool"
+                data-toggle = "modal"
+                data-target = "#add-image"
+                id = "image-modal-button">Add Image</button>
+        </span>
         <span>
             <button class = "btn btn-dark image-tool">Draw</button>
         </span>
@@ -86,11 +121,48 @@
         </span> -->
     </div>
     <div id = "image-tools">
-
+        <div id = "drawing-tools">
+            <div>
+                <label for = "color">Color</label>
+                <input type = "color" id = "color" value = "#000000" class = "form-control">
+            </div>
+            <div>
+                <label for = "thickness">Brush Size</label>
+                <input type = "number" id = "thickness" value = "5" min = "1" max = "100" class = "form-control">
+            </div>
+            <div>
+                <button class = "btn btn-danger" id = "erase">Erase</button>
+            </div>
+        </div>
+        <div id = "spacing-tools">
+            <div>
+                <select id = "space-arrangement" class = "form-control">
+                    <option value = "1.0">Top</option>
+                    <option value = "0.5">Top and Bottom</option>
+                    <option value = "0">Bottom</option>
+                </select>
+            </div>
+            <div>
+                <select id = "spacer" class = "form-control">
+                    <option value = ".0">0% </option>
+                    <option value = ".1">10%</option>
+                    <option value = ".2">20%</option>
+                    <option value = ".3">30%</option>
+                    <option value = ".4">40%</option>
+                    <option value = ".5">50%</option>
+                    <option value = ".6">60%</option>
+                    <option value = ".7">70%</option>
+                    <option value = ".8">80%</option>
+                    <option value = ".9">90%</option>
+                </select>
+            </div>
+        </div>
     </div>
     <div id = "meme">
         <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;">
-            <button id = "fileInputBtn" class = "btn btn-primary">
+            <button 
+                id = "fileInputBtn" 
+                class = "btn btn-primary">
                 Upload an Image
             </button>
             <button 
@@ -103,44 +175,10 @@
         </div>
         <canvas id = "meme-img" height = "0"></canvas>
         <canvas id = "drawing" height = "0"></canvas>
-        <div class = "text-box-container">
-            <div class = "meme-text" id = "meme-text-1"></div>
-        </div>
-        <div class = "text-box-container">
-            <div class = "meme-text" id = "meme-text-2"></div>
-        </div>
     </div>
 </div>
 <div id = "right-content">
     <div id = "text-tool-bar">
-        <div>
-            <textarea placeholder = "Enter Text" id = "text-1" class = "form-control text-box" rows = "1" style = "resize: none;"></textarea>
-            <div class = "dropdown">
-                <button class = 'btn settings-menu' type = 'button'>
-                    <i class = 'fa fa-gear'></i>
-                </button>
-                <div class = 'dropdown-menu'>
-                    hello world
-                </div>
-            </div>
-            <button class = 'btn trash-btn'>
-                <i class = 'fa fa-trash'></i>
-            </button>
-        </div>
-        <div>
-            <textarea placeholder = "Enter Text" id = "text-2" class = "form-control text-box" rows = "1" style = "resize: none;"></textarea>
-            <div class = "dropdown">
-                <button class = 'btn settings-menu' type = 'button'>
-                    <i class = 'fa fa-gear'></i>
-                </button>
-                <div class = 'dropdown-menu'>
-                    hello world
-                </div>
-            </div>
-            <button class = 'btn trash-btn'>
-                <i class = 'fa fa-trash'></i>
-            </button>
-        </div>
     </div>
     <div>
         <button id = "new-box-btn" class = "btn btn-secondary">Add Text Area</button>
@@ -150,7 +188,7 @@
     </div>
     <div>
         <button id = "post-btn" class = "btn btn-primary">Post</button>
-        <button id = "cancel-btn" class = "btn btn-danger">Cancel</button>
+        <a href = "/home/" class = "btn btn-danger">Cancel</a>
     </div>
 </div>
 </div>
