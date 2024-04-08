@@ -874,8 +874,13 @@ def create_like_route():
         positive = positive
     )
     db.session.add(new_like)
+    post = Post.query.filter_by(postID=postID).first()
+    if (positive):
+       post.numLikes += 1
+    else:
+        post.numLikes -= 1
     db.session.commit()
-    print("HEY! IT DOES A THING!!")
+    print("HEY! IT DOES A THING!!🐱‍👓")
 
     # Return a response indicating success
     return {'message': 'Like created successfully'}, 200
