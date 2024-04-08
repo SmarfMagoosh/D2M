@@ -1079,15 +1079,15 @@ def loginExisting():
 
 
 # Testing code from thumbnail, might be useful for future tests
-# @app.get("/temp/")
-# def temp():
-#     return render_template("temp.html")
-# @app.post("/temp/")
-# def post_temp():
-#     body: dict = request.json
-#     thumbnailData = body["thumbnailData"][22:]
-#     create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
-#     return render_template("temp.html")
+@app.get("/temp/")
+def temp():
+    return render_template("temp.html")
+@app.post("/temp/")
+def post_temp():
+    body: dict = request.json
+    thumbnailData = body["thumbnailData"][22:]
+    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
+    return render_template("temp.html")
 
 
 # @app.post("/API/comment/")

@@ -39,6 +39,7 @@ $("document").ready(() => {
 function adjust_spacing(create, value, position) {
     // save drawings
     const drawings = new Image()
+    // drawings.crossOrigin="anonymous";
     drawings.src = create.drawing.canv.toDataURL()
 
     // set new height for image canvas and drawing canvas
@@ -57,6 +58,7 @@ function adjust_spacing(create, value, position) {
 function init_meme(create, src) {
     create.baseImg = new Image();
     create.baseImg.src = src;
+    // create.baseImg.crossOrigin="anonymous";
     create.baseImg.onload = function() {
         const aspectRatio = create.baseImg.naturalHeight / create.baseImg.naturalWidth
         create.dimensions = {
@@ -108,13 +110,29 @@ function post(create) {
             textboxes: $.map($(".text-box"), elem => new MemeTextBox(create, elem)),
             imgData: create.canvas.toDataURL(),
             title: $("#post-title").val(),
-            user: create.user.username
+            user: create.user.username,
         }
-        fetch("/create", {
-            method: "POST",
-            body: JSON.stringify(meme),
-            headers: { "Content-type": "application/json; charset=UTF-8" }
-        }).then(response => window.location.href = "/profile")
+
+        let boxes = $(".text-box")
+        for (let textarea of boxes) {
+            textarea.style.border = "none"
+        }
+        // take screenshot
+        html2canvas($("#meme")[0], {/*useCORS: true,*/ foreignObjectRendering: true, allowTaint: true})
+            .then(canvas => {
+                meme.thumbnailData = canvas.toDataURL('image/png');
+                // restore the textboxes
+                for (let textarea of boxes) {
+                    textarea.style.border = ""
+                }
+            }).then(value => {
+                fetch("/create", {
+                    method: "POST",
+                    body: JSON.stringify(meme),
+                    headers: { "Content-type": "application/json; charset=UTF-8" }
+                })
+            })
+            //.then(response => window.location.href = "/profile")
     }
 }
 
