@@ -113,17 +113,24 @@ function post(create) {
             user: create.user.username,
         }
 
-        let boxes = $(".text-box")
+        const boxes = $(".meme-text");
         for (let textarea of boxes) {
-            textarea.style.border = "none"
+            textarea.style.border = "none";
+        }
+        const grips = $(".ui-icon-gripsmall-diagonal-se");
+        for (let grip of grips) {
+            grip.hidden = true;
         }
         // take screenshot
-        html2canvas($("#meme")[0], {/*useCORS: true,*/ foreignObjectRendering: true, allowTaint: true})
+        html2canvas($("#meme")[0], {useCORS: true, allowTaint: true})
             .then(canvas => {
                 meme.thumbnailData = canvas.toDataURL('image/png');
                 // restore the textboxes
                 for (let textarea of boxes) {
                     textarea.style.border = ""
+                }
+                for (let grip of grips) {
+                    grip.hidden = true;
                 }
             }).then(value => {
                 fetch("/create", {

@@ -84,7 +84,7 @@ def delete_notification(notif):
         db.session.commit()
         
 # takes in the byte data of an image, and saves the thumbnail version
-def create_thumbnail(image_data, filepath, dimensions = (400, 400)):
+def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
     img = Image.open(BytesIO(base64.b64decode(image_data)))
     img.thumbnail(dimensions)
     img.save(filepath)
@@ -722,7 +722,7 @@ def toggle_block_status():
 #     with app.app_context():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# POST ROUTES (return a redirect)
+# POST ROUTES (return a redirect) 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @app.post("/create/")
@@ -1078,7 +1078,7 @@ def loginExisting():
 #     return "", 200
 
 
-# Testing code from thumbnail, might be useful for future tests
+# Testing code from thumbnail, might be useful for future tests 
 @app.get("/temp/")
 def temp():
     return render_template("temp.html")
