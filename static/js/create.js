@@ -125,21 +125,14 @@ function post(create) {
         html2canvas($("#meme")[0], {useCORS: true, allowTaint: true})
             .then(canvas => {
                 meme.thumbnailData = canvas.toDataURL('image/png');
-                // restore the textboxes
-                for (let textarea of boxes) {
-                    textarea.style.border = ""
-                }
-                for (let grip of grips) {
-                    grip.hidden = true;
-                }
             }).then(value => {
                 fetch("/create", {
                     method: "POST",
                     body: JSON.stringify(meme),
                     headers: { "Content-type": "application/json; charset=UTF-8" }
-                })
+                });
             })
-            //.then(response => window.location.href = "/profile")
+            // .then(response => window.location.href = "/profile");
     }
 }
 
