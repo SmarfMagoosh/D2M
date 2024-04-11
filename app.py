@@ -167,6 +167,13 @@ class Report(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
+    def to_json(self):
+        return {
+            "reason": self.reason,
+            "postID" : self.postID,
+            "userEmail" : self.userEmail,
+            "id" : self.reportID
+		}
     
 class Notification(db.Model) :
     __tablename__ = 'Notifications'
@@ -272,6 +279,7 @@ class Post(db.Model) :
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
+            "reportsList": [r.to_json() for r in self.reportsList]
         }
 
 class TextBox(db.Model) :
@@ -868,11 +876,29 @@ def create_like_route():
     positive = data.get('positive')
     postID = data.get('postID')
 
-    new_like = Like(
-        postID=postID,
-        userEmail = userEmail,
-        positive = positive
-    )
+    # Check if there is an existing like by the same user for the same post
+    existing_like = Like.query.filter_by(postID=postID, userEmail=userEmail).first()
+
+    if existing_like:
+        # Check if the existing like has the same polarity
+        if existing_like.positive == positive:
+            # Remove both likes if they have the same polarity
+            db.session.delete(existing_like)
+            db.session.commit()
+            return {'message': 'Existing like removed due to same polarity'}, 200
+        else:
+            # Switch the polarity of the existing like if they have different polarities
+            existing_like.positive = not existing_like.positive
+            db.session.commit()
+            return {'message': 'Existing like polarity switched'}, 200
+    else:
+        # Create a new like if there's no existing like
+        new_like = Like(
+            postID=postID,
+            userEmail=userEmail,
+            positive=positive
+        )
+
     db.session.add(new_like)
     post = Post.query.filter_by(postID=postID).first()
     if (positive):

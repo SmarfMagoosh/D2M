@@ -3,8 +3,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Assuming you have a script tag somewhere in your HTML where you can embed JavaScript
     window.post = {}
     
-    
-    
 //THE REPORT BUTTON
 
 // Get references to elements
@@ -60,9 +58,6 @@ $("#submit-btn").click(e => {
 
 
 
-
-
-
 // Event listener for click event on copy button
 document.getElementById('copy-link-btn').addEventListener('click', () => {
 
@@ -80,34 +75,6 @@ document.getElementById('copy-link-btn').addEventListener('click', () => {
     //     copyButton.textContent = 'Copy Link';
     // }, 2000); // Reset button text after 2 seconds
 });
-
-// // Event listener for click event on remix button
-// document.getElementById('remix-btn').addEventListener('click', e => {
-
-//     const postImage = e.target.getAttribute('data-postImage');
-//     return fetch('/create_with_backimage', {
-//         method: 'POST',
-//         body: JSON.stringify({ postImage: postImage}),
-//         headers: {
-//             'Content-Type': 'application/json'
-//         }
-//     }).then(response => {
-//         if (!response.ok) {
-//             throw new Error('Network response was not ok');
-//         }
-//         // Handle successful response
-//         console.log('Time to create!');
-//         // Optionally, update the UI or perform other actions
-//     })
-//     .catch(error => {
-//         // Handle fetch errors
-//         console.error('Fetch error:', error);
-//     });
-    
-//     window.location.href = "../../create"
-//     //Not implemented lmao
- 
-// });
 
 
 // Add an event listener for form submission
@@ -129,6 +96,8 @@ document.getElementById('comment-form').addEventListener('submit', function(even
         console.log(currentUsername);
         createComment(commentValue, currentUsername, postId)
         .then(response => {
+            console.log("problematic response:")
+            console.log(response)
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -238,6 +207,7 @@ function createBookmark(userEmail, postID) {
         // Handle successful response
         console.log('Okay I built the bookmark');
         // Optionally, update the UI or perform other actions
+        return response;
     })
     .catch(error => {
         // Handle fetch errors
@@ -259,6 +229,7 @@ function createLike(userEmail, postID, positive) {
         // Handle successful response
         console.log('Okay I built the like');
         // Optionally, update the UI or perform other actions
+        return response;
     })
     .catch(error => {
         // Handle fetch errors
@@ -287,6 +258,7 @@ function createReport(reason, userEmail, postID) {
         // Handle successful response
         console.log('Okay I built the report');
         // Optionally, update the UI or perform other actions
+        return response;
     })
     .catch(error => {
         // Handle fetch errors
@@ -308,12 +280,14 @@ function createComment(content, username, postID) {
         }) // Convert data to JSON format
     })
     .then(response => {
+        console.log("Hello response!" +response);
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         // Handle successful response
         console.log('Okay I built the comment');
         // Optionally, update the UI or perform other actions
+        return response;
     })
     .catch(error => {
         // Handle fetch errors

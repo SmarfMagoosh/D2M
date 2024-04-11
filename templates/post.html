@@ -67,8 +67,7 @@
         <textarea id="comment-box" placeholder="Enter your comment"></textarea><br>
         <input type="submit" value="Submit!">
     </form>
-
-    {% if loggedInUser %}
+    {% if loggedInUser.username == post.username %} 
         {% for report in post.reportsList %}
         <div class="comment-box">
             <div class="comment">
@@ -77,9 +76,9 @@
                 </div>
             </div>
         </div>
-        <p>hello!</p>
         {% endfor %}
-    {% endif %}
+    {% endif %} 
+    </div>
 </div>
 
 <div id = "comment-content">
