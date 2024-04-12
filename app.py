@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from forms import SettingsForm
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
+from io import BytesIO
 from PIL import Image
 import base64
 import atexit
@@ -82,16 +83,11 @@ def delete_notification(notif):
         db.session.delete(notif)
         db.session.commit()
         
-# takes in a Pillow Image object and returns the thumbnail version
-def create_thumbnail(image_path, dimensions = (400, 400)):
-    img = Image.open(image_path)
+# takes in the byte data of an image, and saves the thumbnail version
+def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
+    img = Image.open(BytesIO(base64.b64decode(image_data)))
     img.thumbnail(dimensions)
-    return img
-
-# TODO: call this directly after creating a post
-def save_thumbnail(post):
-    create_thumbnail(f"static/images/{post.backImage}")     \
-        .save(f"static/images/thumbnails/{post.postID}.png")
+    img.save(filepath)
     
 #from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
 #potentially necessary in future, but not at the moment
@@ -769,7 +765,7 @@ def delete_entry(id):
 #     with app.app_context():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# POST ROUTES (return a redirect)
+# POST ROUTES (return a redirect) 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @app.post("/create/")
@@ -777,6 +773,7 @@ def post_meme():
     body: dict = request.json
     print(body.keys())
     imgData = body["imgData"][22:]
+    thumbnailData = body["thumbnailData"][22:]
     post_inst = Post(
         spacing = float(body["spacing"]),
         title = body['title'],
@@ -808,6 +805,7 @@ def post_meme():
     db.session.commit()
     with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
          file.write(base64.b64decode(imgData))
+    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
     return "hello world"
 
 @app.post('/add_user/')
@@ -1206,6 +1204,19 @@ def loginExisting():
 #         post.numLikes = post.numLikes-1
 #     create_like(data.get('userEmail'), id, pos)
 #     return "", 200
+
+
+# Testing code from thumbnail, might be useful for future tests 
+@app.get("/temp/")
+def temp():
+    return render_template("temp.html")
+@app.post("/temp/")
+def post_temp():
+    body: dict = request.json
+    thumbnailData = body["thumbnailData"][22:]
+    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
+    return render_template("temp.html")
+
 
 # @app.post("/API/comment/")
 # def get_followed_posts():
