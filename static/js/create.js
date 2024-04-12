@@ -121,6 +121,7 @@ function post(create) {
         for (let grip of grips) {
             grip.hidden = true;
         }
+        $("#meme-img")[0].style.border = "none"
         // take screenshot
         html2canvas($("#meme")[0], {useCORS: true, allowTaint: true})
             .then(canvas => {
