@@ -749,6 +749,20 @@ def toggle_block_status():
     else:
         print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
+    
+
+# Route to delete a post by its ID
+@app.route('/delete/<int:id>', methods=['GET', 'POST'])
+def delete_entry(id):
+    user = load_user(session.get('customIdToken'))
+    post = Post.query.get(id)
+    if user and post and user.username == post.username:
+        entry_to_delete = Post.query.get_or_404(id)
+        db.session.delete(entry_to_delete)
+        db.session.commit()
+        return 'Entry deleted successfully'
+    else:
+        return 'Entry not deleted'
 
 
 # def create_comment(commentData, u2Email):

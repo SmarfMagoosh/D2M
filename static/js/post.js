@@ -10,6 +10,42 @@ document.addEventListener('DOMContentLoaded', function () {
 const reportPopup = document.getElementById('report-popup');
 reportPopup.style.display = 'none'; 
 
+$("#delete-btn").click(e => {
+    // e.preventDefault(); // Prevent the default action of the button click
+    
+    const postID = $(e.target).attr('data-postId');
+    
+    // Display a confirmation dialog
+    const confirmed = confirm("Are you sure you want to delete this post?");
+    
+    // If the user confirms, proceed with the deletion
+    if (confirmed) {
+        fetch('/delete/' + postID, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text(); // or response.json() if expecting JSON response
+        })
+        .then(function(data) {
+            // Handle successful response
+            console.log('Delete request successful:', data);
+            // Redirect to the profile page after successful deletion
+            window.location.href = '/profile/';
+        })
+        .catch(function(error) {
+            // Handle network errors or server errors
+            console.error('Error:', error);
+        });
+    }
+});
+
+
 $("#report-btn").click(e => {
     reportPopup.style.display = 'block';
 });
