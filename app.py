@@ -63,7 +63,6 @@ def update_like_backend():
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
-    print(update_times)
 
 def create_like(username, post, up):
     with app.app_context():
@@ -690,7 +689,6 @@ def toggle_follow_status():
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
         return jsonify({'is_following': is_following})
     else:
-        print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
     
 # This route is used exclusively when the user blocks someone they were following
@@ -712,7 +710,6 @@ def unfollow():
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
         return jsonify({'is_following': False})
     else:
-        print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
 
 # this route corresponds to the block button
@@ -743,7 +740,6 @@ def toggle_block_status():
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
         return jsonify({'is_blocked': is_blocked})
     else:
-        print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
     
 
@@ -771,7 +767,6 @@ def delete_entry(id):
 @app.post("/create/")
 def post_meme():
     body: dict = request.json
-    print(body.keys())
     imgData = body["imgData"][22:]
     thumbnailData = body["thumbnailData"][22:]
     post_inst = Post(
@@ -858,7 +853,6 @@ def create_comment_route():
     )
     db.session.add(new_comment)
     db.session.commit()
-    print("HEY! IT DOES A THING!!")
 
     # Return a response indicating success
     return {'message': 'Comment created successfully'}, 200
@@ -880,7 +874,6 @@ def create_report_route():
     )
     db.session.add(new_report)
     db.session.commit()
-    print("HEY! IT DOES A THING!!")
 
     # Return a response indicating success
     return {'message': 'Report created successfully'}, 200
@@ -924,7 +917,6 @@ def create_like_route():
     else:
         post.numLikes -= 1
     db.session.commit()
-    print("HEY! IT DOES A THING!!🐱‍👓")
 
     # Return a response indicating success
     return {'message': 'Like created successfully'}, 200
@@ -942,7 +934,6 @@ def create_bookmark_route():
     )
     db.session.add(new_like)
     db.session.commit()
-    print("HEY! IT DOES A THING!!")
 
     # Return a response indicating success
     return {'message': 'Bookmark created successfully'}, 200
@@ -963,7 +954,6 @@ def get_recent():
     count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
     username = request.args.get('username', None)
     recent = Post.query
-    # print(str(start_id) + " " + str(count))
     
     if start_id != -1:
         recent = recent.filter(Post.postID<=start_id)
@@ -1059,15 +1049,12 @@ def get_likes():
     field = None
     #within earliest timeslot?
     if not update_times[0] == 0 and timestamp >= update_times[0] and timestamp < update_times[1]:
-        # print("slot 0")
         field = Post.numLikesD3
     #within middle timeslot?
     elif not update_times[1] == 0 and timestamp >= update_times[1] and timestamp < update_times[2]:
-        # print("slot 1")
         field = Post.numLikesD2
     #later than most recent timeslot
     elif timestamp >= update_times[2]:
-        # print("slot 2")
         field = Post.numLikesD1
     #it's not within any current timeslot, say it's outdated
     else:
@@ -1143,7 +1130,6 @@ def getUsername():
     
 @app.get('/getUserInfo')
 def getUser():
-    print(f"Session: {session}")
     userEmail = session.get('customIdToken')
     if userEmail:
         user = User.query.get(userEmail)

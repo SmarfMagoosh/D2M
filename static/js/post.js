@@ -30,11 +30,10 @@ $("#delete-btn").click(e => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.text(); // or response.json() if expecting JSON response
+            return response.text();
         })
         .then(function(data) {
             // Handle successful response
-            console.log('Delete request successful:', data);
             // Redirect to the profile page after successful deletion
             window.location.href = '/profile/';
         })
@@ -63,14 +62,11 @@ $("#submit-btn").click(e => {
     // You also need to retrieve the username and postID from somewhere
     const user = getCurrentUser();  // Assuming you have a function to get the current user
     const postID = $(e.target).attr('data-postId');
-    console.log(reportValue)
-    console.log(postID)
 
     getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
         var currentUsernameEmail = result.gccEmail;
         // Now you can use the 'attribute' variable as needed
-        console.log(currentUsernameEmail);
         // Call the createReport function to create a new comment
     createReport(reportValue, currentUsernameEmail, postID)
     .then(response => {
@@ -78,7 +74,6 @@ $("#submit-btn").click(e => {
             throw new Error('Network response was not ok');
         }
         // Handle successful response
-        console.log('New report created successfully');
         // Optionally, update the UI or perform other actions
         window.location.reload();  // Reload the page to display the new comment
     })
@@ -98,7 +93,6 @@ $("#submit-btn").click(e => {
 document.getElementById('copy-link-btn').addEventListener('click', () => {
 
     var copyText = window.location.href;
-    console.log(copyText);
   
     // Copy the text inside the text field
     navigator.clipboard.writeText(copyText);
@@ -123,22 +117,17 @@ document.getElementById('comment-form').addEventListener('submit', function(even
 
     // You also need to retrieve the username and postID from somewhere
     var postId = this.getAttribute('data-postId');
-    console.log(postId)
 
     getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
         var currentUsername = result.username;
         // Now you can use the 'attribute' variable as needed
-        console.log(currentUsername);
         createComment(commentValue, currentUsername, postId)
         .then(response => {
-            console.log("problematic response:")
-            console.log(response)
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             // Handle successful response
-            console.log('New comment created for post ID:', postId);
             // Optionally, update the UI to reflect the new like
         })
         .catch(error => {
@@ -153,20 +142,16 @@ document.getElementById('comment-form').addEventListener('submit', function(even
 document.getElementById('like-btn').addEventListener('click', function() {
     // Retrieve the post ID associated with the button
     const postId = this.getAttribute('data-postId');
-    console.log("I've been liked by!");
      getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
         var currentUsernameEmail = result.gccEmail;
         // Now you can use the 'attribute' variable as needed
-        console.log(currentUsernameEmail);
-        console.log(postId)
         createLike(currentUsernameEmail, postId, true)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             // Handle successful response
-            console.log('New like created for post ID:', postId);
             // Optionally, update the UI to reflect the new like
         })
         .catch(error => {
@@ -179,19 +164,16 @@ document.getElementById('like-btn').addEventListener('click', function() {
 document.getElementById('dislike-btn').addEventListener('click', function() {
     // Retrieve the post ID associated with the button
     const postId = this.getAttribute('data-postId');
-    console.log("I've been disliked by!");
      getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
         var currentUsernameEmail = result.gccEmail;
         // Now you can use the 'attribute' variable as needed
-        console.log(currentUsernameEmail);
         createLike(currentUsernameEmail, postId, false)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             // Handle successful response
-            console.log('New like created for post ID:', postId);
             // Optionally, update the UI to reflect the new like
         })
         .catch(error => {
@@ -204,19 +186,16 @@ document.getElementById('dislike-btn').addEventListener('click', function() {
 document.getElementById('bookmark-btn').addEventListener('click', function() {
     // Retrieve the post ID associated with the button
     const postId = this.getAttribute('data-postId');
-    console.log("I've been bookmarked by:");
     getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
         var currentUsernameEmail = result.gccEmail;
         // Now you can use the 'attribute' variable as needed
-        console.log(currentUsernameEmail);
         createBookmark(currentUsernameEmail, postId)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             // Handle successful response
-            console.log('New dislike created for post ID:', postId);
             // Optionally, update the UI to reflect the new like
         })
         .catch(error => {
@@ -241,7 +220,6 @@ function createBookmark(userEmail, postID) {
             throw new Error('Network response was not ok');
         }
         // Handle successful response
-        console.log('Okay I built the bookmark');
         // Optionally, update the UI or perform other actions
         return response;
     })
@@ -263,7 +241,6 @@ function createLike(userEmail, postID, positive) {
             throw new Error('Network response was not ok');
         }
         // Handle successful response
-        console.log('Okay I built the like');
         // Optionally, update the UI or perform other actions
         return response;
     })
@@ -292,7 +269,6 @@ function createReport(reason, userEmail, postID) {
             throw new Error('Network response was not ok');
         }
         // Handle successful response
-        console.log('Okay I built the report');
         // Optionally, update the UI or perform other actions
         return response;
     })
@@ -316,12 +292,10 @@ function createComment(content, username, postID) {
         }) // Convert data to JSON format
     })
     .then(response => {
-        console.log("Hello response!" +response);
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         // Handle successful response
-        console.log('Okay I built the comment');
         // Optionally, update the UI or perform other actions
         return response;
     })
@@ -351,7 +325,4 @@ async function getCurrentUser() {
         return null;
     }
 }
-
-
-
 });
