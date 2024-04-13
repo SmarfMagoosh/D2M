@@ -24,6 +24,13 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+# import sendgrid
+# import os
+# from sendgrid.helpers.mail import *
+
+from mailjet_rest import Client
+import os
+
 """
 set FLASK_APP=app.py
 python -m flask run --host=0.0.0.0 --port=80
@@ -609,6 +616,50 @@ def validate_reset_token():
 
 @app.get('/sendResetEmail')
 def sendResetEmail():
+    # sg = sendgrid.SendGridAPIClient(api_key="Da3DDF1Sh9t4Hn9f7xMxKgC2wVMUmdLT")#os.environ.get('SENDGRID_API_KEY'))
+    # from_email = Email("svc_CS_D2M@gcc.edu")
+    # to_email = To("behrbn22@gcc.edu")
+    # subject = "Sending with SendGrid is Fun"
+    # content = Content("text/plain", "and easy to do anywhere, even with Python")
+    # mail = Mail(from_email, to_email, subject, content)
+    # try:
+    #     response = sg.client.mail.send.post(request_body=mail.get())
+    #     print(response.status_code)
+    #     print(response.body)
+    #     print(response.headers)
+    # except Exception as e:
+    #     print(e)
+
+    # return jsonify({'success': True})
+
+    api_key = "30905722bdfe5e24c6f73e0444cd4284"
+    api_secret = "0952e639336b1d9c91f0de8f0fe4e7ba"
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    data = {
+    'Messages': [
+        {
+        "From": {
+            "Email": "svc_CS_D2M@gcc.edu",
+            "Name": "Me"
+        },
+        "To": [
+            {
+            "Email": "behrbn22@gcc.edu",
+            "Name": "You"
+            }
+        ],
+        "Subject": "My first Mailjet Email!",
+        "TextPart": "Greetings from Mailjet!",
+        "HTMLPart": "<h3>Dear passenger 1, welcome to <a href=\"https://www.mailjet.com/\">Mailjet</a>!</h3><br />May the delivery force be with you!"
+        }
+    ]
+    }
+    result = mailjet.send.create(data=data)
+    print(result.status_code)
+    print(result.json())
+
+    return jsonify({'success': True})
+
     username = request.args.get('username')
     token = request.args.get('token')
     user = User.query.filter_by(username=username).first()
