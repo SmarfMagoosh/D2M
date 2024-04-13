@@ -250,7 +250,7 @@ class Post(db.Model) :
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": f"thumbnails/{self.postID}.png",
+            "thumbnail": f"images/thumbnails/{self.postID}.png",
             "username": self.username,
             "numLikes": self.numLikes,
         }
@@ -259,7 +259,8 @@ class Post(db.Model) :
             "id": self.postID,
             "title": self.title,
             "username": self.username,
-            "backImage": self.backImage,#TODO: figure out if page is re-creating meme from text box and back image, or flattened image
+            "backImage": self.backImage,
+            "thumbnail": f"images/thumbnails/{self.postID}.png",
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO 
@@ -270,12 +271,15 @@ class Post(db.Model) :
             "spacing": self.spacing,
             "title": self.title,
             "backImage": self.backImage,
+            "thumbnail": f"images/thumbnails/{self.postID}.png",
             "username": self.username,
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
             "reportsList": [r.to_json() for r in self.reportsList]
         }
+    def thumbnail(self):
+        return f"images/thumbnails/{self.postID}.png"
 
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
@@ -437,7 +441,7 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        return render_template("profile.html", user=user, liked_posts=[lp.render_json() for lp in liked_posts], bookmarked_posts=[bp.render_json() for bp in bookmarked_posts])
         
 
 
@@ -1193,15 +1197,15 @@ def loginExisting():
 
 
 # Testing code from thumbnail, might be useful for future tests 
-@app.get("/temp/")
-def temp():
-    return render_template("temp.html")
-@app.post("/temp/")
-def post_temp():
-    body: dict = request.json
-    thumbnailData = body["thumbnailData"][22:]
-    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
-    return render_template("temp.html")
+# @app.get("/temp/")
+# def temp():
+#     return render_template("temp.html")
+# @app.post("/temp/")
+# def post_temp():
+#     body: dict = request.json
+#     thumbnailData = body["thumbnailData"][22:]
+#     create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
+#     return render_template("temp.html")
 
 
 # @app.post("/API/comment/")

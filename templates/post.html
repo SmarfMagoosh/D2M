@@ -23,7 +23,7 @@
 <div id = "left-content">
     <div id = "meme">
         <!-- put the image source here!-->
-        <img src = "../../static/images/{{post['backImage']}}" alt = "" id = "post-image" width="425">
+        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image" width="425">
     </div>
 </div>
 <div id = "right-content">
@@ -42,7 +42,7 @@
         <button id="dislike-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-down"></i></button>   
         <button id="bookmark-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-bookmark"></i></button>
         {% if loggedInUser.username == post.username%}
-        <button id="delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button>
+        <button id="post-delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button>
         {% else %}
         <button id="report-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-flag"></i></button>
         {% endif %}
@@ -91,6 +91,9 @@
             <div class="comment-content">
                 <p><strong>{{ comment.username }}</strong>: {{ comment.content }}</p>
             </div>
+            {% if loggedInUser.username == comment.username %} 
+            <button id="comment-delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button>
+            {% endif %} 
         </div>
     </div>
     

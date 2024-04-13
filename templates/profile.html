@@ -86,12 +86,7 @@
                         <h5 class="mb-0">Bio</h5> 
                          <div class="p-4 rounded shadow-sm bg-light"> 
                              <p class="font-italic mb-0">{{user.bio}} </p> 
-                         </div> <div class="py-4 px-4"> 
-                             <div class="d-flex align-items-center justify-content-between mb-3"> 
-                                 <h5 class="mb-0">Recent photos</h5>
-                                 <a href="#" class="btn btn-link text-muted">Show all</a> 
-                             </div> 
-                        </div> 
+                         </div>
 
                   <div class="tab">
                    <button class="tablinks" onclick="openTab(event, 'Created')">Created</button>
@@ -102,9 +97,8 @@
                   <div id="Created" class="tabcontent">
                     {% for post in user.postList  %}
                     <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                    <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                    <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
                     </a>
-                    {{post.title}}
                     <br>
                    {% endfor %}
                   </div>
@@ -112,9 +106,8 @@
                   <div id="Liked" class="tabcontent">
                    {% for post in liked_posts %}
                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
                    </a>
-                   {{post.title}}
                    <br>
                     {% endfor %}
                   </div>
@@ -122,9 +115,8 @@
                   <div id="Bookmarked" class="tabcontent">
                     {% for post in bookmarked_posts %}
                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
                    </a>
-                   {{post.title}}
                    <br>
                     {% endfor %}
 
