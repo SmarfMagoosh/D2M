@@ -149,7 +149,7 @@ class User(db.Model) :
         }
         
     def search_result_json(self):
-        pfp = "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80"
+        pfp = "/static/images/users/default-pfp.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
         return{
