@@ -22,9 +22,7 @@ function loadImg(event, img){
             const imgUrl = e.target.result;
 
             // Show image in img element
-            console.log(img.src)
             img.src = imgUrl;
-            console.log(img.src)
             img.style.display = 'block';
         }
 

@@ -34,6 +34,7 @@ $("document").ready(() => {
 
 function adjust_spacing(create, value, position) {
     const drawings = new Image()
+    // drawings.crossOrigin="anonymous";
     drawings.src = create.drawing.canv.toDataURL()
 
     create.canvas.height = create.dimensions.height * (1 + value)
@@ -44,7 +45,54 @@ function adjust_spacing(create, value, position) {
         create.cropData.top, create.cropData.width, 
         create.cropData.height, 0, 
         create.dimensions.height * value * position, 
-        create.dimensions.width, create.dimensions.height)
+        create.dimensions.width, create.dimensions.height
+    )
+}
+
+function init_meme(create, src) {
+    create.baseImg = new Image();
+    create.baseImg.src = src;
+    create.baseImg.onload = function() {
+        const aspectRatio = create.baseImg.naturalHeight / create.baseImg.naturalWidth
+        create.dimensions = {
+            width: create.canvas.width, 
+            height: aspectRatio * create.canvas.width
+        }
+
+        // adjust width and height of img to fit meme and draw it
+        create.canvas.height = create.dimensions.height;
+        create.drawing.canv.height = create.dimensions.height;
+        create.ctx.drawImage(
+            create.baseImg, 0, 0, 
+            create.canvas.width, 
+            create.canvas.height
+        )
+        $("#template-modal-button").hide()
+        $("#img-tool-bar").show()
+    }
+    add_text_box(create)
+    add_text_box(create)
+    $("#fileInputLabel").hide()
+    $("#new-box-btn").attr("disabled", false)
+    $("#list-opener").hide()
+    $("#fileInputBtn").hide()
+    $("#img-tool-bar").show()
+    $("#image-tool-bar").show()
+    $("#drawing").show()
+}
+
+function upload_base_image(create, input) {
+    const MAX_FILE_SIZE = 4_000_000
+    if (FileReader && input.files && input.files.length) {
+        const base = input.files[0]
+        if (base.size < MAX_FILE_SIZE) {
+            const reader = new FileReader();
+            reader.onload = () => init_meme(create, reader.result)
+            reader.readAsDataURL(base);
+        } else {
+            alert(`That image is too large! we only accept files less than ${MAX_FILE_SIZE / 1_000_000}MB`);
+        }
+    }
 }
 
 function post(create) {
@@ -55,13 +103,30 @@ function post(create) {
             textboxes: $.map($(".text-box"), elem => new MemeTextBox(create, elem)),
             imgData: create.canvas.toDataURL(),
             title: $("#post-title").val(),
-            user: create.user.username
+            user: create.user.username,
         }
-        fetch("/create", {
-            method: "POST",
-            body: JSON.stringify(meme),
-            headers: { "Content-type": "application/json; charset=UTF-8" }
-        }).then(response => window.location.href = "/profile")
+
+        const boxes = $(".meme-text");
+        for (let textarea of boxes) {
+            textarea.style.border = "none";
+        }
+        const grips = $(".ui-icon-gripsmall-diagonal-se");
+        for (let grip of grips) {
+            grip.hidden = true;
+        }
+        $("#meme-img")[0].style.border = "none"
+        // take screenshot
+        html2canvas($("#meme")[0], {useCORS: true, allowTaint: true})
+            .then(canvas => {
+                meme.thumbnailData = canvas.toDataURL('image/png');
+            }).then(value => {
+                fetch("/create", {
+                    method: "POST",
+                    body: JSON.stringify(meme),
+                    headers: { "Content-type": "application/json; charset=UTF-8" }
+                });
+            })
+            // .then(response => window.location.href = "/profile");
     }
 }
 
