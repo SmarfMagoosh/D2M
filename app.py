@@ -744,7 +744,7 @@ def toggle_block_status():
     
 
 # Route to delete a post by its ID
-@app.route('/delete/<int:id>', methods=['GET', 'POST'])
+@app.route('/deletePost/<int:id>', methods=['GET', 'POST'])
 def delete_entry(id):
     user = load_user(session.get('customIdToken'))
     post = Post.query.get(id)

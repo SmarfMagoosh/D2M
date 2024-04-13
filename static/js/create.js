@@ -45,54 +45,7 @@ function adjust_spacing(create, value, position) {
         create.cropData.top, create.cropData.width, 
         create.cropData.height, 0, 
         create.dimensions.height * value * position, 
-        create.dimensions.width, create.dimensions.height
-    )
-}
-
-function init_meme(create, src) {
-    create.baseImg = new Image();
-    create.baseImg.src = src;
-    create.baseImg.onload = function() {
-        const aspectRatio = create.baseImg.naturalHeight / create.baseImg.naturalWidth
-        create.dimensions = {
-            width: create.canvas.width, 
-            height: aspectRatio * create.canvas.width
-        }
-
-        // adjust width and height of img to fit meme and draw it
-        create.canvas.height = create.dimensions.height;
-        create.drawing.canv.height = create.dimensions.height;
-        create.ctx.drawImage(
-            create.baseImg, 0, 0, 
-            create.canvas.width, 
-            create.canvas.height
-        )
-        $("#template-modal-button").hide()
-        $("#img-tool-bar").show()
-    }
-    add_text_box(create)
-    add_text_box(create)
-    $("#fileInputLabel").hide()
-    $("#new-box-btn").attr("disabled", false)
-    $("#list-opener").hide()
-    $("#fileInputBtn").hide()
-    $("#img-tool-bar").show()
-    $("#image-tool-bar").show()
-    $("#drawing").show()
-}
-
-function upload_base_image(create, input) {
-    const MAX_FILE_SIZE = 4_000_000
-    if (FileReader && input.files && input.files.length) {
-        const base = input.files[0]
-        if (base.size < MAX_FILE_SIZE) {
-            const reader = new FileReader();
-            reader.onload = () => init_meme(create, reader.result)
-            reader.readAsDataURL(base);
-        } else {
-            alert(`That image is too large! we only accept files less than ${MAX_FILE_SIZE / 1_000_000}MB`);
-        }
-    }
+        create.dimensions.width, create.dimensions.height)
 }
 
 function post(create) {
