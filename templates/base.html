@@ -26,10 +26,48 @@
         <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:3rem;height:3rem;border-radius: 10px;"></a>
         <script src="{{ url_for('static', filename='js/search.js') }}"></script>
         <div class="navbar-items">
-            <input type="text" id="searchInput" placeholder="Search by name">
+            <div class="input-group dropdown-center">
+                <input type="text" id="searchInput" placeholder="Search by name" class="form-control">
+                <button id="tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">no tag</button>
+                <ul class="dropdown-menu px-3" style="width: 20rem;">
+                    <li>
+                        <input type="text" id="tagInput" placeholder="Enter tag..." class="form-control"> <!-- style="padding-left: .25rem;"-->
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <div id="taglist">
+                        <button class="btn badge mb-1 tag-badge" hidden>template</button>
+                    </div>
+                </ul>
+            </div>
             <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
-            <div class="dropdown-content" id="searchResultsDropdown">
-                <!-- Content for search results dropdown goes here -->
+            <div class="container" id="searchResultsDropdown" hidden>
+                <h3 id="no-results" hidden>No Results</h3>
+                <div class="col-6" id="postResultTemplate" hidden>
+                    <a href="/post/10" class="resultslink rounded">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
+                        <span><strong>post name</strong></span>
+                        by
+                        <span><em>username</em></span>
+                    </a>
+                </div>
+                <div id="userResultTemplate" hidden>
+                    <a href="/profile/u1" class="resultslink rounded">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
+                        <span><strong>username</strong></span>
+                    </a>
+                </div>
+                <div class="col-8 px-2">
+                    <h4 id="search-posts-label">Posts</h4>
+                    <div class="row" id="search-post-results">
+                        
+                    </div>
+                </div>
+                <div class="col-4 px-2" id="user-results">
+                    <h4 id="search-users-label">Users</h4>
+                    <div id="search-user-results">
+                        
+                    </div>
+                </div>
             </div>
             <div class="dropdown" id="notifications" hidden>
                 <a href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">

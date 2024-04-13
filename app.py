@@ -140,20 +140,21 @@ class User(db.Model) :
             "posts": [l.render_json() for l in self.likeList]
 		}
     
-    def get_settings_info(self):
-        return {
-            "username": self.username,
-            "gccEmail": self.gccEmail,
-            "bio": self.bio,
-            "backupEmail": self.backupEmail,
-        }
-    
     def get_user_info(self):
         return {
             "username": self.username,
             "gccEmail": self.gccEmail,
             "bio": self.bio,
             "backupEmail": self.backupEmail,
+        }
+        
+    def search_result_json(self):
+        pfp = "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80"
+        if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
+            pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
+        return{
+            "username": self.username,
+            "pfp": pfp,
         }
 
 class Report(db.Model) :
@@ -218,6 +219,10 @@ class Block(db.Model):
     # advanced backref because of 2 foreign keys from same table
     blocker = db.relationship('User', back_populates='blockList', foreign_keys=[user1])
 
+class Tag(db.Model):
+    __tablename__ = 'Tags'
+    tag = db.Column(db.String, primary_key=True)
+
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
@@ -230,6 +235,7 @@ class Post(db.Model) :
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
     numLikesD3 = db.Column(db.Integer) # [20,30) min ago
+    tag = db.Column(db.String, db.ForeignKey('Tags.tag'))
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -280,6 +286,14 @@ class Post(db.Model) :
         }
     def thumbnail(self):
         return f"images/thumbnails/{self.postID}.png"
+    def search_result_json(self):
+        return{
+            "id": self.postID,
+            "title": self.title,
+            "thumbnail": f"/static/images/thumbnails/{self.postID}.png",
+            "tag": self.tag,
+            "poster": self.owner.username,
+        }
 
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
@@ -329,11 +343,20 @@ with app.app_context():
     db.create_all()
 
         # Create posts  to be inserted
+        
+    tag1 = Tag(tag="tag1")
+    tag2 = Tag(tag="tag2")
+    tag3 = Tag(tag="tag3")
+    tag4 = Tag(tag="tag4")
+    tag5 = Tag(tag="tag5")
+    tag6 = Tag(tag="tag6")
+    
     u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
     u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
+    
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", owner = u2, numLikes=10)
+                 backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
                  backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
@@ -354,6 +377,7 @@ with app.app_context():
     db.session.add_all((like11,like12,like13))
     db.session.add_all((bm11,bm12,bm13))
     db.session.add(notif)
+    db.session.add_all((tag1,tag2,tag3,tag4,tag5,tag6))
     db.session.commit()
 
 # for the update to like counts every 10 minutes
@@ -748,7 +772,7 @@ def toggle_block_status():
     
 
 # Route to delete a post by its ID
-@app.route('/delete/<int:id>', methods=['GET', 'POST'])
+@app.route('/deletePost/<int:id>', methods=['GET', 'POST'])
 def delete_entry(id):
     user = load_user(session.get('customIdToken'))
     post = Post.query.get(id)
@@ -970,6 +994,11 @@ def get_recent():
     
     return [p.render_json() for p in recent]
 
+@app.get("/API/taglist/")
+def get_taglist():
+    ret = Tag.query.all()
+    return [t.tag for t in ret]
+
 @app.get("/API/get_followed_posts/<string:gccEmail>")
 def get_followed_posts(gccEmail):
     start_id = int(request.args.get('start_id', -1))
@@ -1087,18 +1116,26 @@ def get_likes():
 
 @app.route('/search', methods=['GET'])
 def search():
-    search_query = request.args.get('query')
+    search_query = request.args.get('query', default=None)
+    tag = request.args.get('tag', default=None)
+    matching_users = User.query
+    matching_posts = Post.query
+    
+    if search_query != None:
+        matching_users = matching_users.filter(User.username.ilike(f'%{search_query}%'))
+        matching_posts = matching_posts.filter(Post.title.ilike(f'%{search_query}%'))
+    
+    if tag != None:
+        matching_posts = matching_posts.filter_by(tag=tag)
+        matching_posts = matching_posts.limit(20).all()
+        post_results = [post.search_result_json() for post in matching_posts]
+        return jsonify({'users': [], 'posts': post_results})
 
-    # Search for users by username
-    matching_users = User.query.filter(User.username.ilike(f'%{search_query}%')).all()
-
-    # Search for posts by title
-    matching_posts = Post.query.filter(Post.title.ilike(f'%{search_query}%')).all()
-
+    matching_users = matching_users.limit(10).all()
+    matching_posts = matching_posts.limit(20).all()
     # Construct JSON response
-    user_results = [{'username': user.username} for user in matching_users]
-    post_results = [{'title': post.title} for post in matching_posts]
-
+    user_results = [user.search_result_json() for user in matching_users]
+    post_results = [post.search_result_json() for post in matching_posts]
     return jsonify({'users': user_results, 'posts': post_results})
     
 @app.route('/check_user', methods=['GET'])
