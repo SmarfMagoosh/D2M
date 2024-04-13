@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const notif_count_dd = document.getElementById('notif-count-dd');//count inside of the notification dropdown
     notif_template = document.getElementById('notif-template');//div containing sample notification
 
-    //load the timer
+    //load the notifications
     await fetch(`/API/get_notifications/`)
         .then(validateJSON)
         .then(data => {
@@ -50,7 +50,6 @@ async function insert_notification(notification){
                 "id" : notification.id
             })
         });
-        // console.log(notification.id + "" + )
     });
     
 

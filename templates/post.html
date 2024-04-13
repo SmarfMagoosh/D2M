@@ -5,18 +5,22 @@
 {% endblock %}
 
 {% block head %}
-    <script src = "../../static/js/post.js"></script>  <!-- remember to sub this for (url_for) !!!! -->
-    <link rel = "stylesheet" href = "../../static/css/post.css">
-    <link rel="stylesheet" href="../../static/css/styling.css">
+    <script src = "{{ url_for('static', filename='js/post.js') }}"></script>
+    <link rel = "stylesheet" href = "{{ url_for('static', filename='css/post.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styling.css') }}">
     <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
-    <script type="text/javascript" src="../../static/js/navBar.js"></script>
-    {% endblock %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/navBar.js') }}"></script>
+
+        <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}
 
 {% block content %}
 
@@ -41,26 +45,48 @@
         <button id="like-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-up"></i></button>  
         <button id="dislike-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-down"></i></button>   
         <button id="bookmark-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-bookmark"></i></button>
-        <!-- <button id="report-btn"><i class="fa-solid fa-flag"></i></button> -->
+        {% if loggedInUser.username == post.username%}
+        <!-- <button id="delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button> -->
+        <!-- Delete Post Button -->
+        <button id="delete-btn" data-postId="{{ post['id'] }}" type="button" class="btn btn-danger" id="deletePostBtn" data-toggle="modal" data-target="#confirmDeleteModal">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+        {% else %}
+        <button id="report-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-flag"></i></button>
+        {% endif %}
         <button id="copy-link-btn"><i class="fa-solid fa-link"></i></button>
-        <button id="remix-btn"><i class="fa-solid fa-file-pen"></i></button>
+        <a href="{{ url_for('get_remix', post_id=post.id ) }}">
+            <button id="remix-btn" ><i class="fa-solid fa-file-pen"></i></button>
+        </a> 
+        
     </div>
     
-    <!-- <div id="report-popup" class="popup">
+    <div id="report-popup" class="comment-box">
         <div class="popup-content">
-            <span class="close-btn" onclick="closePopup()">&times;</span>
-            <label for="comment">Reason for Report:</label>
-            <textarea id="report-text" placeholder="Enter your report"></textarea>
-            <button onclick="submitReport()">Submit</button>
-            <button onclick="closePopup()">Cancel</button>
+            <label for="comment">Reason for Report:</label><br>
+            <textarea id="report-text" placeholder="Enter your report"></textarea><br>
+            <button id="submit-btn" data-postId="{{ post['id'] }}">Submit</button>
+            <button id="cancel-btn">Cancel</button>
         </div>
-    </div> -->
+    </div>
 
     <form id="comment-form" data-postId="{{ post['id'] }}">
         <label for="comment">Leave a Comment:</label><br>
         <textarea id="comment-box" placeholder="Enter your comment"></textarea><br>
         <input type="submit" value="Submit!">
     </form>
+    {% if loggedInUser.username == post.username %} 
+        {% for report in post.reportsList %}
+        <div class="comment-box">
+            <div class="comment">
+                <div class="comment-content">
+                    <p>your post was reported: {{ report.reason }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %} 
+    </div>
 </div>
 
 <div id = "comment-content">
@@ -77,6 +103,28 @@
     </div>
     
     {% endfor %}
+</div>
+
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="display: flex; justify-content: space-between;">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this post?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <button data-postId="{{ post['id'] }}" type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 

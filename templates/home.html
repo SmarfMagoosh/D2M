@@ -6,8 +6,10 @@
 {% block head %}
 
 <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
-<link rel = "stylesheet" href = "../static/css/home.css">
+<link rel = "stylesheet" href = "{{ url_for('static', filename='css/home.css') }}">
 <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styling.css') }}">
 
 {% endblock %}
 
@@ -17,6 +19,7 @@
   <a href="{{ url_for('get_post', post_id=post.id) }}">
     <img src="../../static/images/{{post['thumbnail']}}" alt="" width="425" class="image-link">
   </a>
+  {{post.title}}
 
   {% endfor %}
   
@@ -25,8 +28,4 @@
     
   </div>
   
-
-
 {% endblock %}
-
-

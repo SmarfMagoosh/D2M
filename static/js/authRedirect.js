@@ -54,8 +54,10 @@ function loginExisting() {
     .then(data => {
         if (data.exists) {
             fetch(`/login?email=${data.email}`)
-            // sessionStorage.setItem("customIdToken", data.email)
-            window.location.href = "../home";
+            .then(response => {
+                // sessionStorage.setItem("customIdToken", data.email)
+                window.location.href = "../home";
+            })
         } else {
             document.getElementById("incorrectCredentials").style.display = "inline";
             usernameField.value = ""
@@ -75,20 +77,7 @@ function signIn() {
 }
 
 function signOut() {
-
-    /**
-     * You can pass a custom request object below. This will override the initial configuration. For more information, visit:
-     * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/request-response-object.md#request
-     */
-
-    // Choose which account to logout from by passing a username.
-    const logoutRequest = {
-        account: myMSALObj.getAccountByUsername(username),
-        // postLogoutRedirectUri: 'http://localhost:3000/signout', // Simply remove this line if you would like navigate to index page after logout.
-
-    };
-
-    myMSALObj.logoutRedirect(logoutRequest);
+    logout()
 }
 
 function register() {
@@ -108,8 +97,10 @@ function register() {
     .then(data => {
         if ((data.uniqueUsername) && (data.goodPassword)) {
             fetch(`/login?email=${email}`)
+            .then(response => {
             // sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
+            })
         }
         else {
             invalidUsername = document.getElementById("invalidUsername")

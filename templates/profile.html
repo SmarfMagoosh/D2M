@@ -20,15 +20,48 @@
         <div class="media align-items-end profile-head"> 
             <div class="profile mr-3">
                 <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80" alt="..." width="130" class="rounded mb-2 img-thumbnail">
-                
             </div>
             <div class="media-body mb-5 text-white"> 
-                <h2 class="mt-0 mb-0", id="username">{{user.username}}</h2>
-                <h2 class="mt-1", id="email">{{user.gccEmail}}</h2>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mt-0 mb-0" id="username">{{user.username}}</h2>
+                        <h2 class="mt-1" id="email">{{user.gccEmail}}</h2>
+                    </div>
+                    {% if loggedInUser and loggedInUser.gccEmail != user.gccEmail %}
+                    <div>
+                        <button id="blockButton" href="#" class="btn btn-dark btn-sm">
+                            {% if blocked %}
+                                Unblock
+                            {% else %}
+                                Block
+                            {% endif %}
+                        </button>
+
+                        {% if not blocked %}
+                            <button id="followButton" href="#" class="btn btn-dark btn-sm">
+                                {% if following %}
+                                    Unfollow
+                                {% else %}
+                                    Follow
+                                {% endif %}
+                            </button>
+                        {% else %}
+                            <button id="followButton" href="#" style="display: none;" class="btn btn-dark btn-sm">
+                                {% if following %}
+                                    Unfollow
+                                {% else %}
+                                    Follow
+                                {% endif %}
+                            </button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
                 <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block">Edit profile</a>
-                    <p class="small mb-4">                  
+                <p class="small mb-4"></p>
             </div> 
-        </div> 
+        </div>
+        
     </div> 
     <div class="bg-light p-4 d-flex justify-content-end text-center"> 
         <!-- <ul class="list-inline mb-0"> 
@@ -77,40 +110,100 @@
                   </div>
                               
                   <div id="Liked" class="tabcontent">
-                   
-                   PUT LIKED STUFFS HERE
-
-                   <!-- {% for post in liked_posts %}
-                   <div class="post">
-                       <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                           <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
-                       </a>
-                       <p>{{ post.title }}</p>
-                   </div>
-               {% endfor %} -->
-
-                    {% for like in user.likeList %}
-                        {{ like.postID }}
+                   {% for post in liked_posts %}
+                   <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   </a>
+                   {{post.title}}
+                   <br>
                     {% endfor %}
                   </div>
                               
                   <div id="Bookmarked" class="tabcontent">
-                    <!-- {% for post in user.bookmarkList.postID %}
-                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                    <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
-                    </a>
-                    {{post.title}} 
-                   {% endfor %}-->
-                   PUT BOOKMARK STUFFS HERE
-
-                    {% for bookmark in user.bookmarkList %}
-                        {{ bookmark.postID }}
+                    {% for post in bookmarked_posts %}
+                   <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   </a>
+                   {{post.title}}
+                   <br>
                     {% endfor %}
 
                   </div>
                            
         </div>
     </div>
+    <script>
+        // Function to execute when the follow button is clicked
+
+        document.addEventListener('DOMContentLoaded', function() {
+            followButton = document.getElementById('followButton')
+            blockButton = document.getElementById('blockButton')
+
+            if(followButton) {
+                // Function to execute when the follow button is clicked
+                followButton.addEventListener('click', function() {
+                    // Data to send to the server
+                    var data = {
+                        otherUserEmail: document.getElementById("email").innerText,
+                    };
+
+                    // Make an AJAX request to toggle follow status
+                    fetch('/toggle_follow_status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => followButton.innerText = data.is_following ? 'Unfollow' : 'Follow')
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+
+            if(blockButton) {
+                // Function to execute when the follow button is clicked
+                blockButton.addEventListener('click', function() {
+                    // Data to send to the server
+                    var data = {
+                        otherUserEmail: document.getElementById("email").innerText,
+                    };
+
+                    // Make an AJAX request to toggle follow status
+                    fetch('/toggle_block_status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(ret => {
+                        if(ret.is_blocked) {
+                            blockButton.innerText = 'Unblock';
+                            if(followButton)
+                                followButton.style.display = 'none';
+                                fetch('/unfollow', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(data)
+                                })
+                                .then(followButton.innerText = "Follow")
+                        }
+                        else {
+                            blockButton.innerText = 'Block';
+                            if(followButton)
+                                followButton.style.display = '';
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+        });
+    </script>
+
     </div>
 </div>
 {% endblock %}

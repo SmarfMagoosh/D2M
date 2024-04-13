@@ -46,7 +46,6 @@
   justify-content: space-between;
   align-items: center;
   background-color: #9e363a; /* Dark background for the navbar */
-  position: fixed; /* Use fixed positioning */
   width: 100%; /* Full width of the viewport */
   top: 0; /* Align the navbar at the top */
   padding: 10px 20px; /* Adjust padding as needed */
@@ -78,25 +77,38 @@
 }
 
 #searchResultsDropdown {
-  display: none; /* Initially hide the dropdown */
+  display: flex;
   position: absolute; /* Position the dropdown absolutely */
   top: calc(100%); /* Place the dropdown below the search bar with some spacing */
   left: 50%; /* Align the dropdown with the center of the search bar */
   transform: translateX(-50%); /* Adjust to center the dropdown horizontally */
   z-index: 1; /* Ensure the dropdown is above other content */
-  background-color: #f9f9f9;
+  background-color: var(--bs-body-bg);
   min-width: 160px;
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   padding: 12px 16px;
+  border-color: var(--bs-border-color);
+  border-width: normal;
+  border-style: solid;
+  border-top-width: 0;
 }
 
-#searchResultsDropdown .dropdown-item {
-  cursor: pointer;
+.resultslink {
+  color: var(--bs-body-color);
+  text-decoration: none;
+  display: block;
+  border-color: var(--bs-border-color);
+  border-width: thin;
+  border-style: solid;
+}
+.resultslink:hover {
+  background-color: var(--bs-secondary-bg);
 }
 
-#searchResultsDropdown .dropdown-item:hover {
-  background-color: #ddd;
+.resultsdiv{
+  padding: calc(var(--bs-gutter-x) * .25);
 }
+
 /* Styles for the circular button */
 .circular-button {
   width: 6rem; /* Set the width of the button */
@@ -149,13 +161,13 @@ body{
 }
 
 /* Style for the input field */
-#searchInput {
+/* #searchInput {
     padding: 8px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    margin-right: 8px; /* Add some spacing between input and button */
-}
+    margin-right: 8px; Add some spacing between input and button
+}*/
 
 /* Style for the search button */
 #searchButton {
@@ -196,4 +208,9 @@ body{
   display: flex;
   align-items: center; /* Align items vertically in the center */
   gap: 10px; /* Add space between items */
+}
+
+
+.tag-badge {
+  margin-right: .4em;
 }
