@@ -40,8 +40,34 @@
                 </ul>
             </div>
             <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
-            <div class="dropdown-content" id="searchResultsDropdown">
-                <!-- Content for search results dropdown goes here -->
+            <div class="container" id="searchResultsDropdown" hidden>
+                <h3 id="no-results" hidden>No Results</h3>
+                <div class="col-6" id="postResultTemplate" hidden>
+                    <a href="/post/10" class="resultslink rounded">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
+                        <span><strong>post name</strong></span>
+                        by
+                        <span><em>username</em></span>
+                    </a>
+                </div>
+                <div id="userResultTemplate" hidden>
+                    <a href="/profile/u1" class="resultslink rounded">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
+                        <span><strong>username</strong></span>
+                    </a>
+                </div>
+                <div class="col-8 px-2">
+                    <h4 id="search-posts-label">Posts</h4>
+                    <div class="row" id="search-post-results">
+                        
+                    </div>
+                </div>
+                <div class="col-4 px-2" id="user-results">
+                    <h4 id="search-users-label">Users</h4>
+                    <div id="search-user-results">
+                        
+                    </div>
+                </div>
             </div>
             <div class="dropdown" id="notifications" hidden>
                 <a href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
