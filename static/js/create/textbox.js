@@ -1,52 +1,29 @@
 function textbox_init(create) {
-    create.textboxes = {};
-    create.textboxes.boxes = []
-    create.textboxes.numboxes = 0;
-
-    $(".meme-text").hide()
-    $(".meme-text").mouseover(e => {
-        const x = $(e.target).parents(".text-box-container")
-        const meme = x.parent()
-        x.detach()
-        meme.append(x)
-    })
+    create.textboxes = []
 }
 
 function add_text_box(create) {
-    create.textboxes.numboxes += 1;
-
-    // show new textbox on rightside panel
     const textbox = $(`
     <div>
-        <textarea placeholder = "Enter Text" id = "text-${create.textboxes.numboxes}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
+        <textarea placeholder = "Enter Text" id = "text-${create.textboxes.length}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
         <div class = "dropdown">
             <button class = "btn settings-menu" type = "button"><i class = "fa fa-gear"></i></button>
-            <div class = "dropdown-menu">${settings_menu(create.textboxes.numboxes)}</div>
+            <div class = "dropdown-menu">${settings_menu(create.textboxes.length)}</div>
         </div>
         <button class = "btn trash-btn"><i class = "fa fa-trash"></i></button>
     </div>
     `)
     $("#right-content").children()[0].append(textbox[0]);
 
-    // overlay new text create.over meme
     $("#meme").append($(`
         <div class = 'text-box-container' style = 'top: 0'>
-            <div class = 'meme-text' id = 'meme-text-${create.textboxes.numboxes}'></div>
+            <div class = 'meme-component' style = 'height: 3rem;'>
+                <div class = 'meme-text' id = 'meme-text-${create.textboxes.length}'></div>
+            </div>
         </div>`))
+    $(".meme-component").each(enable_meme_component("text-box"))
 
-    // make new text box draggable and resizable
-    $(".meme-text")
-        .draggable({containment: "parent"})
-        .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
-        .mouseover(e => bring_to_front($(e.target).parents(".text-box-container")))
-
-    // update meme-text when text is entered
-    $(".text-box").on("input", e => {
-        const x = $(`#meme-${e.target.id}`)
-        x.resizable("destroy")
-        x.text(e.target.value)
-        x.resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
-    })
+    $(".text-box").on("input", e => $(`#meme-${e.target.id}`).text(e.target.value))
     $(".trash-btn").click(e => delete_box(e.target))
 
     textbox.children(".dropdown").children(".settings-menu").click(e => {
@@ -56,8 +33,9 @@ function add_text_box(create) {
             $(e.target).next(".dropdown-menu").slideToggle() 
         }
     })
+
+    create.textboxes.push(textbox)
     
-    // set up text box settings event listeners
     const id = e => parseInt(e.target.id.split("-")[1])
     $(".settings-alignment").off("change").change(e => $(`#meme-text-${id(e)}`).css("text-align", e.target.value))
     $(".settings-font-size").off("change").change(e => $(`#meme-text-${id(e)}`).css("font-size", `${e.target.value}px`))
@@ -74,10 +52,9 @@ function add_text_box(create) {
 
 function delete_box(btn) {
     btn = $(btn).closest("div")
-    //while (btn.tagName != "DIV") { btn = btn.parentNode }
     const id = btn[0].children[0].id
     btn.remove()
-    $(`#meme-${id}`).remove()
+    $(`#meme-${id}`).parents(".text-box-container").remove()
 }
 
 function settings_menu(x) {
@@ -159,20 +136,4 @@ function settings_menu(x) {
         <label for = "capitals-${x}">All Caps</label>
     </div>
 </div>`
-}
-
-function disable_textboxes() {
-    $(".meme-text").off("click").resizable("destroy").draggable("destroy")
-}
-
-function enable_textboxes() {
-    $(".meme-text")
-        .draggable({containment: "parent"})
-        .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
-        .mouseover(e => {
-            const x = $(e.target).parents(".text-box-container")
-            const meme = x.parent()
-            x.detach()
-            meme.append(x)
-        })
 }

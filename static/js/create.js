@@ -1,5 +1,4 @@
 $("document").ready(() => {
-    //namespace for page
     const create = {}
     fetch("/getUserInfo")
         .then(response => response.ok ? response.json() : Promise.reject(response))
@@ -10,94 +9,42 @@ $("document").ready(() => {
 
     window.get_create = () => create
     $("#image-tool-bar").hide()
-    $("#fileInputBtn").click(e => $("#fileInput").click())
-
-    // no creating or viewing text boxes until image selected
     $("#new-box-btn").attr("disabled", true)
-
-    // initialize spacing tools
     $("#spacing-tools").hide()
     $("#spacer").change(e => adjust_spacing(create, e.target.value, $("#space-arrangement").val()))
     $("#space-arrangement").change(e => adjust_spacing(create, $("#spacer").val(), e.target.value))
 
-    // get canvas and context for it
     create.canvas =  $("#meme-img")[0]
     create.canvas.width = create.canvas.parentNode.clientWidth - 20
     create.drawing.canv.width = create.canvas.parentNode.clientWidth - 20
     create.ctx = create.canvas.getContext("2d")
 
-    // add more event listeners
     $("#post-btn").click(post(create))
     $("#new-box-btn").click(e => add_text_box(create))
     $(".image-tool").click(e => update_tools(e.target.innerText))
 
-    // event listeners for adding the base image
-    $("#fileInput").change(e => upload_base_image(create, e.target))
-    $(".template-card").click(e => init_meme(create, e.target.src.replace("/template-thumbnails", "/meme-templates")))
+    $("#switch-btn").hide()
+    $("#fileInput").change(e => display_image(create, e.target))//upload_base_image(create, e.target))
+    $(".template-card").click(e => {
+        const img = new Image()
+        img.src = e.target.src.replace("/template-thumbnails", "/meme-templates")
+        img.onload = upload_base_image(create, img)
+    })
 })
 
 function adjust_spacing(create, value, position) {
-    // save drawings
     const drawings = new Image()
     drawings.src = create.drawing.canv.toDataURL()
 
-    // set new height for image canvas and drawing canvas
     create.canvas.height = create.dimensions.height * (1 + value)
     create.drawing.canv.height = create.dimensions.height * (1 + value)
 
-    // redraw base image
     create.ctx.drawImage(
-        create.baseImg, 0,
-        create.dimensions.height * value * position,
-        create.dimensions.width,
-        create.dimensions.height
-    )
-}
-
-function init_meme(create, src) {
-    create.baseImg = new Image();
-    create.baseImg.src = src;
-    create.baseImg.onload = function() {
-        const aspectRatio = create.baseImg.naturalHeight / create.baseImg.naturalWidth
-        create.dimensions = {
-            width: create.canvas.width, 
-            height: aspectRatio * create.canvas.width
-        }
-
-        // adjust width and height of img to fit meme and draw it
-        create.canvas.height = create.dimensions.height;
-        create.drawing.canv.height = create.dimensions.height;
-        create.ctx.drawImage(
-            create.baseImg, 0, 0, 
-            create.canvas.width, 
-            create.canvas.height
-        )
-        $("#template-modal-button").hide()
-        $("#img-tool-bar").show()
-    }
-    add_text_box(create)
-    add_text_box(create)
-    $("#fileInputLabel").hide()
-    $("#new-box-btn").attr("disabled", false)
-    $("#list-opener").hide()
-    $("#fileInputBtn").hide()
-    $("#img-tool-bar").show()
-    $("#image-tool-bar").show()
-    $("#drawing").show()
-}
-
-function upload_base_image(create, input) {
-    const MAX_FILE_SIZE = 4_000_000
-    if (FileReader && input.files && input.files.length) {
-        const base = input.files[0]
-        if (base.size < MAX_FILE_SIZE) {
-            const reader = new FileReader();
-            reader.onload = () => init_meme(create, reader.result)
-            reader.readAsDataURL(base);
-        } else {
-            alert(`That image is too large! we only accept files less than ${MAX_FILE_SIZE / 1_000_000}MB`);
-        }
-    }
+        create.baseImg, create.cropData.left, 
+        create.cropData.top, create.cropData.width, 
+        create.cropData.height, 0, 
+        create.dimensions.height * value * position, 
+        create.dimensions.width, create.dimensions.height)
 }
 
 function post(create) {
@@ -150,10 +97,10 @@ function update_tools(tool_bar) {
     if (tool_bar == "Adjust Spacing") {
         $("#spacing-tools").show()
         $(".text-box-container").each((i, elem) => bring_to_front($(elem)))
-        enable_textboxes()
+        $(".meme-component").each(enable_meme_component)
     } else if (tool_bar == "Draw") {
         $("#drawing-tools").show()
-        disable_textboxes()
+        $(".meme-component").each(disable_meme_component)
         bring_to_front($("#drawing"))
     }
 }
@@ -162,4 +109,20 @@ function bring_to_front(elem) {
     const p = elem.parent()
     elem.detach()
     p.append(elem)
+}
+
+function enable_meme_component(type) {
+    return (i, elem) => {
+        try {
+            $(elem).resizable("option", "disabled")
+        } catch (error) {
+            $(elem).draggable({containment: "parent"})
+                .resizable({containment: "parent", handles: "n, ne, e, se, s, sw, w, nw"})
+                .mouseover(e => bring_to_front($(e.target).parents(`.${type}-container`)))
+        }
+    }
+}
+
+function disable_meme_component(i, elem) {
+    $(elem).off("click").resizable("destroy").draggable("destroy")
 }
