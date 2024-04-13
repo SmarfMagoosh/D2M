@@ -632,8 +632,8 @@ def sendResetEmail():
 
     # return jsonify({'success': True})
 
-    api_key = "30905722bdfe5e24c6f73e0444cd4284"
-    api_secret = "0952e639336b1d9c91f0de8f0fe4e7ba"
+    api_key = "751ee360058ff1983b3edf6a8e232ba3"
+    api_secret = "9f9233c6606b41d971aee0fb0803ac6b"
     mailjet = Client(auth=(api_key, api_secret), version='v3.1')
     data = {
     'Messages': [
