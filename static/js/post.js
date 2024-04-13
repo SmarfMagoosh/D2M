@@ -10,17 +10,21 @@ document.addEventListener('DOMContentLoaded', function () {
 const reportPopup = document.getElementById('report-popup');
 reportPopup.style.display = 'none'; 
 
-$("#delete-btn").click(e => {
-    // e.preventDefault(); // Prevent the default action of the button click
-    
-    const postID = $(e.target).attr('data-postId');
-    
-    // Display a confirmation dialog
-    const confirmed = confirm("Are you sure you want to delete this post?");
-    
-    // If the user confirms, proceed with the deletion
-    if (confirmed) {
-        fetch('/delete/' + postID, {
+
+$(document).ready(function() {
+    // Event listener for delete button click
+    $('#deletePostBtn').click(function() {
+        // Show the confirmation modal
+        $('#confirmDeleteModal').modal('show');
+    });
+
+    // Event listener for confirm delete button click
+    $('#confirmDeleteBtn').click(function() {
+        // Submit the delete post form
+        console.log("hellloo");
+        const postID = this.getAttribute('data-postId');
+        
+        fetch('/deletePost/' + postID, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -41,9 +45,8 @@ $("#delete-btn").click(e => {
             // Handle network errors or server errors
             console.error('Error:', error);
         });
-    }
+    });
 });
-
 
 $("#report-btn").click(e => {
     reportPopup.style.display = 'block';
