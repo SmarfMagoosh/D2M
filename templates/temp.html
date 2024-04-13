@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+
+    <!--html2canvas-->
+    <script src = "{{url_for('static', filename='js/premade/html2canvas.js')}}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            //get elements
+            const button = document.getElementById('take-screenshot');
+            button.addEventListener("click", () => {
+                html2canvas(document.body).then(canvas => {
+                    fetch(window.location.href, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            thumbnailData: canvas.toDataURL('image/png'),
+                        }),
+                        headers: { "Content-type": "application/json; charset=UTF-8" }
+                    })
+                })
+            } )
+        
+        });
+    </script>
+</head>
+<body>
+    <div>
+        <button id="take-screenshot">Take Screenshot</button>
+    </div>
+</body>
+</html>

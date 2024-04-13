@@ -20,7 +20,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 
 window.addEventListener('DOMContentLoaded', () => {
     dm_toggle = document.getElementById("darkModeToggle")
-    // console.log(dm_toggle)
     updateToggle(getPreferredTheme())
 })
 

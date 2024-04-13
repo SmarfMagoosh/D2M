@@ -1,7 +1,7 @@
 /* main page structure */
 
 body {
-    background-color: #999999;
+    background-color: dimgray;
 }
 
 #main-content-div {
@@ -18,6 +18,10 @@ body {
     height: fit-content
 }
 
+#fileInput, #addImgInput {
+    display: none;
+}
+
 /* MEME DISPLAY */
 
 #meme-img {
@@ -32,6 +36,19 @@ body {
     position: relative;
 }
 
+.meme-component {
+    margin: 1px;
+    border: dashed white 1px;
+    outline: dashed black 1px;
+    cursor: move;
+    width: 50%;
+}
+
+.extra-img {
+    width: 50%;
+    height: 50%;
+}
+
 .meme-text {
     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
     font-size: 32px;
@@ -39,9 +56,13 @@ body {
     -webkit-text-stroke: white 1px;
     text-align: center;
     overflow: hidden;
-    width: 40%;
-    height: 3rem;
-    border: dashed black 2px;
+    width: 100%;
+    height: 100%;
+}
+
+.meme-component > img {
+    width: 100%;
+    height: 100%;
 }
 
 .bold {font-weight: bold;}
@@ -51,60 +72,15 @@ body {
 .no-shadow {-webkit-text-stroke: white 0px;}
 .all-caps {text-transform: capitalize;}
 
-.ui-resizable-s, .ui-resizable-n {
-    height: 15px;
-    width: calc(100% - 20px);
-    margin: auto;
-    left: 0;
-    right: 0;
-}
-
-.ui-resizable-e, .ui-resizable-w {
-    width: 15px;
-    height: calc(100% - 10px);
-    top: 0;
-    bottom: 0;
-    margin: auto;
-}
-
-.ui-resizable-s {
-    bottom: -7px;
-}
-
-.ui-resizable-n {
-    top: -7px;
-}
-
-.ui-resizable-w {
-    left: -7px;
-}
-
-.ui-resizable-e {
-    right: -7px;
-}
-
-.ui-resizable-ne, .ui-resizable-nw, .ui-resizable-se, .ui-resizable-sw {
-    width:15px;
-    height: 15px;
-}
-
-.text-box-container, #drawing {
-    top: 0;
+.text-box-container, #drawing, .image-container {
+    top: -1px;
     position: absolute;
     left: 0;
     right: 0;
     margin: auto;
-    max-width: calc(100% - 20px);
     text-align: center;
-    overflow: hidden;
-    height: 100%;
-    max-height: calc(100%);
-}
-
-/* END MEME DISPLAY */
-
-#fileInput {
-    display: none;
+    max-width: calc(100% - 10px);
+    height: calc(100% + 1px);
 }
 
 /* left tool bar */
@@ -122,14 +98,14 @@ body {
     width: fit-content;
 }
 
-#image-tools {
+#image-tools > div{
     display: flex;
     margin: 1rem auto;
     width: 90%;
     justify-content: space-between;
 }
 
-#image-tools > div {
+#image-tools > div > div {
     display: inline-flex;
 }
 
@@ -221,4 +197,73 @@ textarea.form-control, #post-title {
 
 .modal-footer button {
     display: flex;
+}
+
+/* UI RESIZABLE CHANGESE */
+.ui-resizable-ne, .ui-resizable-nw, .ui-resizable-se, .ui-resizable-sw {
+    width: 15px;
+    height: 15px;
+}
+
+.ui-resizable-s, .ui-resizable-n {
+    margin: auto;
+    left: 0;
+    right: 0;
+    width: calc(100% - 20px);
+    height: 10px;
+}
+
+.ui-resizable-e, .ui-resizable-w {
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    height: calc(100% - 20px);
+    width: 10px;
+}
+
+.ui-resizable-n {
+    top: -7px;
+}
+.ui-resizable-ne {
+    top: -7px;
+    right: -7px;
+}
+
+.ui-resizable-e {
+    right: -7px;
+}
+
+.ui-resizable-se {
+    right: -7px;
+    bottom: -7px;
+}
+
+.ui-resizable-s {
+    bottom: -7px;
+}
+
+.ui-resizable-sw {
+    bottom: -7px;
+    left: -7px;
+}
+
+.ui-resizable-w {
+    left: -7px;
+}
+
+.ui-resizable-nw {
+    left: -7px;
+    top: -7px;
+}
+
+.ui-icon {
+    background-image: none;
+}
+
+#cropper > .ui-resizable-handle {
+    width: 15px;
+    height: 15px;
+    background-color: #bbbbbb;
+    border-radius: 0.25rem;
+    border: solid black 1px;
 }

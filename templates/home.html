@@ -19,6 +19,7 @@
   <a href="{{ url_for('get_post', post_id=post.id) }}">
     <img src="../../static/images/{{post['thumbnail']}}" alt="" width="425" class="image-link">
   </a>
+  {{post.title}}
 
   {% endfor %}
   
