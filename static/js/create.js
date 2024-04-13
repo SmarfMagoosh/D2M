@@ -34,6 +34,7 @@ $("document").ready(() => {
 
 function adjust_spacing(create, value, position) {
     const drawings = new Image()
+    // drawings.crossOrigin="anonymous";
     drawings.src = create.drawing.canv.toDataURL()
 
     create.canvas.height = create.dimensions.height * (1 + value)
@@ -55,13 +56,30 @@ function post(create) {
             textboxes: $.map($(".text-box"), elem => new MemeTextBox(create, elem)),
             imgData: create.canvas.toDataURL(),
             title: $("#post-title").val(),
-            user: create.user.username
+            user: create.user.username,
         }
-        fetch("/create", {
-            method: "POST",
-            body: JSON.stringify(meme),
-            headers: { "Content-type": "application/json; charset=UTF-8" }
-        }).then(response => window.location.href = "/profile")
+
+        const boxes = $(".meme-text");
+        for (let textarea of boxes) {
+            textarea.style.border = "none";
+        }
+        const grips = $(".ui-icon-gripsmall-diagonal-se");
+        for (let grip of grips) {
+            grip.hidden = true;
+        }
+        $("#meme-img")[0].style.border = "none"
+        // take screenshot
+        html2canvas($("#meme")[0], {useCORS: true, allowTaint: true})
+            .then(canvas => {
+                meme.thumbnailData = canvas.toDataURL('image/png');
+            }).then(value => {
+                fetch("/create", {
+                    method: "POST",
+                    body: JSON.stringify(meme),
+                    headers: { "Content-type": "application/json; charset=UTF-8" }
+                });
+            })
+            // .then(response => window.location.href = "/profile");
     }
 }
 

@@ -50,7 +50,6 @@ async function insert_notification(notification){
                 "id" : notification.id
             })
         });
-        // console.log(notification.id + "" + )
     });
     
 

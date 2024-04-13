@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from forms import SettingsForm
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
+from io import BytesIO
 from PIL import Image
 import base64
 import atexit
@@ -62,11 +63,10 @@ def update_like_backend():
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
-    print(update_times)
 
-def create_like(email, post, up):
+def create_like(username, post, up):
     with app.app_context():
-        like = Like(userEmail = email, postID = post, positive=up)
+        like = Like(username = username, postID = post, positive=up)
         db.session.add(like)
         db.session.commit()
         
@@ -82,16 +82,11 @@ def delete_notification(notif):
         db.session.delete(notif)
         db.session.commit()
         
-# takes in a Pillow Image object and returns the thumbnail version
-def create_thumbnail(image_path, dimensions = (400, 400)):
-    img = Image.open(image_path)
+# takes in the byte data of an image, and saves the thumbnail version
+def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
+    img = Image.open(BytesIO(base64.b64decode(image_data)))
     img.thumbnail(dimensions)
-    return img
-
-# TODO: call this directly after creating a post
-def save_thumbnail(post):
-    create_thumbnail(f"static/images/{post.backImage}")     \
-        .save(f"static/images/thumbnails/{post.postID}.png")
+    img.save(filepath)
     
 #from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
 #potentially necessary in future, but not at the moment
@@ -167,6 +162,13 @@ class Report(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
     reason = db.Column(db.String, nullable = False)
+    def to_json(self):
+        return {
+            "reason": self.reason,
+            "postID" : self.postID,
+            "userEmail" : self.userEmail,
+            "id" : self.reportID
+		}
     
 class Notification(db.Model) :
     __tablename__ = 'Notifications'
@@ -272,6 +274,7 @@ class Post(db.Model) :
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
+            "reportsList": [r.to_json() for r in self.reportsList]
         }
 
 class TextBox(db.Model) :
@@ -380,6 +383,16 @@ def get_create():
         loggedInUser = user)
 
 
+@app.get("/create/<int:post_id>")
+def get_remix(post_id):
+    # Get the post from the database
+    # TODO
+    post = Post.query.filter_by(postID=post_id).first()
+    # post_image = <somehow get the image from your DB result>
+    # Return a response indicating success
+    return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], loggedInUser = load_user(session.get('customIdToken')), post = post)
+
+
 @app.get("/home/")
 def get_home():
     # gets the most recent posts and sends them to the frontend
@@ -404,24 +417,35 @@ def get_post(post_id):
 @app.get("/profile/")
 @app.get("/profile/<string:username>/")
 def get_profile(username = None):
-    loggedInUser = load_user(session.get('customIdToken'))
-    following = False
-    blocked = False
-    if username == None: # thus a user is loggedIn
-        profileOwner = loggedInUser
-    else:  # load a different person's profile
-        profileOwner = User.query.filter_by(username=username).first()
-        if loggedInUser:
-            if Follow.query.filter_by(user1=loggedInUser.gccEmail, user2=profileOwner.gccEmail).first():
-                following = True
-            if Block.query.filter_by(user1=loggedInUser.gccEmail, user2=profileOwner.gccEmail).first():
-                blocked = True
+    if(username == None):
+        user = load_user(session.get('customIdToken'))
+        liked_post_ids = [like.postID for like in Like.query.filter_by(userEmail=user.gccEmail).all()]
+        # Get the bookmarked posts associated with the user
+        bookmarked_post_ids = [bookmark.postID for bookmark in Bookmark.query.filter_by(userEmail=user.gccEmail).all()]
+        # Fetch the liked posts
+        liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
+        # Fetch the bookmarked posts
+        bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
+        return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+    else:
+        user = User.query.filter_by(username=username).first()
+        # Get the liked posts associated with the user
+        liked_post_ids = [like.postID for like in Like.query.filter_by(userEmail=user.gccEmail).all()]
+        # Get the bookmarked posts associated with the user
+        bookmarked_post_ids = [bookmark.postID for bookmark in Bookmark.query.filter_by(userEmail=user.gccEmail).all()]
+        # Fetch the liked posts
+        liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
+        # Fetch the bookmarked posts
+        bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
+        return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        
 
-    return render_template("profile.html", user = profileOwner, loggedInUser = loggedInUser, following = following, blocked = blocked)
 
+@app.get('/getCurrentSettings')
+def getCurrentSettings():
+    email = request.args.get('email')
+    return redirect(url_for('get_settings')+ "email=" + str(email))
 
-# this method loads the settings page with settings updated for the current user
-# return back to home if there is no user signed in
 # need to get their current settings, but also needs to work if someone navigates by back arrow/typing in /settings
 @app.get("/settings/")
 # @login_required
@@ -665,7 +689,6 @@ def toggle_follow_status():
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
         return jsonify({'is_following': is_following})
     else:
-        print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
     
 # This route is used exclusively when the user blocks someone they were following
@@ -687,7 +710,6 @@ def unfollow():
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
         return jsonify({'is_following': False})
     else:
-        print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
 
 # this route corresponds to the block button
@@ -718,22 +740,35 @@ def toggle_block_status():
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
         return jsonify({'is_blocked': is_blocked})
     else:
-        print("One or both users do not exist.")
         return jsonify({'message': "Error: One or both users do not exist."})
+    
+
+# Route to delete a post by its ID
+@app.route('/deletePost/<int:id>', methods=['GET', 'POST'])
+def delete_entry(id):
+    user = load_user(session.get('customIdToken'))
+    post = Post.query.get(id)
+    if user and post and user.username == post.username:
+        entry_to_delete = Post.query.get_or_404(id)
+        db.session.delete(entry_to_delete)
+        db.session.commit()
+        return 'Entry deleted successfully'
+    else:
+        return 'Entry not deleted'
 
 
 # def create_comment(commentData, u2Email):
 #     with app.app_context():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# POST ROUTES (return a redirect)
+# POST ROUTES (return a redirect) 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @app.post("/create/")
 def post_meme():
     body: dict = request.json
-    print(body.keys())
     imgData = body["imgData"][22:]
+    thumbnailData = body["thumbnailData"][22:]
     post_inst = Post(
         spacing = float(body["spacing"]),
         title = body['title'],
@@ -765,6 +800,7 @@ def post_meme():
     db.session.commit()
     with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
          file.write(base64.b64decode(imgData))
+    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
     return "hello world"
 
 @app.post('/add_user/')
@@ -817,10 +853,91 @@ def create_comment_route():
     )
     db.session.add(new_comment)
     db.session.commit()
-    print("HEY! IT DOES A THING!!")
 
     # Return a response indicating success
     return {'message': 'Comment created successfully'}, 200
+
+# Define a route to handle AJAX requests for creating comments
+@app.post('/create_report')
+def create_report_route():
+    # Get the data from the AJAX request
+    data = request.json
+    reason = data.get('reason')
+    userEmail = data.get('userEmail')
+    postID = data.get('postID')
+
+    new_report = Report(
+        postID=postID,
+        reason = reason,
+        userEmail= userEmail
+        # The reportID will be automatically generated due to autoincrement=True
+    )
+    db.session.add(new_report)
+    db.session.commit()
+
+    # Return a response indicating success
+    return {'message': 'Report created successfully'}, 200
+
+# Define a route to handle AJAX requests for creating comments
+@app.post('/create_like')
+def create_like_route():
+    # Get the data from the AJAX request
+    data = request.json
+    userEmail = data.get('userEmail')
+    positive = data.get('positive')
+    postID = data.get('postID')
+
+    # Check if there is an existing like by the same user for the same post
+    existing_like = Like.query.filter_by(postID=postID, userEmail=userEmail).first()
+
+    if existing_like:
+        # Check if the existing like has the same polarity
+        if existing_like.positive == positive:
+            # Remove both likes if they have the same polarity
+            db.session.delete(existing_like)
+            db.session.commit()
+            return {'message': 'Existing like removed due to same polarity'}, 200
+        else:
+            # Switch the polarity of the existing like if they have different polarities
+            existing_like.positive = not existing_like.positive
+            db.session.commit()
+            return {'message': 'Existing like polarity switched'}, 200
+    else:
+        # Create a new like if there's no existing like
+        new_like = Like(
+            postID=postID,
+            userEmail=userEmail,
+            positive=positive
+        )
+
+    db.session.add(new_like)
+    post = Post.query.filter_by(postID=postID).first()
+    if (positive):
+       post.numLikes += 1
+    else:
+        post.numLikes -= 1
+    db.session.commit()
+
+    # Return a response indicating success
+    return {'message': 'Like created successfully'}, 200
+
+@app.post('/create_bookmark')
+def create_bookmark_route():
+    # Get the data from the AJAX request
+    data = request.json
+    userEmail = data.get('userEmail')
+    postID = data.get('postID')
+
+    new_like = Bookmark(
+        postID=postID,
+        userEmail = userEmail,
+    )
+    db.session.add(new_like)
+    db.session.commit()
+
+    # Return a response indicating success
+    return {'message': 'Bookmark created successfully'}, 200
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # QUERY/API ROUTES (return a json object)
@@ -837,7 +954,6 @@ def get_recent():
     count = int(request.args.get('count', DEFAULT_POSTS_LOADED))
     username = request.args.get('username', None)
     recent = Post.query
-    # print(str(start_id) + " " + str(count))
     
     if start_id != -1:
         recent = recent.filter(Post.postID<=start_id)
@@ -933,15 +1049,12 @@ def get_likes():
     field = None
     #within earliest timeslot?
     if not update_times[0] == 0 and timestamp >= update_times[0] and timestamp < update_times[1]:
-        # print("slot 0")
         field = Post.numLikesD3
     #within middle timeslot?
     elif not update_times[1] == 0 and timestamp >= update_times[1] and timestamp < update_times[2]:
-        # print("slot 1")
         field = Post.numLikesD2
     #later than most recent timeslot
     elif timestamp >= update_times[2]:
-        # print("slot 2")
         field = Post.numLikesD1
     #it's not within any current timeslot, say it's outdated
     else:
@@ -1017,7 +1130,6 @@ def getUsername():
     
 @app.get('/getUserInfo')
 def getUser():
-    print(f"Session: {session}")
     userEmail = session.get('customIdToken')
     if userEmail:
         user = User.query.get(userEmail)
@@ -1078,6 +1190,19 @@ def loginExisting():
 #         post.numLikes = post.numLikes-1
 #     create_like(data.get('userEmail'), id, pos)
 #     return "", 200
+
+
+# Testing code from thumbnail, might be useful for future tests 
+@app.get("/temp/")
+def temp():
+    return render_template("temp.html")
+@app.post("/temp/")
+def post_temp():
+    body: dict = request.json
+    thumbnailData = body["thumbnailData"][22:]
+    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
+    return render_template("temp.html")
+
 
 # @app.post("/API/comment/")
 # def get_followed_posts():

@@ -21,15 +21,12 @@ function displaySearchResults(results) {
         return;
     }
 
-    console.log(results);
-
     results.users.forEach(user => {
         const userElement = document.createElement('div');
         userElement.textContent = `${user.username}`;
         userElement.classList.add('dropdown-item');
         userElement.addEventListener('click', () => {
             // Handle click on dropdown item (e.g., navigate to user profile)
-            console.log(`Clicked on ${user.username}`);
         });
         searchResultsDropdown.appendChild(userElement);
     });
@@ -40,7 +37,6 @@ function displaySearchResults(results) {
         postElement.classList.add('dropdown-item');
         postElement.addEventListener('click', () => {
             // Handle click on dropdown item (e.g., navigate to post)
-            console.log(`Clicked on ${post.title}`);
         });
         searchResultsDropdown.appendChild(postElement);
     });
