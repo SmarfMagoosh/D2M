@@ -14,8 +14,6 @@ function drawing_init(create) {
     create.drawing.ctx.lineCap = "round";
     create.drawing.ctx.lineJoin = "round";
 
-    
-
     canvas.mousedown(drawMousedown(create));
     canvas.mouseup(drawMouseup(create));
     canvas.mousemove(drawMousemove(create));
@@ -53,7 +51,6 @@ function drawMousedown(create) {
 function drawMouseup(create) {
     return function(e) {
         if (e.buttons & 2 == 0 && !create.drawing.erase) {
-            // end the path
             draw(create, {'x': e.offsetX, 'y': e.offsetY});
             create.drawing.ctx.closePath();
             create.drawing.mouseStart = null;
@@ -68,11 +65,9 @@ function drawMousemove(create) {
         create.drawing.last = now;
 
         if (create.drawing.mouseStart !== null && e.buttons % 2 == 1  && !create.drawing.erase) {
-            // when not in erase mode, continue the path and draw line segment
             create.drawing.mouseStart = {'x': e.offsetX, 'y': e.offsetY};
             draw(create, create.drawing.mouseStart);
         } else if (e.buttons % 2 == 1 && create.drawing.erase) {
-            // when in erase mode, clear the rectangle around the cursor
             create.drawing.ctx.clearRect(
                 e.offsetX - create.drawing.thickness / 2,
                 e.offsetY - create.drawing.thickness / 2,
@@ -84,7 +79,6 @@ function drawMousemove(create) {
 }
 
 function draw(create, end) {
-    // draw line as part of existing path
     create.drawing.ctx.lineWidth = create.drawing.thickness;
     create.drawing.ctx.strokeStyle = create.drawing.color;
     create.drawing.ctx.lineTo(end.x, end.y);

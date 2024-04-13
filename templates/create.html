@@ -38,6 +38,13 @@
         <div class = "modal-content">
             <div class = "modal-header">
                 <h3 class = "modal-title">Select a Template</h3>
+                <button 
+                    class = "btn btn-primary" 
+                    data-dismiss="modal"
+                    data-target="#add-image"
+                    data-toggle="modal">
+                    Or Upload your own!
+                </button>
                 <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">Close</span>
                 </button>
@@ -61,9 +68,6 @@
                 </table>
             </div>
             <div class = "modal-footer">
-                <button id = "fileInputBtn2" class = "btn btn-primary" data-dismiss="modal">
-                    Or Upload your own!
-                </button>
                 <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">Close</span>
                 </button>
@@ -81,22 +85,24 @@
                 </button>
             </div>
             <div class = "modal-body">
-                <div style = "margin-top: 1rem;">
-                    <button id = "addImgBtn" class = "btn btn-primary" style = "margin: auto; width: 60%; display: block;">
-                        Upload an Image
+                <div style = "margin-top: 1rem; display: flex; justify-content: space-around;">
+                    <button id = "addImgBtn" class = "btn btn-primary" style = "margin: auto; width: 40%; text-align: center;">
+                        Select Image
+                    </button>
+                    <button id = "uploadImgBtn" class = "btn btn-primary" style = "margin: auto; width: 40%; text-align: center;" data-dismiss = "modal" aria-label = "Close">
+                        Insert Image
                     </button>
                 </div>
-                <canvas
-                    style = "margin: 1rem auto; display: block;"
-                    id = "added-image-preview" 
-                    style = "display: block; margin: auto; border: solid black 1px;"
-                    height = "0">
-                </canvas>
+                <div style = 'position: relative;'>
+                    <canvas
+                        style = "margin: 1rem auto; display: block;"
+                        id = "added-image-preview" 
+                        style = "display: block; margin: auto; border: solid black 2px;"
+                        height = "0">
+                    </canvas>
+                </div>
             </div>
             <div class = "modal-footer">
-                <button id = "uploadImgBtn" class = "btn btn-primary" style = "margin: auto; width: 60%; display: block;" data-dismiss = "modal" aria-label = "Close">
-                    <span aria-hidden = "true">Add to Canvas</span>
-                </button>
             </div>
         </div>
     </div>
@@ -159,23 +165,30 @@
         </div>
     </div>
     <div id = "meme">
-        <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;">
+        <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;" id = "img-btns">
             <button 
-                id = "fileInputBtn" 
-                class = "btn btn-primary">
+                class = "btn btn-primary"
+                data-target="#add-image"
+                data-toggle="modal">
                 Upload an Image
             </button>
             <button 
                 class = "btn btn-primary" 
                 data-toggle = "modal" 
-                data-target = "#template-list"
-                id = "template-modal-button">
+                data-target = "#template-list">
                 Or use a template!
             </button>
         </div>
         <canvas id = "meme-img" height = "0"></canvas>
         <canvas id = "drawing" height = "0"></canvas>
     </div>
+    <button
+        id = "switch-btn"
+        class = "btn btn-primary" 
+        data-target="#template-list" 
+        data-toggle="modal">
+        Switch Template
+    </button>
 </div>
 <div id = "right-content">
     <div id = "text-tool-bar">
