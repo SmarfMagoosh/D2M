@@ -221,11 +221,13 @@ class Block(db.Model):
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    spacing = db.Column(db.Float, nullable = False)
+    spacing = db.Column(db.Float, nullable = False, default = 0.0)
+    space_arrangement = db.Column(db.Float, default = 0.0)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
-    timePosted = db.Column(db.String)#, nullable = False)
+    timePosted = db.Column(db.DateTime)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
+    draw = db.Column(db.String)
     numLikes = db.Column(db.Integer, default=0)
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
@@ -235,6 +237,7 @@ class Post(db.Model) :
     # also allows the classes that use the foreign key to use <class>.parentPost
     comments = db.relationship('Comment', backref='parentPost')
     textBoxes = db.relationship('TextBox', backref='parentPost')
+    extraImage = db.relationship('ExtraImage', backref='parentPost')
     reportsList = db.relationship('Report', backref='post')
     likeUsers = db.relationship('Like', backref='post')
     bookmarkUsers = db.relationship('Bookmark', backref='post')
@@ -242,9 +245,12 @@ class Post(db.Model) :
     def remix_json(self):
         return {
             "spacing": self.spacing,
+            "space_arrangement": self.space_arrangement,
             "title": "Remix of " + self.title,
             "backImage": self.backImage,
             "textBoxes": [t.to_json() for t in self.textBoxes],
+            "extraImages": [i.to_json() for i in self.extraImage],
+            "draw": self.draw
         }
     def render_json(self):
         return {
@@ -274,32 +280,58 @@ class Post(db.Model) :
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-            "reportsList": [r.to_json() for r in self.reportsList]
+            "reportsList": [r.to_json() for r in self.reportsList],
         }
 
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
     textBoxID = db.Column(db.Integer, primary_key = True)
-    orientation = db.Column(db.String, nullable = False)
-    shadowColor = db.Column(db.String, nullable = False)
-    color = db.Column(db.String, nullable = False)
-    position = db.Column(db.String, nullable = False)
-    font = db.Column(db.String, nullable = False)
-    fontSize = db.Column(db.Float, nullable = False)
-    content = db.Column(db.String, nullable = False)
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    alignment = db.Column(db.String)
+    fontSize = db.Column(db.Integer)
+    font = db.Column(db.String)
+    shadowColor = db.Column(db.String)
+    color = db.Column(db.String)
+    decorations = db.Column(db.String)
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
+    top = db.Column(db.Integer)
+    left = db.Column(db.Integer)
+    content = db.Column(db.String)
     
     def to_json(self):
 	    return {
 			"id": self.textBoxID,
-			"orientation": self.orientation,
-			"shadowColor": self.shadowColor,
-			"color": self.color,
-			"position": self.position,
-            "font": self.font,
+			"alignment": self.alignment,
             "fontSize": self.fontSize,
-            "content": self.content,
-            "parentPost": self.postID,
+            "font": self.font,
+            "shadowColor": self.shadowColor,
+            "color": self.color,
+            "decorations": [x == "1" for x in self.decorations.split(" ")],
+            "width": self.width,
+            "height": self.height,
+            "top": self.top,
+            "left": self.left,
+            "content": self.content
+		}
+    
+class ExtraImage(db.Model):
+    __tablename__ = 'ExtraImages'
+    extraImageId = db.Column(db.Integer, primary_key = True)
+    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    left = db.Column(db.Integer)
+    top = db.Column(db.Integer)
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
+    src = db.Column(db.String)
+    
+    def to_json(self):
+	    return {
+            "image": self.src,
+            "left": self.left,
+            "top": self.top,
+            "width": self.width,
+            "height": self.height
 		}
 
 class Comment(db.Model) :
@@ -385,11 +417,7 @@ def get_create():
 
 @app.get("/create/<int:post_id>")
 def get_remix(post_id):
-    # Get the post from the database
-    # TODO
-    post = Post.query.filter_by(postID=post_id).first()
-    # post_image = <somehow get the image from your DB result>
-    # Return a response indicating success
+    post = Post.query.get(post_id).remix_json()
     return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], loggedInUser = load_user(session.get('customIdToken')), post = post)
 
 
@@ -439,8 +467,6 @@ def get_profile(username = None):
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
         return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
         
-
-
 @app.get('/getCurrentSettings')
 def getCurrentSettings():
     email = request.args.get('email')
@@ -766,42 +792,72 @@ def delete_entry(id):
 
 @app.post("/create/")
 def post_meme():
-    body: dict = request.json
-    imgData = body["imgData"][22:]
-    thumbnailData = body["thumbnailData"][22:]
-    post_inst = Post(
-        spacing = float(body["spacing"]),
-        title = body['title'],
-        backImage = "",
-        timePosted = 0, # TODO
-        username = body["user"],
-        numLikes = 0,
-        numLikesD1 = 0,
-        numLikesD2 = 0,
-        numLikesD3 = 0,
-    )
-    db.session.add(post_inst)
-    db.session.commit()
-    post_inst.backImage = f"{post_inst.postID}.png"
-    db.session.commit()
-    for box in body["textboxes"]:
-        tb_inst = TextBox(
-            content = box["text"],
-            postID = post_inst.postID,
-            font = box["settings"]["font"],
-            fontSize = box["settings"]["font_size"],
-            orientation = "", #TODO: remove
-            shadowColor = box["settings"]["font_shadow"],
-            color = box["settings"]["font_color"],
-            position = "", # TODO: change
-            # TODO: store position, text settings
+    try:
+        body: dict = request.json
+        if body["template"]:
+            imgData = body["imgData"]
+        else:
+            imgData = body["imgData"][22:] # TODO: save templates correctly
+        thumbnailData = body["thumbnailData"][22:]
+        post_inst = Post(
+            spacing = body["spacing"],
+            space_arrangement = body["space_arrangement"],
+            title = body["title"],
+            backImage = "", #updated later
+            timePosted = datetime.now(),
+            username = body["user"],
+            draw = body["drawing"]
         )
-        db.session.add(tb_inst)
-    db.session.commit()
-    with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
-         file.write(base64.b64decode(imgData))
-    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
-    return "hello world"
+        db.session.add(post_inst)
+        db.session.commit()
+        
+        if not body["template"]:
+            post_inst.backImage = f"{post_inst.postID}.png"
+            with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
+                file.write(base64.b64decode(imgData))
+        else:
+            post_inst.backImage = body["imgData"]
+        db.session.commit()
+        
+        for tb in body["textboxes"]:
+            tb_inst = TextBox(
+                postID = post_inst.postID,
+                alignment = tb["settings"]["alignment"],
+                fontSize = int(tb["settings"]["font_size"]),
+                font = tb["settings"]["font"],
+                shadowColor = tb["settings"]["font_shadow"],
+                color = tb["settings"]["font_color"],
+                decorations = " ".join([str(int(tb["settings"][key])) for key in ["is_bold", "is_italic", "underlined", "is_struckthrough", "has_shadow", "is_capitalized"]]),
+                width = tb["width"],
+                height = tb["height"],
+                top = tb.get("top", "auto"),
+                left = tb.get("left", "auto"),
+                content = tb["text"]
+            )
+            db.session.add(tb_inst)
+        db.session.commit()
+
+        for image in body["images"]:
+            image_inst = ExtraImage(
+                postID = post_inst.postID,
+                left = image["left"],
+                top = image["top"],
+                width = image["width"],
+                height = image["height"],
+                src = image["src"]
+            )
+            db.session.add(image_inst)
+            db.session.commit()
+            with open(f"./static/images/extra_images/{image_inst.extraImageId}.png", "wb") as file:
+                file.write(base64.b64decode(imgData))
+            image_inst.image = f"{image_inst.extraImageId}.png"
+            db.session.commit()
+        db.session.commit()
+        create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
+        return {"message" : "posted successfully"}, 200
+    except Exception as e:
+        print(e.with_traceback())
+        return {"message": "error in posting"}, 500 
 
 @app.post('/add_user/')
 def add_user():
@@ -1166,11 +1222,6 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
-    
-
-
-
-
 
 # def create_comment(commentData, user_name):
 #     with app.app_context():

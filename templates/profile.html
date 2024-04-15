@@ -102,7 +102,7 @@
                   <div id="Created" class="tabcontent">
                     {% for post in user.postList  %}
                     <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                    <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                    <img src="../static/images/{{post.render_json().thumbnail }}" alt="" width="425" class="image-link">
                     </a>
                     {{post.title}}
                     <br>
@@ -112,7 +112,7 @@
                   <div id="Liked" class="tabcontent">
                    {% for post in liked_posts %}
                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   <img src="../static/images/{{post.render_json().thumbnail }}" alt="" width="425" class="image-link">
                    </a>
                    {{post.title}}
                    <br>
@@ -122,7 +122,7 @@
                   <div id="Bookmarked" class="tabcontent">
                     {% for post in bookmarked_posts %}
                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="{{ post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   <img src="../static/images/{{post.render_json().thumbnail }}" alt="" width="425" class="image-link">
                    </a>
                    {{post.title}}
                    <br>
