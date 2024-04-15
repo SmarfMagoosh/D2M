@@ -50,7 +50,7 @@ function drawMousedown(create) {
 
 function drawMouseup(create) {
     return function(e) {
-        if (e.buttons & 2 == 0 && !create.drawing.erase) {
+        if (e.buttons % 2 == 0 && !create.drawing.erase) {
             draw(create, {'x': e.offsetX, 'y': e.offsetY});
             create.drawing.ctx.closePath();
             create.drawing.mouseStart = null;
@@ -65,9 +65,11 @@ function drawMousemove(create) {
         create.drawing.last = now;
 
         if (create.drawing.mouseStart !== null && e.buttons % 2 == 1  && !create.drawing.erase) {
+            console.log("drawing")
             create.drawing.mouseStart = {'x': e.offsetX, 'y': e.offsetY};
             draw(create, create.drawing.mouseStart);
         } else if (e.buttons % 2 == 1 && create.drawing.erase) {
+            console.log("erasing")
             create.drawing.ctx.clearRect(
                 e.offsetX - create.drawing.thickness / 2,
                 e.offsetY - create.drawing.thickness / 2,

@@ -7,7 +7,6 @@ import re
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from forms import SettingsForm
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from io import BytesIO
@@ -149,7 +148,7 @@ class User(db.Model) :
         }
         
     def search_result_json(self):
-        pfp = "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80"
+        pfp = "/static/images/users/default-pfp.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
         return{
@@ -226,11 +225,13 @@ class Tag(db.Model):
 class Post(db.Model) :
     __tablename__ = 'Posts'
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    spacing = db.Column(db.Float, nullable = False)
+    spacing = db.Column(db.Float, nullable = False, default = 0.0)
+    space_arrangement = db.Column(db.Float, default = 0.0)
     title = db.Column(db.String, nullable = True)
     backImage = db.Column(db.String, nullable = False)
-    timePosted = db.Column(db.String)#, nullable = False)
+    timePosted = db.Column(db.DateTime)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
+    draw = db.Column(db.String)
     numLikes = db.Column(db.Integer, default=0)
     numLikesD1 = db.Column(db.Integer) # [0,10) min ago
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
@@ -241,6 +242,7 @@ class Post(db.Model) :
     # also allows the classes that use the foreign key to use <class>.parentPost
     comments = db.relationship('Comment', backref='parentPost')
     textBoxes = db.relationship('TextBox', backref='parentPost')
+    extraImage = db.relationship('ExtraImage', backref='parentPost')
     reportsList = db.relationship('Report', backref='post')
     likeUsers = db.relationship('Like', backref='post')
     bookmarkUsers = db.relationship('Bookmark', backref='post')
@@ -248,9 +250,12 @@ class Post(db.Model) :
     def remix_json(self):
         return {
             "spacing": self.spacing,
+            "space_arrangement": self.space_arrangement,
             "title": "Remix of " + self.title,
             "backImage": self.backImage,
             "textBoxes": [t.to_json() for t in self.textBoxes],
+            "extraImages": [i.to_json() for i in self.extraImage],
+            "draw": self.draw
         }
     def render_json(self):
         return {
@@ -280,7 +285,7 @@ class Post(db.Model) :
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-            "reportsList": [r.to_json() for r in self.reportsList]
+            "reportsList": [r.to_json() for r in self.reportsList],
         }
     def search_result_json(self):
         return{
@@ -294,26 +299,52 @@ class Post(db.Model) :
 class TextBox(db.Model) :
     __tablename__ = 'TextBoxes'
     textBoxID = db.Column(db.Integer, primary_key = True)
-    orientation = db.Column(db.String, nullable = False)
-    shadowColor = db.Column(db.String, nullable = False)
-    color = db.Column(db.String, nullable = False)
-    position = db.Column(db.String, nullable = False)
-    font = db.Column(db.String, nullable = False)
-    fontSize = db.Column(db.Float, nullable = False)
-    content = db.Column(db.String, nullable = False)
     postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    alignment = db.Column(db.String)
+    fontSize = db.Column(db.Integer)
+    font = db.Column(db.String)
+    shadowColor = db.Column(db.String)
+    color = db.Column(db.String)
+    decorations = db.Column(db.String)
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
+    top = db.Column(db.Integer)
+    left = db.Column(db.Integer)
+    content = db.Column(db.String)
     
     def to_json(self):
 	    return {
 			"id": self.textBoxID,
-			"orientation": self.orientation,
-			"shadowColor": self.shadowColor,
-			"color": self.color,
-			"position": self.position,
-            "font": self.font,
+			"alignment": self.alignment,
             "fontSize": self.fontSize,
-            "content": self.content,
-            "parentPost": self.postID,
+            "font": self.font,
+            "shadowColor": self.shadowColor,
+            "color": self.color,
+            "decorations": [x == "1" for x in self.decorations.split(" ")],
+            "width": self.width,
+            "height": self.height,
+            "top": self.top,
+            "left": self.left,
+            "content": self.content
+		}
+    
+class ExtraImage(db.Model):
+    __tablename__ = 'ExtraImages'
+    extraImageId = db.Column(db.Integer, primary_key = True)
+    postID = db.Column(db.Integer, db.ForeignKey('Posts.postID'))
+    left = db.Column(db.Integer)
+    top = db.Column(db.Integer)
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
+    src = db.Column(db.String)
+    
+    def to_json(self):
+	    return {
+            "image": self.src,
+            "left": self.left,
+            "top": self.top,
+            "width": self.width,
+            "height": self.height
 		}
 
 class Comment(db.Model) :
@@ -344,7 +375,7 @@ with app.app_context():
     tag2 = Tag(tag="tag2")
     tag3 = Tag(tag="tag3")
     tag4 = Tag(tag="tag4")
-    tag5 = Tag(tag="tag5")
+    tag5 = Tag(tag="jeff")
     tag6 = Tag(tag="tag6")
     
     u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
@@ -409,11 +440,7 @@ def get_create():
 
 @app.get("/create/<int:post_id>")
 def get_remix(post_id):
-    # Get the post from the database
-    # TODO
-    post = Post.query.filter_by(postID=post_id).first()
-    # post_image = <somehow get the image from your DB result>
-    # Return a response indicating success
+    post = Post.query.get(post_id).remix_json()
     return render_template("create.html", templates = [url_for('static', filename = f"template-thumbnails/{file}") for file in os.listdir("./static/template-thumbnails")], loggedInUser = load_user(session.get('customIdToken')), post = post)
 
 
@@ -450,7 +477,7 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        return render_template("profile.html", loggedInUser=user, user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
     else:
         user = User.query.filter_by(username=username).first()
         # Get the liked posts associated with the user
@@ -461,10 +488,8 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
         
-
-
 @app.get('/getCurrentSettings')
 def getCurrentSettings():
     email = request.args.get('email')
@@ -474,86 +499,79 @@ def getCurrentSettings():
 @app.get("/settings/")
 # @login_required
 def get_settings():
-    form = SettingsForm()
     #get curr user
     user = load_user(session.get('customIdToken'))
     if user:
-        form.username.data = user.username
-        form.bio.data = user.bio
-        form.backup_email.data = user.backupEmail
-        return render_template('settings.html', form=form, loggedInUser = load_user(session.get('customIdToken')))
+        pfp = "#"
+        banner = "#"
+        if os.path.isfile(f"static/images/users/{user.gccEmail}/pfp.png"):
+            pfp = url_for('static', filename=f'images/users/{user.gccEmail}/pfp.png')
+        if os.path.isfile(f"static/images/users/{user.gccEmail}/banner.png"):
+            banner = url_for('static', filename=f'images/users/{user.gccEmail}/banner.png')
+        return render_template('settings.html', user=user, pfp=pfp, banner=banner)
     else:
         redirect(url_for("get_home"))
         return {'loggedout': True}
-    
-
-# this method gettings the new settings entered on the settings page and validates them
-# returns a json indicating which entries are valid
-@app.get("/checkNewSettings/")
-def checkNewSettings():
-    info = json.loads(request.args.get('info'))
-    user = load_user(session.get('customIdToken'))
-
-    returnVal = {}
-
-    # indicate if username was updated
-    returnVal['usernameUpdate'] = info['username'] != user.username
-
-    # indicate if new username already exists or not
-    if User.query.filter_by(username=info['username']).first():
-        returnVal['usernameUnique'] = False
-    else:
-        returnVal['usernameUnique'] = True
-
-
-    backupEmail = info['backup_email']
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-
-    # indicate if backup email is being updated
-    returnVal['emailUpdate'] = str(backupEmail) != str(user.backupEmail)
-    # indicate is new backup email is of valid email form
-    returnVal['validEmail'] = True if re.fullmatch(regex, backupEmail) else False
-
-    # indicate if the password is being updated
-    returnVal['passwordUpdate'] = info['old_password'] != "" or info['change_password'] != "" or info['confirm_password'] != ""
-    # indicate the current passwords match
-    returnVal['oldPasswordMatch'] = bcrypt.checkpw(info['old_password'].encode('utf-8'), user.backupPasswordHash)
-    # indicate if the new password is valid
-    returnVal['newPasswordValid'] = len(info['change_password']) >= 8
-    # indicate if the new passwords match
-    returnVal['newPasswordMatch'] = info['change_password'] == info['confirm_password']
-
-    # indicate if info was successfully updated
-    success = True
-    if returnVal['usernameUpdate'] and not returnVal['usernameUnique']:
-        success = False
-    if returnVal['emailUpdate'] and not returnVal['validEmail']:
-        success = False
-    if returnVal['passwordUpdate'] and (not returnVal['oldPasswordMatch'] or not returnVal['newPasswordValid'] or not returnVal['newPasswordMatch']):
-        success = False
-
-    returnVal['success'] = success
-    
-    return jsonify(returnVal)
 
 # this post route updates the user settings based on the inputed values on the settings page
 @app.route("/settings/", methods=["POST"])
 def post_settings():
     json_data = request.json
     user = load_user(session.get('customIdToken'))
+    
+    returnVal = {}
+
+    # indicate if new username already exists or not
+    if json_data.get('username') != user.username and User.query.filter_by(username=json_data.get('username')).first():
+        returnVal['usernameUnique'] = False
+    else:
+        returnVal['usernameUnique'] = True
+
+
+    backupEmail = json_data.get('backup_email')
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    
+    # indicate is new backup email is of valid email form
+    returnVal['validEmail'] = (backupEmail == "") or (True if re.fullmatch(regex, backupEmail) else False)
+
+    # indicate if the password is being updated
+    returnVal['passwordUpdate'] = json_data.get('old_password') != "" or json_data['change_password'] != "" or json_data['confirm_password'] != ""
+    # indicate the current passwords match
+    returnVal['oldPasswordMatch'] = bcrypt.checkpw(json_data.get('old_password').encode('utf-8'), user.backupPasswordHash)
+    # indicate if the new password is valid
+    returnVal['newPasswordValid'] = len(json_data.get('change_password')) >= 8
+    # indicate if the new passwords match
+    returnVal['newPasswordMatch'] = json_data.get('change_password') == json_data.get('confirm_password')
+
+    # indicate if info was successfully updated
+    returnVal['success'] = returnVal['usernameUnique'] and returnVal['validEmail']
+    returnVal['success'] = returnVal['success'] and (not returnVal['passwordUpdate'] or (returnVal['oldPasswordMatch'] and returnVal['newPasswordValid'] and returnVal['newPasswordMatch']))
+    
+    #don't update any values if anything fails validation
+    if returnVal['success'] == False:
+        return jsonify(returnVal)
+    
     user.username = json_data.get('username')
     user.bio = json_data.get('bio')
+    
+    icon = json_data.get("icon")
+    print(icon[0:10])
+    if icon[0:10] == "data:image":
+        create_thumbnail(icon[icon.index(',')+1:], f"./static/images/users/{user.gccEmail}/pfp.png", dimensions = (300, 300))
+    banner = json_data.get("banner")
+    if banner[0:10] == "data:image":
+        create_thumbnail(banner[banner.index(',')+1:], f"./static/images/users/{user.gccEmail}/banner.png", dimensions = (1200, 400))
+    
     user.backupEmail = json_data.get('backup_email')
 
     oldPassword = json_data.get('old_password')
     newPassword = json_data.get('change_password')
     confirmPassword = json_data.get('confirm_password')
 
-    if bcrypt.checkpw(oldPassword.encode('utf-8'), user.backupPasswordHash) and newPassword == confirmPassword:
-        user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
 
     db.session.commit()
-    return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
+    return jsonify(returnVal)
 
 # get a user object
 def load_user(userEmail):
@@ -790,42 +808,72 @@ def delete_entry(id):
 
 @app.post("/create/")
 def post_meme():
-    body: dict = request.json
-    imgData = body["imgData"][22:]
-    thumbnailData = body["thumbnailData"][22:]
-    post_inst = Post(
-        spacing = float(body["spacing"]),
-        title = body['title'],
-        backImage = "",
-        timePosted = 0, # TODO
-        username = body["user"],
-        numLikes = 0,
-        numLikesD1 = 0,
-        numLikesD2 = 0,
-        numLikesD3 = 0,
-    )
-    db.session.add(post_inst)
-    db.session.commit()
-    post_inst.backImage = f"{post_inst.postID}.png"
-    db.session.commit()
-    for box in body["textboxes"]:
-        tb_inst = TextBox(
-            content = box["text"],
-            postID = post_inst.postID,
-            font = box["settings"]["font"],
-            fontSize = box["settings"]["font_size"],
-            orientation = "", #TODO: remove
-            shadowColor = box["settings"]["font_shadow"],
-            color = box["settings"]["font_color"],
-            position = "", # TODO: change
-            # TODO: store position, text settings
+    try:
+        body: dict = request.json
+        if body["template"]:
+            imgData = body["imgData"]
+        else:
+            imgData = body["imgData"][22:] # TODO: save templates correctly
+        thumbnailData = body["thumbnailData"][22:]
+        post_inst = Post(
+            spacing = body["spacing"],
+            space_arrangement = body["space_arrangement"],
+            title = body["title"],
+            backImage = "", #updated later
+            timePosted = datetime.now(),
+            username = body["user"],
+            draw = body["drawing"]
         )
-        db.session.add(tb_inst)
-    db.session.commit()
-    with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
-         file.write(base64.b64decode(imgData))
-    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
-    return "hello world"
+        db.session.add(post_inst)
+        db.session.commit()
+        
+        if not body["template"]:
+            post_inst.backImage = f"{post_inst.postID}.png"
+            with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
+                file.write(base64.b64decode(imgData))
+        else:
+            post_inst.backImage = body["imgData"]
+        db.session.commit()
+        
+        for tb in body["textboxes"]:
+            tb_inst = TextBox(
+                postID = post_inst.postID,
+                alignment = tb["settings"]["alignment"],
+                fontSize = int(tb["settings"]["font_size"]),
+                font = tb["settings"]["font"],
+                shadowColor = tb["settings"]["font_shadow"],
+                color = tb["settings"]["font_color"],
+                decorations = " ".join([str(int(tb["settings"][key])) for key in ["is_bold", "is_italic", "underlined", "is_struckthrough", "has_shadow", "is_capitalized"]]),
+                width = tb["width"],
+                height = tb["height"],
+                top = tb.get("top", "auto"),
+                left = tb.get("left", "auto"),
+                content = tb["text"]
+            )
+            db.session.add(tb_inst)
+        db.session.commit()
+
+        for image in body["images"]:
+            image_inst = ExtraImage(
+                postID = post_inst.postID,
+                left = image["left"],
+                top = image["top"],
+                width = image["width"],
+                height = image["height"],
+                src = image["src"]
+            )
+            db.session.add(image_inst)
+            db.session.commit()
+            with open(f"./static/images/extra_images/{image_inst.extraImageId}.png", "wb") as file:
+                file.write(base64.b64decode(imgData))
+            image_inst.image = f"{image_inst.extraImageId}.png"
+            db.session.commit()
+        db.session.commit()
+        create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
+        return {"message" : "posted successfully"}, 200
+    except Exception as e:
+        print(e.with_traceback())
+        return {"message": "error in posting"}, 500 
 
 @app.post('/add_user/')
 def add_user():
@@ -1203,11 +1251,6 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
-    
-
-
-
-
 
 # def create_comment(commentData, user_name):
 #     with app.app_context():

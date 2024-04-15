@@ -1,0 +1,2 @@
+{'text': 'helol', 'width': 311, 'height': 39, 'top': 0, 'left': 0, 'id': '0', 'settings': {'alignment': 'center', 'font_size': '32', 'font': 'Impact, sans-serif', 'font_color': '#000000', 'font_shadow': '#ffffff', 'is_bold': True, 'is_italic': True, 'underlined': True, 'is_struckthrough': True, 'has_shadow': True, 'is_capitalized': True}}
+{'text': 'asdf', 'width': 311, 'height': 39, 'top': 0, 'left': 0, 'id': '1'}
