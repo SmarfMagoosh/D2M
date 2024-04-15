@@ -52,8 +52,6 @@ body {
 .meme-text {
     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
     font-size: 32px;
-    text-transform: uppercase;
-    -webkit-text-stroke: white 1px;
     text-align: center;
     overflow: hidden;
     width: 100%;
@@ -69,8 +67,8 @@ body {
 .italics {font-style: italic;}
 .strike {text-decoration: line-through;}
 .underline {text-decoration: underline;}
-.no-shadow {-webkit-text-stroke: white 0px;}
-.all-caps {text-transform: capitalize;}
+.has-shadow {-webkit-text-stroke: white 2px;}
+.all-caps {text-transform: uppercase;}
 
 .text-box-container, #drawing, .image-container {
     top: -1px;
@@ -79,8 +77,8 @@ body {
     right: 0;
     margin: auto;
     text-align: center;
-    max-width: calc(100% - 10px);
-    height: calc(100% + 1px);
+    max-width: calc(100% - 12px);
+    height: calc(100%);
 }
 
 /* left tool bar */
@@ -88,7 +86,7 @@ body {
 #image-tool-bar {
     margin: auto;
     margin-top: 1rem;
-    width: 90%;
+    width: calc(100% - 12px);
     display: flex;
     justify-content: space-between;
 }
@@ -98,10 +96,10 @@ body {
     width: fit-content;
 }
 
-#image-tools > div{
+#image-tools > div {
     display: flex;
     margin: 1rem auto;
-    width: 90%;
+    width: calc(100% - 12px);
     justify-content: space-between;
 }
 

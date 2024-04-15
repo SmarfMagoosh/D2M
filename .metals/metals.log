@@ -294,3 +294,53 @@ create table fingerprints(
 2024.04.11 13:06:50 INFO  no build target found for C:\Users\DREHEREN20\AppData\Local\Temp\67778e90-149c-4adc-9626-5ad741a1797e_Project 3.zip.97e\Project 3\src\main\scala\SortNorm.scala. Using presentation compiler with project's scala-library version: 3.3.1
 2024.04.11 13:06:56 INFO  time: code lens generation in 20s
 2024.04.11 13:06:56 INFO  time: code lens generation in 22s
+2024.04.14 15:27:15 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at c:\Users\DREHEREN20\OneDrive - Grove City College\Desktop\Stuff\school\GitHub\D2M\.metals\lsp.trace.json
+2024.04.14 15:27:19 INFO  logging to files C:\Users\DREHEREN20\OneDrive - Grove City College\Desktop\Stuff\school\GitHub\D2M\.metals\metals.log
+2024.04.14 15:27:19 INFO  Started: Metals version 1.2.2 in folders 'C:\Users\DREHEREN20\OneDrive - Grove City College\Desktop\Stuff\school\GitHub\D2M' for client Visual Studio Code 1.88.1.
+15:27:24.348 [pool-1-thread-7] INFO org.flywaydb.core.internal.license.VersionPrinter -- Flyway Community Edition 9.22.3 by Redgate
+15:27:24.352 [pool-1-thread-7] INFO org.flywaydb.core.internal.license.VersionPrinter -- See release notes here: https://rd.gt/416ObMi
+15:27:24.352 [pool-1-thread-7] INFO org.flywaydb.core.internal.license.VersionPrinter -- 
+15:27:24.356 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classpath resources at 'classpath:db/callback' ...
+15:27:24.356 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Determining location urls for classpath:db/callback using ClassLoader jdk.internal.loader.ClassLoaders$AppClassLoader@c387f44 ...
+15:27:24.356 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Unable to resolve location classpath:db/callback.
+15:27:24.356 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classpath resources at 'classpath:db/migration' ...
+15:27:24.356 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Determining location urls for classpath:db/migration using ClassLoader jdk.internal.loader.ClassLoaders$AppClassLoader@c387f44 ...
+15:27:24.357 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning URL: jar:file:/C:/Users/DREHEREN20/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/scalameta/metals_2.13/1.2.2/metals_2.13-1.2.2.jar!/db/migration
+15:27:24.363 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/
+15:27:24.363 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V1__Create_tables.sql
+15:27:24.363 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V2__Server_discovery.sql
+15:27:24.363 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V3__Jar_symbols.sql
+15:27:24.363 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V4__Fingerprints.sql
+15:27:24.364 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classes at classpath:db/migration
+15:27:24.369 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+15:27:24.369 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V4__Fingerprints.sql
+15:27:24.370 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V2__Server_discovery.sql
+15:27:24.371 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V3__Jar_symbols.sql
+15:27:24.371 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V1__Create_tables.sql
+15:27:24.494 [pool-1-thread-7] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:h2:file:C:\Users\DREHEREN20\OneDrive - Grove City College\Desktop\Stuff\school\GitHub\D2M\.metals\metals (H2 2.2)
+15:27:24.494 [pool-1-thread-7] DEBUG org.flywaydb.core.FlywayExecutor -- Driver: H2 JDBC Driver 2.2.224 (2023-09-17)
+15:27:24.495 [pool-1-thread-7] DEBUG org.flywaydb.core.FlywayExecutor -- DDL Transactions Supported: false
+15:27:24.497 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.schemahistory.SchemaHistoryFactory -- Schemas: 
+15:27:24.497 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.schemahistory.SchemaHistoryFactory -- Default schema: null
+15:27:24.503 [pool-1-thread-7] WARN org.flywaydb.core.internal.database.base.Database -- Flyway upgrade recommended: H2 2.2.224 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+15:27:24.505 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.callback.SqlScriptCallbackFactory -- Scanning for SQL callbacks ...
+15:27:24.505 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+15:27:24.516 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.command.DbValidate -- Validating migrations ...
+15:27:24.523 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+15:27:24.535 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+15:27:24.535 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V4__Fingerprints.sql (filename: V4__Fingerprints.sql)
+15:27:24.535 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V2__Server_discovery.sql (filename: V2__Server_discovery.sql)
+15:27:24.535 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V3__Jar_symbols.sql (filename: V3__Jar_symbols.sql)
+15:27:24.535 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V1__Create_tables.sql (filename: V1__Create_tables.sql)
+15:27:24.536 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+15:27:24.536 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V4__Fingerprints.sql (filename: V4__Fingerprints.sql)
+15:27:24.536 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V2__Server_discovery.sql (filename: V2__Server_discovery.sql)
+15:27:24.536 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V3__Jar_symbols.sql (filename: V3__Jar_symbols.sql)
+15:27:24.536 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V1__Create_tables.sql (filename: V1__Create_tables.sql)
+15:27:24.552 [pool-1-thread-7] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 4 migrations (execution time 00:00.034s)
+15:27:24.556 [pool-1-thread-7] DEBUG org.flywaydb.core.internal.command.DbSchemas -- Skipping creation of existing schema: "PUBLIC"
+15:27:24.565 [pool-1-thread-7] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "PUBLIC": 4
+15:27:24.571 [pool-1-thread-7] INFO org.flywaydb.core.internal.command.DbMigrate -- Schema "PUBLIC" is up to date. No migration necessary.
+15:27:24.789 [pool-1-thread-7] DEBUG org.flywaydb.core.FlywayExecutor -- Memory usage: 37 of 100M
+2024.04.14 15:27:25 WARN  no build tool detected in workspace 'C:\Users\DREHEREN20\OneDrive - Grove City College\Desktop\Stuff\school\GitHub\D2M'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2024.04.14 15:27:25 WARN  Build server is not auto-connectable.

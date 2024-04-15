@@ -34,6 +34,8 @@ function display_image(create, input) {
                     .click((baseImg ? upload_base_image : upload_extra_image)(create, img, canv))
             }
             reader.readAsDataURL(base);
+        } else {
+            alert(`That file is too large! We only accept files < ${MAX_FILE_SIZE / 1_000_000}MB`)
         }
     }
 }
@@ -60,15 +62,16 @@ const upload_base_image = (create, img, display) => function(e) {
 }
 
 const upload_extra_image = (create, img, display) => function(e) {
-    const extra_canv = cropExtraImage(create, img, display, $("#cropper"))
+    const box = cropExtraImage(create, img, display, $("#cropper"))
         .attr("id", `image-${create.images.length}`)
 
     $("#meme")
-        .append($(`<div class = 'image-container' style = 'top: 0'></div>`)
-        .append($("<div class = 'meme-component'></div>").append(extra_canv)))
+        .append($(`<div class = 'image-container' style = 'top: 0'></div>`).append(box));
     $(".meme-component").each(enable_meme_component("image"))
     $("#uploadImgBtn").hide()
     reset_canvas()
+
+    // TODO: add img bar to left hand tools so it can be deleted
 }
 
 function reset_canvas() {
@@ -80,19 +83,27 @@ function reset_canvas() {
 }
 
 function cropBaseImage(create, img, display, crop) {
-    const scaledRatio = img.naturalWidth / display.width;
-    const aspectRatio = crop.height() / crop.width();
+    create.template = true
+    let [top, left, width, height] = [0, 0, img.naturalWidth, img.naturalHeight]
+    let aspectRatio = img.naturalHeight / img.naturalWidth
+    if (display !== null) {
+        create.template = false
 
-    const [top, left] = [scaledRatio * parseInt(crop.css("top")), scaledRatio * parseInt(crop.css("left"))];
-    const [width, height] = [scaledRatio * crop.width(), scaledRatio * crop.height()];
+        const scaledRatio = img.naturalWidth / display.width;
+        aspectRatio = crop.height() / crop.width();
+
+        [top, left] = [scaledRatio * parseInt(crop.css("top")), scaledRatio * parseInt(crop.css("left"))];
+        [width, height] = [scaledRatio * crop.width(), scaledRatio * crop.height()];
+    }
+    
 
     create.dimensions = {
         width: create.canvas.width, 
         height: aspectRatio * create.canvas.width
     }
 
-    create.canvas.height = create.canvas.width * aspectRatio;
-    create.drawing.height = create.canvas.height;
+    create.canvas.height = create.dimensions.height;
+    create.drawing.canv.height = create.dimensions.height;
     create.baseImg = img;
     create.cropData = {
         left: left,
@@ -124,19 +135,21 @@ function cropExtraImage(create, img, display, crop) {
         canv[0].height = canv[0].width * aspectRatio;
     }
 
-    ctx.drawImage(img, left, top, height, width, 0, 0, canv[0].width, canv[0].height);
+    while (canv[0].height >= create.canvas.height || canv[0].width >= create.canvas.width) {
+        canv[0].height /= 2
+        canv[0].width /= 2
+    }
 
-    create.images.push({
-        img: canv[0].toDataURL(),
-        top: top,
-        left: left,
-        width: width,
-        height: height
-    })
+    ctx.drawImage(img, left, top, width, height, 0, 0, canv[0].width, canv[0].height);
 
-    const cont = $(`<div class = 'image-container' style = 'top: 0'></div>`);
-    cont.width(canv[0].width).height(canv[0].height).append(canv)
-    canv.width("100%").height("100%")
+    const croppedImg = new Image()
+    croppedImg.src = canv[0].toDataURL();
 
-    return canv;
+    const cont = $(`<div class = 'meme-component' style = 'top: 0'></div>`);
+    cont.width(canv[0].width).height(canv[0].height).append($(croppedImg))
+    $(croppedImg).width("100%").height("100%")
+
+    create.images.push(cont)
+
+    return cont;
 }
