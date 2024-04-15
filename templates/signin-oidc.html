@@ -57,8 +57,8 @@
             <!-- <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"> -->
 
             <div class="form-control mr-sm-2 d-flex justify-content-around">
-                <input type="text" id="searchInput" placeholder="Search by name" class="form-control">
-                <button id="tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style = "margin-right: 1rem;">no tag</button>
+                <input type="text" id="searchInput" placeholder="Search by name" class="form-control" style="border-top-right-radius: 0%;  border-bottom-right-radius: 0%;">
+                <button id="tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style = "margin-right: 1rem; border-top-left-radius: 0%;  border-bottom-left-radius: 0%;">no tag</button>
                 <ul class="dropdown-menu px-3" style="width: 20rem;">
                     <li>
                         <input type="text" id="tagInput" placeholder="Enter tag..." class="form-control"> <!-- style="padding-left: .25rem;"-->
@@ -70,13 +70,12 @@
                 </ul>
 
                 <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
-
-
             </div>
 
 
             <!-- <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button> -->
           </form>
+
           <!-- <div class="input-group dropdown-center">
             <input type="text" id="searchInput" placeholder="Search by name" class="form-control">
             <button id="tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">no tag</button>
@@ -92,6 +91,17 @@
           </div> -->
         
         <!-- <button type="submit"><i class="fa-solid fa-magnifying-glass"></button> -->
+        </div>
+
+        <div class="btn-group d-flex justify-content-center" style="margin-right: 1rem; height: 3rem;">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa-regular fa-user"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <button class="dropdown-item" type="button">Action</button>
+                <button class="dropdown-item" type="button">Another action</button>
+                <button class="dropdown-item" type="button">Something else here</button>
+            </div>
         </div>
       </nav>
 
