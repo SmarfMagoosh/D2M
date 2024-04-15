@@ -830,8 +830,8 @@ def post_meme():
         if body["template"]:
             imgData = body["imgData"]
         else:
-            imgData = body["imgData"][22:] # TODO: save templates correctly
-        thumbnailData = body["thumbnailData"][22:]
+            imgData = body["imgData"][body["imgData"].index(',')+1:] # TODO: save templates correctly
+        thumbnailData = body["thumbnailData"][body["thumbnailData"].index(',')+1:]
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -1292,19 +1292,6 @@ def loginExisting():
 #         post.numLikes = post.numLikes-1
 #     create_like(data.get('userEmail'), id, pos)
 #     return "", 200
-
-
-# Testing code from thumbnail, might be useful for future tests 
-@app.get("/temp/")
-def temp():
-    return render_template("temp.html")
-@app.post("/temp/")
-def post_temp():
-    body: dict = request.json
-    thumbnailData = body["thumbnailData"][22:]
-    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
-    return render_template("temp.html")
-
 
 # @app.post("/API/comment/")
 # def get_followed_posts():
