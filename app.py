@@ -477,7 +477,7 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        return render_template("profile.html", loggedInUser=user, user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
     else:
         user = User.query.filter_by(username=username).first()
         # Get the liked posts associated with the user
@@ -488,7 +488,7 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
         
 @app.get('/getCurrentSettings')
 def getCurrentSettings():
