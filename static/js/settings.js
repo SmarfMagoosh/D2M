@@ -1,24 +1,50 @@
 email = ""
-// base code provided by chatGPT, significantly modified by Tommy
+let unameAlert = null;
+let emailAlert = null;
+let wrongPswdAlert = null;
+let matchAlert = null;
+let lengthAlert = null;
+let successAlert = null;
+let changePassword = null;
+let confirmPassword = null;
+let submitButtn = null;
+let icon_img = null;
+let banner_img = null;
 window.addEventListener('DOMContentLoaded', () => {
     const icon = document.getElementById('icon');
-    const icon_img = document.getElementById('icon_img');
+    icon_img = document.getElementById('icon_img');
     icon.addEventListener('change', (event) => loadImg(event, icon_img));
     if (icon_img.src != ""){
-        icon_img.style.display = 'block';
+        icon_img.hidden = false;
     }
 
     const banner = document.getElementById('banner');
-    const banner_img = document.getElementById('banner_img');
+    banner_img = document.getElementById('banner_img');
     banner.addEventListener('change', (event) => loadImg(event, banner_img));
     if (banner_img.src != ""){
-        banner_img.style.display = 'block';
+        banner_img.hidden = false;
     }
 
-    //get all warning message elements
-    alerts = document.getElementsByClassName("bruh")
+    changePassword = document.getElementById("change_password");
+    confirmPassword = document.getElementById("confirm_password");
+    submitButtn = document.getElementById("submit");
+
+    changePassword.addEventListener("input", (event) => {
+        verifyMatch();
+    })
+    confirmPassword.addEventListener("input", (event) => {
+        verifyMatch();
+    })
+
+    unameAlert = document.getElementById("invalidUsername");
+    emailAlert = document.getElementById("invalidEmail");
+    wrongPswdAlert = document.getElementById("wrongPassword");
+    matchAlert = document.getElementById("passwordMatchError");
+    lengthAlert = document.getElementById("invalidLength");
+    successAlert = document.getElementById("success");
 });
 
+// code by chatGPT, modified by Tommy to work in this project
 function loadImg(event, img){
     const file = event.target.files[0];
     if (file){
@@ -26,16 +52,22 @@ function loadImg(event, img){
         reader.onload = function(e) {
             const imgUrl = e.target.result;
 
-
-
             // Show image in img element
-            // console.log(img.src)
             img.src = imgUrl;
-            // console.log(img.src)
-            img.style.display = 'block';
+            img.hidden = false;
         }
 
         reader.readAsDataURL(file);
+    }
+}
+
+function verifyMatch(){
+    if(changePassword.value !== confirmPassword.value){
+        matchAlert.hidden = false;
+        submitButtn.disabled = true;
+    }else{
+        matchAlert.hidden = true;
+        submitButtn.disabled = false;
     }
 }
 
@@ -56,44 +88,33 @@ function applyChanges() {
         }
     });
 
+    formData["icon"] = icon_img.src;
+    formData["banner"] = banner_img.src;
+
 
     // validate the new settings entered in the fields
-    fetch(`/checkNewSettings/?info=${JSON.stringify(formData)}`)
+    fetch("/settings", {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: { "Content-type": "application/json; charset=UTF-8" }
+    })
     .then(response => response.json())
     .then(data => {
-
+        console.log(data)
         // show appropriate alerts based on reponse
 
-        if(data.usernameUpdate && !data.usernameUnique) alerts[0].classList.add("showBruh")
-        else alerts[0].classList.remove("showBruh")
+        unameAlert.hidden = data.usernameUnique;
 
-        if(data.emailUpdate && !data.validEmail) alerts[1].classList.add("showBruh")
-        else alerts[1].classList.remove("showBruh")
+        emailAlert.hidden = data.validEmail;
 
         if(data.passwordUpdate){
-            if(!data.oldPasswordMatch) alerts[2].classList.add("showBruh")
-            else alerts[2].classList.remove("showBruh")
+            wrongPswdAlert.hidden = data.oldPasswordMatch;
 
-            if(!data.newPasswordValid) alerts[3].classList.add("showBruh")
-            else alerts[3].classList.remove("showBruh")
+            lengthAlert.hidden = data.newPasswordValid
 
-            if(!data.newPasswordMatch) alerts[4].classList.add("showBruh")
-            else alerts[4].classList.remove("showBruh")
+            matchAlert.hidden = data.newPasswordMatch;
         }
     
-        // upon data valid, update settings in db
-        if(data.success) {
-            fetch(`/settings/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(reponse => {
-                // indicate update success
-                alerts[5].classList.add("success")
-            })
-        }
+        successAlert.hidden = !data.success;
     })
 }

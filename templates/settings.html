@@ -5,101 +5,102 @@
 
 {% block head %}
 <script src="{{url_for('static', filename='js/settings.js')}}"></script>
+<link rel = "stylesheet" href = "{{ url_for('static', filename='css/settings.css') }}">
 {% endblock %}
 
 {% block content %}
-    <h1>
+    <h2>
         <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/backarrow.png')}}" alt="back" style="width:1em;height:1em;"></a>
-        User Settings
-    </h1>
+        <span style="margin-left: 1rem;">User Settings</span>
+    </h2>
 <form>
-    {{form.hidden_tag()}}
     <div class="container">
-        <h3>Profile</h3>
-        <hr>
+        <div class="row">
+            <div class="col-md-12 col-lg-6">
+                <h3>Profile</h3>
+                <hr>
 
-        <div class="bruh">
-            <b id="invalidUsername">*This username has already been taken*</b>
-        </div>
+                <div class="alert alert-danger" id="invalidUsername" hidden>
+                    <b>This username has already been taken</b>
+                </div>
 
-        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
-            {{ form.username.label }}
-            {{ form.username(class="form-control") }}
-        </div>
+                <div class="mb-2">
+                    <label for="username">Username</label>
+                    <input class="form-control" id="username" maxlength="64" name="username" required type="text" value="{{user.username}}">
+                </div>
 
-        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
-            {{form.bio.label}}
-            {{form.bio(class="form-control")}}
-        </div>
+                <div class="mb-2">
+                    <label for="bio">Biography</label>
+                    <textarea class="form-control" id="bio" maxlength="1024" name="bio" value="{{user.bio}}"></textarea>
+                </div>
 
-        <div class="mb-2">
-            <div>
-                {{ form.icon.label }}
-                {{ form.icon(accept="image/*") }}
+                <div class="mb-2">
+                    <div>
+                        <label for="icon">Profile Picture</label>
+                        <input accept="image/*" id="icon" name="icon" type="file">
+                    </div>
+                    <br>
+                    <img id="icon_img" src='{{ pfp }}' alt="Icon Image" class="col-sm-12 col-md-6 settingImg" hidden>
+                </div>
+
+                <div class="mb-2">
+                    <div>
+                        <label for="banner">Banner</label>
+                        <input accept="image/*" id="banner" name="banner" type="file">
+                    </div>
+                    <br>
+                    <img id="banner_img" src='{{ banner }}' alt="Banner Image" class="col-sm-12 col-md-6 settingImg" hidden>
+                </div>
             </div>
-            <br>
-            <img id="icon_img" src="{{ pfp }}" alt="Icon Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
-        </div>
+            <div class="col-sm-12 col-md-6">
+                <h3>Account Backup</h3>
+                <hr>
 
-        <div class="mb-2">
-            <div>
-                {{form.banner.label}}
-                {{form.banner(accept="image/*")}}
+                <div class="alert alert-danger" id="invalidEmail" hidden>
+                    <b>Must be in email format</b>
+                </div>
+
+                <div class="mb-2">
+                    <label for="backup_email">Backup Email</label>
+                    <input class="form-control" id="backup_email" name="backup_email" type="email" value="{{user.backupEmail}}">
+                </div>
+
+                <div class="alert alert-danger" id="wrongPassword" hidden>
+                    <b>Incorrect password</b>
+                </div>
+                
+                <div class="mb-2">
+                    <label for="old_password">Current Password</label>
+                    <input class="form-control" id="old_password" maxlength="256" minlength="8" name="old_password" type="password">
+                </div>
+
+                <div class="mb-2">
+                    <label for="change_password">New Password</label>
+                    <input class="form-control" id="change_password" maxlength="256" minlength="8" name="change_password" type="password">
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input class="form-control" id="confirm_password" name="confirm_password" type="password">
+                </div>
+
+                <div class="alert alert-danger" id="passwordMatchError" hidden>
+                    <b>The new passwords don't match</b>
+                </div>
+
+                <div class="alert alert-danger" id="invalidLength" hidden>
+                    <b>The new password must be between 8 and 256 characters</b>
+                </div>
+
             </div>
-            <br>
-            <img id="banner_img" src="{{ banner }}" alt="Banner Image" style="display: none;" class="col-sm-12 col-md-6 col-lg-4"></canvas>
-        </div>
-        <h3>Account Backup</h3>
-        <hr>
-
-        <div class="bruh">
-            <b id="invalidEmail">*Must be in email format*</b>
-        </div>
-
-        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
-            {{form.backup_email.label}}
-            {{form.backup_email(class="form-control")}}
-        </div>
-
-        <div class="bruh">
-            <b id="oldPasswordErro">*Incorrect password*</b>
-        </div>
-        
-        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
-            {{form.old_password.label}}
-            {{form.old_password(class="form-control")}}
-        </div>
-
-        <div class="bruh">
-            <b id="invalidPassword">*The new password must be at least 8 characters*</b>
-        </div>
-
-        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
-            {{form.change_password.label}}
-            {{form.change_password(class="form-control")}}
-        </div>
-
-        <div class="bruh">
-            <b id="passwordMatchError">*The new passwords don't match*</b>
-        </div>
-
-        <div class="mb-2 col-sm-12 col-md-6 col-lg-4">
-            {{form.confirm_password.label}}
-            {{form.confirm_password(class="form-control")}}
-        </div>
-
-        <!-- <div class="mb-2">
-            {{form.submit(class="btn btn-danger")}}
-        </div> -->
-
-        <div class="mb-2">
-            <button class="btn btn-danger" type = "button" onclick="applyChanges()">Apply Changes</button>
-            <div class="bruh">
-                <b id="success">*Your information was updated!*</b>
+            <div class="col-sm-12 col-md-6" style="margin: auto;"">
+                <button class="btn btn-danger" type = "button" onclick="applyChanges()" id="submit">Apply Changes</button>
+                <div class="alert alert-success" id="success" hidden>
+                    <b>Your information was updated!</b>
+                </div>
             </div>
         </div>
-
-  </div>
+    </div>
 </form>
 {% endblock %}
 

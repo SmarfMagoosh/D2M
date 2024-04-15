@@ -7,7 +7,6 @@ import re
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from forms import SettingsForm
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from io import BytesIO
@@ -344,7 +343,7 @@ with app.app_context():
     tag2 = Tag(tag="tag2")
     tag3 = Tag(tag="tag3")
     tag4 = Tag(tag="tag4")
-    tag5 = Tag(tag="tag5")
+    tag5 = Tag(tag="jeff")
     tag6 = Tag(tag="tag6")
     
     u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
@@ -474,93 +473,79 @@ def getCurrentSettings():
 @app.get("/settings/")
 # @login_required
 def get_settings():
-    form = SettingsForm()
     #get curr user
     user = load_user(session.get('customIdToken'))
     if user:
-        form.username.data = user.username
-        form.bio.data = user.bio
-        form.backup_email.data = user.backupEmail
         pfp = "#"
         banner = "#"
         if os.path.isfile(f"static/images/users/{user.gccEmail}/pfp.png"):
             pfp = url_for('static', filename=f'images/users/{user.gccEmail}/pfp.png')
         if os.path.isfile(f"static/images/users/{user.gccEmail}/banner.png"):
             banner = url_for('static', filename=f'images/users/{user.gccEmail}/banner.png')
-        return render_template('settings.html', form=form, pfp=pfp, banner=banner)
+        return render_template('settings.html', user=user, pfp=pfp, banner=banner)
     else:
         redirect(url_for("get_home"))
         return {'loggedout': True}
-    
-
-# this method gettings the new settings entered on the settings page and validates them
-# returns a json indicating which entries are valid
-@app.get("/checkNewSettings/")
-def checkNewSettings():
-    info = json.loads(request.args.get('info'))
-    user = load_user(session.get('customIdToken'))
-    print(info)
-    returnVal = {}
-
-    # indicate if username was updated
-    returnVal['usernameUpdate'] = info['username'] != user.username
-
-    # indicate if new username already exists or not
-    if User.query.filter_by(username=info['username']).first():
-        returnVal['usernameUnique'] = False
-    else:
-        returnVal['usernameUnique'] = True
-
-
-    backupEmail = info['backup_email']
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-
-    # indicate if backup email is being updated
-    returnVal['emailUpdate'] = str(backupEmail) != str(user.backupEmail)
-    # indicate is new backup email is of valid email form
-    returnVal['validEmail'] = True if re.fullmatch(regex, backupEmail) else False
-
-    # indicate if the password is being updated
-    returnVal['passwordUpdate'] = info['old_password'] != "" or info['change_password'] != "" or info['confirm_password'] != ""
-    # indicate the current passwords match
-    returnVal['oldPasswordMatch'] = bcrypt.checkpw(info['old_password'].encode('utf-8'), user.backupPasswordHash)
-    # indicate if the new password is valid
-    returnVal['newPasswordValid'] = len(info['change_password']) >= 8
-    # indicate if the new passwords match
-    returnVal['newPasswordMatch'] = info['change_password'] == info['confirm_password']
-
-    # indicate if info was successfully updated
-    success = True
-    if returnVal['usernameUpdate'] and not returnVal['usernameUnique']:
-        success = False
-    if returnVal['emailUpdate'] and not returnVal['validEmail']:
-        success = False
-    if returnVal['passwordUpdate'] and (not returnVal['oldPasswordMatch'] or not returnVal['newPasswordValid'] or not returnVal['newPasswordMatch']):
-        success = False
-
-    returnVal['success'] = success
-    
-    return jsonify(returnVal)
 
 # this post route updates the user settings based on the inputed values on the settings page
 @app.route("/settings/", methods=["POST"])
 def post_settings():
     json_data = request.json
     user = load_user(session.get('customIdToken'))
+    
+    returnVal = {}
+
+    # indicate if new username already exists or not
+    if json_data.get('username') != user.username and User.query.filter_by(username=json_data.get('username')).first():
+        returnVal['usernameUnique'] = False
+    else:
+        returnVal['usernameUnique'] = True
+
+
+    backupEmail = json_data.get('backup_email')
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    
+    # indicate is new backup email is of valid email form
+    returnVal['validEmail'] = (backupEmail == "") or (True if re.fullmatch(regex, backupEmail) else False)
+
+    # indicate if the password is being updated
+    returnVal['passwordUpdate'] = json_data.get('old_password') != "" or json_data['change_password'] != "" or json_data['confirm_password'] != ""
+    # indicate the current passwords match
+    returnVal['oldPasswordMatch'] = bcrypt.checkpw(json_data.get('old_password').encode('utf-8'), user.backupPasswordHash)
+    # indicate if the new password is valid
+    returnVal['newPasswordValid'] = len(json_data.get('change_password')) >= 8
+    # indicate if the new passwords match
+    returnVal['newPasswordMatch'] = json_data.get('change_password') == json_data.get('confirm_password')
+
+    # indicate if info was successfully updated
+    returnVal['success'] = returnVal['usernameUnique'] and returnVal['validEmail']
+    returnVal['success'] = returnVal['success'] and (not returnVal['passwordUpdate'] or (returnVal['oldPasswordMatch'] and returnVal['newPasswordValid'] and returnVal['newPasswordMatch']))
+    
+    #don't update any values if anything fails validation
+    if returnVal['success'] == False:
+        return jsonify(returnVal)
+    
     user.username = json_data.get('username')
     user.bio = json_data.get('bio')
+    
+    icon = json_data.get("icon")
+    print(icon[0:10])
+    if icon[0:10] == "data:image":
+        create_thumbnail(icon[icon.index(',')+1:], f"./static/images/users/{user.gccEmail}/pfp.png", dimensions = (300, 300))
+    banner = json_data.get("banner")
+    if banner[0:10] == "data:image":
+        create_thumbnail(banner[banner.index(',')+1:], f"./static/images/users/{user.gccEmail}/banner.png", dimensions = (1200, 400))
+    
     user.backupEmail = json_data.get('backup_email')
 
     oldPassword = json_data.get('old_password')
     newPassword = json_data.get('change_password')
     confirmPassword = json_data.get('confirm_password')
 
-    if bcrypt.checkpw(oldPassword.encode('utf-8'), user.backupPasswordHash) and newPassword == confirmPassword:
-        user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+    user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
 
     db.session.commit()
-    # TODO: when I ran this it caused an error saying that json_data.get('email') was NoneType
-    return redirect(url_for("get_settings")+"?email="+json_data.get('email'))
+    return jsonify(returnVal)
 
 # get a user object
 def load_user(userEmail):
