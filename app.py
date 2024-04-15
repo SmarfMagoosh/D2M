@@ -7,7 +7,6 @@ import re
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from forms import SettingsForm
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from io import BytesIO
@@ -48,6 +47,7 @@ db = SQLAlchemy(app)
 
 # setup queue for sorting by likes
 update_times = [0, 0, 0]
+like_milestones = [10, 25, 50, 100, 250, 500, 1000]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # NON-ROUTE FUNCTIONS
@@ -63,6 +63,16 @@ def update_like_backend():
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
+    
+    print("doot")
+    
+    #check for posts crossing like thresholds
+    global like_milestones
+    with app.app_context():
+        for milestone in like_milestones:
+            passed = Post.query.filter(Post.numLikesD1 >= milestone, Post.numLikesD2 < milestone).all()
+            for post in passed:
+                create_notification(post.owner.gccEmail, f"{post.title} has gained {milestone} likes!", post.title, f"/post/{post.postID}")
 
 def create_like(username, post, up):
     with app.app_context():
@@ -71,9 +81,10 @@ def create_like(username, post, up):
         db.session.commit()
         
 
-def create_notification(email, text, title, time):
+def create_notification(email, text, title, link = "#"):
     with app.app_context():
-        notif = Notification(userEmail = email, text = text, title=title, time=time)
+        time = datetime.now().strftime("%m/%d/%Y %I:%M %p")
+        notif = Notification(userEmail = email, text = text, title=title, time=time, link=link)
         db.session.add(notif)
         db.session.commit()
 
@@ -128,6 +139,7 @@ class User(db.Model) :
     notificationList = db.relationship('Notification', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
+    followerList = db.relationship('Follow', back_populates='followed', foreign_keys='Follow.user2')
     blockList = db.relationship('Block', back_populates='blocker', foreign_keys='Block.user1')
 
     def postlist_to_json(self):
@@ -177,6 +189,7 @@ class Notification(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     title = db.Column(db.String)
     text = db.Column(db.String)
+    link = db.Column(db.String)
     # format: mm/dd/yy hh:mm AM/PM
     # ex: 3/7/24 5:30 AM
     time = db.Column(db.String)
@@ -185,7 +198,8 @@ class Notification(db.Model) :
             "title": self.title,
             "text" : self.text,
             "time" : self.time,
-            "id" : self.NotificationID
+            "id" : self.NotificationID,
+            "link": self.link 
 		}
 
 class Like(db.Model):
@@ -210,6 +224,7 @@ class Follow(db.Model):
     user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     # advanced backref because of 2 foreign keys from same table
     follower = db.relationship('User', back_populates='followList', foreign_keys=[user1])
+    followed = db.relationship('User', back_populates='followerList', foreign_keys=[user2])
 
 class Block(db.Model):
     __tablename__ = 'Blocks'
@@ -228,7 +243,7 @@ class Post(db.Model) :
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     spacing = db.Column(db.Float, nullable = False, default = 0.0)
     space_arrangement = db.Column(db.Float, default = 0.0)
-    title = db.Column(db.String, nullable = True)
+    title = db.Column(db.String)
     backImage = db.Column(db.String, nullable = False)
     timePosted = db.Column(db.DateTime)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
@@ -384,12 +399,12 @@ with app.app_context():
     u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
     
     post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
+                 backImage = "4 rules.png", owner = u2, numLikes=9, tag=tag1.tag)
     post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
                  backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    # follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
+    follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
     # follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
@@ -397,7 +412,7 @@ with app.app_context():
     bm11 = Bookmark(user=u1, postID=10)
     bm12 = Bookmark(user=u1, postID=30)
     bm13 = Bookmark(user=u1, postID=20)
-    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
+    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM", link="#")
 
     # Add all of these records to the session and commit changes
     db.session.add_all((u1,u2,u3))
@@ -734,6 +749,7 @@ def toggle_follow_status():
             db.session.add(new_follow)
             db.session.commit()
             is_following = True
+            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower")
 
         # Reload user1 instance to update followList
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
@@ -876,6 +892,10 @@ def post_meme():
                 file.write(base64.b64decode(imgData))
             image_inst.image = f"{image_inst.extraImageId}.png"
             db.session.commit()
+        user = load_user(session.get("customIdToken"))
+        for f in user.followerList:
+            u = f.follower
+            create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {u.username}", f"/post/{post_inst.postID}")
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
         return {"message" : "posted successfully"}, 200
@@ -923,6 +943,9 @@ def create_comment_route():
     content = data.get('content')
     username = data.get('username')
     postID = data.get('postID')
+    
+    post = Post.query.filter_by(postID=postID).first()
+    create_notification(post.owner.gccEmail, f"{username} has commented on {post.title}.", post.title, f"/post/{post.postID}")
 
     new_comment = Comment(
         content=content,
@@ -1092,11 +1115,9 @@ def get_bookmarked(gccEmail):
     bookmarks =  bookmarks[0:count] #reduce to count or less elements
     return [l.post.render_json() for l in bookmarks]
 
-@app.get("/API/get_notifications/<string:gccEmail>")
 @app.get("/API/get_notifications/")
-def get_notifications(gccEmail=None):
-    if gccEmail == None: 
-        gccEmail = session.get('customIdToken')
+def get_notifications():
+    gccEmail = session.get('customIdToken')
     notifications = Notification.query.filter_by(userEmail=gccEmail).all()
     return {"logged_in": gccEmail != None, "list": [n.to_json() for n in notifications]}
 

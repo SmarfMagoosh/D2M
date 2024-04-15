@@ -27,7 +27,8 @@
         <script src="{{ url_for('static', filename='js/search.js') }}"></script>
         <div class="navbar-items">
             <div class="input-group dropdown-center">
-                <input type="text" id="searchInput" placeholder="Search by name" class="form-control">
+                <!-- maxlength="30" is to succeed acceptance test 3.4 -->
+                <input type="text" id="searchInput" placeholder="Search by name" class="form-control" maxlength="30">
                 <button id="tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">no tag</button>
                 <ul class="dropdown-menu px-3" style="width: 20rem;">
                     <li>
@@ -79,7 +80,7 @@
                     <div id="notif-template" hidden>
                         <li class="dropdown-divider"></li>
                         <li class="container row">
-                            <a class="col-10 notif-link" href="#">
+                            <a class="col-10 notif-link" href="#" style="text-decoration: unset;">
                                 <p style="text-wrap: wrap;">
                                     <span class="notif-time"></span><br>
                                     <strong><span class="notif-title"></span></strong><br>

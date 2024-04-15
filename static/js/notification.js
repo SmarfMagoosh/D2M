@@ -29,17 +29,20 @@ async function insert_notification(notification){
     const container = document.getElementById("flashcards-container");
 
     const nDiv = notif_template.cloneNode(true);
+    nDiv.removeAttribute("id");
 
     // nDiv.id = notification.id;
-    nDiv.removeAttribute("hidden")
+    nDiv.removeAttribute("hidden");
 
     const time = nDiv.querySelector(".notif-time");
     const title = nDiv.querySelector(".notif-title");
     const text = nDiv.querySelector(".notif-text");
+    const link = nDiv.querySelector(".notif-link");
 
     time.innerText = notification.time;
     title.innerText = notification.title;
     text.innerText = notification.text;
+    link.href = notification.link;
 
     const closeBtn = nDiv.querySelector(".btn-close");
     closeBtn.addEventListener("click", () => { 
