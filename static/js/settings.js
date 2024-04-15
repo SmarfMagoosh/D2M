@@ -30,10 +30,10 @@ window.addEventListener('DOMContentLoaded', () => {
     submitButtn = document.getElementById("submit");
 
     changePassword.addEventListener("input", (event) => {
-        verifyMatch();
+        verifyPswds();
     })
     confirmPassword.addEventListener("input", (event) => {
-        verifyMatch();
+        verifyPswds();
     })
 
     unameAlert = document.getElementById("invalidUsername");
@@ -61,13 +61,19 @@ function loadImg(event, img){
     }
 }
 
-function verifyMatch(){
+function verifyPswds(){
     if(changePassword.value !== confirmPassword.value){
         matchAlert.hidden = false;
         submitButtn.disabled = true;
     }else{
         matchAlert.hidden = true;
         submitButtn.disabled = false;
+    }
+    if(changePassword.value != "" && (changePassword.value.length < 8 || changePassword.value.length > 256)){
+        lengthAlert.hidden = false
+    }
+    else {
+        lengthAlert.hidden = true
     }
 }
 
