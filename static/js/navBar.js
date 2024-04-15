@@ -19,5 +19,5 @@ function setUsername(username) {
 }
 
 function goToSettings() {
-    window.location.href = `/settings`
+    window.location.href = `/settings/`
 }
