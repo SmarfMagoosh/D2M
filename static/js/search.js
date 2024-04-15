@@ -52,6 +52,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             if(tagContainsQuery) count++;
         }
     });
+    document.onclick = function(e){
+        if(!searchResultsDropdown.contains(e.target)){
+            searchResultsDropdown.hidden = true;
+        }
+    };
 });
 
 
