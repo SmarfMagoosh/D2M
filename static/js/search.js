@@ -52,6 +52,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             if(tagContainsQuery) count++;
         }
     });
+
+    searchBar.addEventListener("keyup", e => {
+        if (e.key === "Enter") {
+            search();
+        }
+    })
+
     document.onclick = function(e){
         if(!searchResultsDropdown.contains(e.target)){
             searchResultsDropdown.hidden = true;
