@@ -7,7 +7,6 @@ import re
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from forms import SettingsForm
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
 from io import BytesIO
