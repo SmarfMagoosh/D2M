@@ -510,7 +510,7 @@ def get_settings():
             pfp = url_for('static', filename=f'images/users/{user.gccEmail}/pfp.png')
         if os.path.isfile(f"static/images/users/{user.gccEmail}/banner.png"):
             banner = url_for('static', filename=f'images/users/{user.gccEmail}/banner.png')
-        return render_template('settings.html', user=user, pfp=pfp, banner=banner)
+        return render_template('settings.html', user=user, pfp=pfp, banner=banner, loggedInUser=user)
     else:
         redirect(url_for("get_home"))
         return {'loggedout': True}
@@ -667,8 +667,8 @@ def sendResetEmail():
 
     # Connect to SMTP server
     try:
-        with smtplib.SMTP('webmail.gcc.edu', 587, timeout=10) as server:
-            server = smtplib.SMTP('webmail.gcc.edu', 587)
+        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
+            server = smtplib.SMTP('smtp.office365.com', 587)
             server.starttls()  # Secure the connection
             server.login(sender_email, password)
             text = msg.as_string()
