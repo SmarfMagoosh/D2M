@@ -478,6 +478,8 @@ def get_post(post_id):
 @app.get("/profile/")
 @app.get("/profile/<string:username>/")
 def get_profile(username = None):
+    blocked = False
+    following = False
     if(username == None):
         user = load_user(session.get('customIdToken'))
         liked_post_ids = [like.postID for like in Like.query.filter_by(userEmail=user.gccEmail).all()]
@@ -489,7 +491,14 @@ def get_profile(username = None):
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
         return render_template("profile.html", loggedInUser=user, user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
     else:
+        loggedInUser = load_user(session.get('customIdToken'))
         user = User.query.filter_by(username=username).first()
+        if loggedInUser:
+            if Follow.query.filter_by(user1=loggedInUser.gccEmail, user2=user.gccEmail).first():
+                following = True
+            if Block.query.filter_by(user1=loggedInUser.gccEmail, user2=user.gccEmail).first():
+                blocked = True
+                
         # Get the liked posts associated with the user
         liked_post_ids = [like.postID for like in Like.query.filter_by(userEmail=user.gccEmail).all()]
         # Get the bookmarked posts associated with the user
@@ -498,7 +507,7 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, blocked=blocked, following=following, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
         
 @app.get('/getCurrentSettings/')
 def getCurrentSettings():

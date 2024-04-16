@@ -134,12 +134,14 @@
             followButton = document.getElementById('followButton')
             blockButton = document.getElementById('blockButton')
 
+            const email = document.getElementById("email").innerText;
+            otherUserEmail = email.substring(1, email.length-1);
             if(followButton) {
                 // Function to execute when the follow button is clicked
                 followButton.addEventListener('click', function() {
                     // Data to send to the server
                     var data = {
-                        otherUserEmail: document.getElementById("email").innerText,
+                        otherUserEmail: otherUserEmail,
                     };
 
                     // Make an AJAX request to toggle follow status
@@ -161,7 +163,7 @@
                 blockButton.addEventListener('click', function() {
                     // Data to send to the server
                     var data = {
-                        otherUserEmail: document.getElementById("email").innerText,
+                        otherUserEmail: otherUserEmail,
                     };
 
                     // Make an AJAX request to toggle follow status
