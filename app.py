@@ -30,7 +30,7 @@ python -m flask run --host=0.0.0.0 --port=80
 """
 
 # for easy changing of defaults
-DEFAULT_POSTS_LOADED = 30
+DEFAULT_POSTS_LOADED = 100
 MINUTES_BETWEEN_REFRESH = 10
 
 # add the script directory to the python path
