@@ -41,6 +41,7 @@ function sendEmail() {
     .then(response => response.json())
     .then(data => {
         if(data.exists){
+            document.getElementById("loader").style.display = "inline"
             fetch(`/genResetToken?username=${usernameField.value}`)
             .then(response => response.json())
             .then(data => {
@@ -49,9 +50,11 @@ function sendEmail() {
                     .then(response => response.json())
                     .then(data => {
                         if(data.success) {
+                            document.getElementById("loader").style.display = "none"
                             document.getElementById("emailSuccess").style.display = "inline"
                         }
                         else {
+                            document.getElementById("loader").style.display = "none"
                             document.getElementById("emailError").style.display = "inline"
                             console.log("ERROR: the email did not send")
                         }

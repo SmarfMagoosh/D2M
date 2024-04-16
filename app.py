@@ -4,6 +4,7 @@ import os, sys, json
 import string
 import secrets
 import re
+import traceback 
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -29,7 +30,7 @@ python -m flask run --host=0.0.0.0 --port=80
 """
 
 # for easy changing of defaults
-DEFAULT_POSTS_LOADED = 30
+DEFAULT_POSTS_LOADED = 100
 MINUTES_BETWEEN_REFRESH = 10
 
 # add the script directory to the python path
@@ -154,6 +155,18 @@ class User(db.Model) :
         return{
             "username": self.username,
             "pfp": pfp,
+        }
+    
+    def profile_json(self):
+        pfp = "/static/images/users/default-pfp.png"
+        banner = "/static/images/users/default-banner.png"
+        if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
+            pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
+            banner = f"/static/images/users/{self.gccEmail}/banner.png"
+        return{
+            "username": self.username,
+            "pfp": pfp,
+            "banner": banner
         }
 
 class Report(db.Model) :
@@ -289,7 +302,8 @@ class Post(db.Model) :
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-            "reportsList": [r.to_json() for r in self.reportsList]
+            "reportsList": [r.to_json() for r in self.reportsList],
+            "tag": self.tag
         }
     def thumbnail(self):
         return f"images/thumbnails/{self.postID}.png"
@@ -381,8 +395,8 @@ with app.app_context():
     tag2 = Tag(tag="tag2")
     tag3 = Tag(tag="tag3")
     tag4 = Tag(tag="tag4")
-    tag5 = Tag(tag="tag5")
-    tag6 = Tag(tag="tag6")
+    tag5 = Tag(tag="jeff")
+    tag6 = Tag(tag="bottom-text")
     
     u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
@@ -647,9 +661,34 @@ def sendResetEmail():
     user.passwordResetToken = token
     db.session.commit()
 
+
+    # Email configuration
+    primary = sendEmailTo(user.gccEmail)
+    
+    if(user.backupEmail and user.backupEmail != ""):
+        if(primary and sendEmailTo(user.backupEmail)):
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False})
+
+    if(primary):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False})
+
+def sendEmailTo(email: str): 
+    username = request.args.get('username')
+    token = request.args.get('token')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return False
+
+    user.passwordResetToken = token
+    db.session.commit()
+
     # Email configuration
     sender_email = 'svc_CS_D2M@gcc.edu'
-    receiver_email = user.gccEmail
+    receiver_email = email
     password = 'Laq86937'
 
     # Create message container
@@ -683,16 +722,16 @@ def sendResetEmail():
             text = msg.as_string()
             server.sendmail(sender_email, receiver_email, text)
             server.quit()  # Quit the SMTP server   
-            return jsonify({'success': True})
+            return True
     except smtplib.SMTPException as e:
         print("SMTP error:", e)
-        return jsonify({'success': False, 'error': str(e)})
+        return False
     except TimeoutError:
         print("SMTP connection timed out")
-        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
+        return False
     except Exception as e:
         print("Other error:", e)
-        return jsonify({'success': False, 'error': str(e)})
+        return False
 
 @app.get('/setPassword/')
 def setPassword():
@@ -840,6 +879,16 @@ def post_meme():
             imgData = body["imgData"][22:]
             print("base64 length: ", len(body["imgData"]))
         thumbnailData = body["thumbnailData"][22:]
+        
+        tag = None
+        tags = Tag.query.filter_by(tag=body["tag"]).all()
+        if len(tags) >= 1:
+            tag = tags[0]
+        else:
+            tag = Tag(tag = body["tag"])
+            db.session.add(tag)
+            db.session.commit()
+        
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -848,7 +897,8 @@ def post_meme():
             timePosted = datetime.now(),
             username = body["user"],
             draw = body["drawing"],
-            template = body["template"]
+            template = body["template"],
+            tag = body["tag"]
         )
         db.session.add(post_inst)
         db.session.commit()
@@ -933,6 +983,7 @@ def add_user():
 @app.post('/create_comment/')
 def create_comment_route():
     # Get the data from the AJAX request
+    print("hi!")
     data = request.json
     content = data.get('content')
     username = data.get('username')
@@ -1235,6 +1286,12 @@ def getUsername():
     else:
         return ""
     
+@app.route('/profile_json/<string:gccEmail>')
+def get_profile_json(gccEmail):
+    user = User.query.get_or_404(gccEmail)
+    profile_data = user.profile_json()
+    return jsonify(profile_data)
+
 @app.get('/getUserInfo/')
 def getUser():
     userEmail = session.get('customIdToken')

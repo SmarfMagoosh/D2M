@@ -2,7 +2,18 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Assuming you have a script tag somewhere in your HTML where you can embed JavaScript
     window.post = {}
-    
+
+    // get correct color for the tag
+    const tag = $("#post-tag").text().substring(1);
+    var hash = 0, i, chr;
+    if (tag.length === 0) return hash;
+    for (i = 0; i < tag.length; i++) {
+      chr = tag.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    const colors = ["primary", /*"secondary",*/ "success", "warning", "info"/*, "danger"*/];
+    $("#post-tag").addClass(`badge-${colors[Math.abs(hash)%colors.length]}`)
 
 $(document).ready(function() {
     // Event listener for delete button click
@@ -83,10 +94,6 @@ $("#submit-btn").click(e => {
     const user = getCurrentUser();  // Assuming you have a function to get the current user
     const postID = $(e.target).attr('data-postId');
 
-    if (reportValue == None){
-        return;
-    }
-
     getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
         var currentUsernameEmail = result.gccEmail;
@@ -138,9 +145,7 @@ document.getElementById('comment-form').addEventListener('submit', function(even
 
     // Get the value of the comment input field
     const commentValue = document.getElementById('comment-box').value;
-    if (commentValue == None){
-        return;
-    }
+  
 
 
     // You also need to retrieve the username and postID from somewhere
@@ -157,12 +162,12 @@ document.getElementById('comment-form').addEventListener('submit', function(even
             }
             // Handle successful response
             // Optionally, update the UI to reflect the new like
+            (window.location.reload());
         })
         .catch(error => {
             // Handle fetch errors
             console.error('Fetch error:', error);
         });
-        window.location.reload();
     })
 });
 var likeButton = document.getElementById('like-btn');
