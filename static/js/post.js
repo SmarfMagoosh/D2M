@@ -377,14 +377,14 @@ async function toggleButtons() {
     const userDislikedPost = dislikeButton.getAttribute('data-disliked');
     const userBookmarkedPost = bookmarkButton.getAttribute('data-bookmark');
 
-    if (userLikedPost) {
+    if (userLikedPost == true ) {
         likeButton.style.backgroundColor = 'red';
         dislikeButton.style.backgroundColor = '';
-    } else if (userDislikedPost){
+    } else if (userDislikedPost == true){
         likeButton.style.backgroundColor = '';
         dislikeButton.style.backgroundColor = 'red';
     }
-    if (userBookmarkedPost) {
+    if (userBookmarkedPost == true) {
         bookmarkButton.style.backgroundColor = 'red';
     }
 }
