@@ -37,8 +37,11 @@
         <a href="{{ url_for('get_profile', username=post.username) }}">
             <h4>{{ post.username }}</h4>
         </a>      
-        <h5> {{ post["numLikes"] }} likes </h5>
-        
+        <h5> 
+            {{ post["numLikes"] }} like{%if post["numLikes"] != 1%}s{%endif%}
+            <span class="badge" id = "post-tag" {% if not post["tag"] %}hidden{%endif%}>#{{ post["tag"] }}</span>
+        </h5>
+            
     </div>
     <div class="post-buttons">
         

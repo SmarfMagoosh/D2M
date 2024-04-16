@@ -290,7 +290,8 @@ class Post(db.Model) :
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-            "reportsList": [r.to_json() for r in self.reportsList]
+            "reportsList": [r.to_json() for r in self.reportsList],
+            "tag": self.tag
         }
     def thumbnail(self):
         return f"images/thumbnails/{self.postID}.png"
