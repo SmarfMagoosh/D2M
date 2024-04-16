@@ -4,7 +4,6 @@ import os, sys, json
 import string
 import secrets
 import re
-import traceback 
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -30,7 +29,6 @@ python -m flask run --host=0.0.0.0 --port=80
 """
 
 # for easy changing of defaults
-DEFAULT_POSTS_LOADED = 100
 DEFAULT_POSTS_LOADED = 100
 MINUTES_BETWEEN_REFRESH = 10
 
@@ -65,8 +63,6 @@ def update_like_backend():
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
-    
-    print("doot")
     
     #check for posts crossing like thresholds
     global like_milestones
@@ -404,43 +400,44 @@ class Comment(db.Model) :
 		}
 
 with app.app_context():
+    db.drop_all()
     db.create_all()
 
-    #     # Create posts  to be inserted
+        # Create posts  to be inserted
         
-    # tag1 = Tag(tag="tag1")
-    # tag2 = Tag(tag="tag2")
-    # tag3 = Tag(tag="tag3")
-    # tag4 = Tag(tag="tag4")
-    # tag5 = Tag(tag="jeff")
-    # tag6 = Tag(tag="bottom-text")
+    tag1 = Tag(tag="tag1")
+    tag2 = Tag(tag="tag2")
+    tag3 = Tag(tag="tag3")
+    tag4 = Tag(tag="tag4")
+    tag5 = Tag(tag="jeff")
+    tag6 = Tag(tag="bottom-text")
     
-    # u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
-    # u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
-    # u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
+    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
+    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
+    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
     
-    # post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-    #              backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
-    # post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-    #              backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
-    # post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-    #              backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    # like11 = Like(user=u1, postID=10)
-    # like12 = Like(user=u1, postID=30)
-    # like13 = Like(user=u1, postID=20, positive=False)
-    # bm11 = Bookmark(user=u1, postID=10)
-    # bm12 = Bookmark(user=u1, postID=30)
-    # bm13 = Bookmark(user=u1, postID=20)
-    # notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
+    post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
+                 backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
+    post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
+                 backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
+    post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
+                 backImage = "Stop doing databases.png", owner = u3, numLikes=100)
+    like11 = Like(user=u1, postID=10)
+    like12 = Like(user=u1, postID=30)
+    like13 = Like(user=u1, postID=20, positive=False)
+    bm11 = Bookmark(user=u1, postID=10)
+    bm12 = Bookmark(user=u1, postID=30)
+    bm13 = Bookmark(user=u1, postID=20)
+    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
-    # # Add all of these records to the session and commit changes
-    # db.session.add_all((u1,u2,u3))
-    # db.session.add_all((post1, post2, post3))
-    # db.session.add_all((like11,like12,like13))
-    # db.session.add_all((bm11,bm12,bm13))
-    # db.session.add(notif)
-    # db.session.add_all((tag1,tag2,tag3,tag4,tag5,tag6))
-    # db.session.commit()
+    # Add all of these records to the session and commit changes
+    db.session.add_all((u1,u2,u3))
+    db.session.add_all((post1, post2, post3))
+    db.session.add_all((like11,like12,like13))
+    db.session.add_all((bm11,bm12,bm13))
+    db.session.add(notif)
+    db.session.add_all((tag1,tag2,tag3,tag4,tag5,tag6))
+    db.session.commit()
 
 # for the update to like counts every 10 minutes
 scheduler = BackgroundScheduler()
@@ -945,6 +942,10 @@ def post_meme():
                 file.write(base64.b64decode(imgData))
             image_inst.image = f"{image_inst.extraImageId}.png"
             db.session.commit()
+        user = load_user(session.get("customIdToken"))
+        for f in user.followerList:
+            u = f.follower
+            create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {u.username}", f"/post/{post_inst.postID}")
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
         return {"message" : "posted successfully"}, 200
@@ -993,6 +994,10 @@ def create_comment_route():
     content = data.get('content')
     username = data.get('username')
     postID = data.get('postID')
+    
+    post = Post.query.get(postID)
+    if username != post.owner.username:
+        create_notification(post.owner.gccEmail, f"{username} has commented on {post.title}", post.title, f"/post/{post.postID}")
 
     new_comment = Comment(
         content=content,
@@ -1003,10 +1008,6 @@ def create_comment_route():
     )
     db.session.add(new_comment)
     db.session.commit()
-    
-    post = Post.query.get(postID)
-    poster = post.owner.gccEmail
-    create_notification(poster, f"{username} commented on {post.title}", f"{post.title}", f"/post/{postID}")
 
     # Return a response indicating success
     return {'message': 'Comment created successfully'}, 200
