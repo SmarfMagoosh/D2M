@@ -377,9 +377,9 @@ class Comment(db.Model) :
 			"parentPost": self.postID,
 		}
 
-# with app.app_context():
-#     db.drop_all()
-#     db.create_all()
+with app.app_context():
+    # db.drop_all()
+    db.create_all()
 
     #     # Create posts  to be inserted
         
@@ -474,9 +474,14 @@ def get_post(post_id):
     # just plain get might work better, not sure, but it would return None with a failure rather than aborting
     post = Post.query.get_or_404(post_id)
     user = load_user(session.get('customIdToken'))
-    has_liked = Like.query.filter_by(postID=post_id, userEmail= user.gccEmail, positive=True).first() is not None
-    has_disliked = Like.query.filter_by(postID=post_id, userEmail=user.gccEmail, positive=False).first() is not None
-    has_bookmarked = Bookmark.query.filter_by(postID=post_id, userEmail=user.gccEmail).first() is not None
+    if user:
+        has_liked = Like.query.filter_by(postID=post_id, userEmail= user.gccEmail, positive=True).first() is not None
+        has_disliked = Like.query.filter_by(postID=post_id, userEmail=user.gccEmail, positive=False).first() is not None
+        has_bookmarked = Bookmark.query.filter_by(postID=post_id, userEmail=user.gccEmail).first() is not None
+    else:
+        has_liked = False
+        has_disliked = False
+        has_bookmarked = False
 
     return render_template("post.html", post=post.to_json(), loggedInUser = user, has_liked=has_liked,has_disliked = has_disliked, has_bookmarked=has_bookmarked)
 
