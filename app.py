@@ -4,6 +4,7 @@ import os, sys, json
 import string
 import secrets
 import re
+import traceback 
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -376,7 +377,7 @@ with app.app_context():
     tag3 = Tag(tag="tag3")
     tag4 = Tag(tag="tag4")
     tag5 = Tag(tag="jeff")
-    tag6 = Tag(tag="tag6")
+    tag6 = Tag(tag="bottom-text")
     
     u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
@@ -815,6 +816,16 @@ def post_meme():
         else:
             imgData = body["imgData"][22:] # TODO: save templates correctly
         thumbnailData = body["thumbnailData"][22:]
+        
+        tag = None
+        tags = Tag.query.filter_by(tag=body["tag"]).all()
+        if len(tags) >= 1:
+            tag = tags[0]
+        else:
+            tag = Tag(tag = body["tag"])
+            db.session.add(tag)
+            db.session.commit()
+        
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -822,7 +833,8 @@ def post_meme():
             backImage = "", #updated later
             timePosted = datetime.now(),
             username = body["user"],
-            draw = body["drawing"]
+            draw = body["drawing"],
+            tag = body["tag"]
         )
         db.session.add(post_inst)
         db.session.commit()
@@ -872,7 +884,7 @@ def post_meme():
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
         return {"message" : "posted successfully"}, 200
     except Exception as e:
-        print(e.with_traceback())
+        traceback.print_exc()
         return {"message": "error in posting"}, 500 
 
 @app.post('/add_user/')

@@ -9,7 +9,7 @@ let userResultTemplate = null;
 let userResultText = null;
 let userResultDiv = null;
 let noResults = null;
-const colors = ["primary", /*"secondary",*/ "success", /*"warning",*/ "info", "danger"];
+const colors = ["primary", /*"secondary",*/ "success", "warning", "info"/*, "danger"*/];
 const maxtagsvisible = 30;
 document.addEventListener("DOMContentLoaded", async () => {
     searchResultsDropdown = document.getElementById('searchResultsDropdown');
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     tagDropdownBtn = document.getElementById("tag-dropdown-btn");
 
     /* initialize the no tag option */
-    insertTag("no tag", "secondary")
+    insertTag("no tag", "secondary");
     /* fetch and add the other tags */
     await fetch(`/API/taglist/`)
         .then(validateJSON)
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let count = 0;
         for (let i = 0; i < tagList.length; i++) {
             if(tagList[i].innerText == "template") continue;
-            const tagContainsQuery = tagList[i].innerText.toLowerCase().includes(tagSearchBar.value.toLowerCase().substring(1));
+            const tagContainsQuery = tagList[i].innerText.toLowerCase().includes(tagSearchBar.value.toLowerCase());
             tagList[i].hidden = !tagContainsQuery || count >= maxtagsvisible;
             if(tagContainsQuery) count++;
         }
@@ -190,7 +190,7 @@ function validateJSON(response) {
 
 
 function getColor(text){
-    return colors[text.hashCode()%colors.length]
+    return colors[Math.abs(text.hashCode())%colors.length]
 }
 
 //Thanks to esmiralha on stackoverflow for this

@@ -140,7 +140,7 @@ textarea.form-control, #post-title {
 }
 
 #post-title {
-    margin: 1rem;
+    margin-left: 1rem;
 }
 
 .btn {
@@ -265,3 +265,7 @@ textarea.form-control, #post-title {
     border-radius: 0.25rem;
     border: solid black 1px;
 }
+
+.c-tag-badge {
+    margin-right: .4em;
+  }
