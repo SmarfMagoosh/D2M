@@ -8,7 +8,7 @@ function signOut() {
     .then(result => {
         sessionStorage.removeItem("customIdToken");
         logout()
-        window.location.href = "../home";
+        window.location.href = "/home/";
     })
 
 }
@@ -19,5 +19,5 @@ function setUsername(username) {
 }
 
 function goToSettings() {
-    window.location.href = `/settings`
+    window.location.href = `/settings/`
 }

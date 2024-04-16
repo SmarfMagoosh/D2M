@@ -27,7 +27,7 @@
 <div id = "left-content">
     <div id = "meme">
         <!-- put the image source here!-->
-        <img src = "../../static/images/thumbnails/{{post['backImage']}}" alt = "" id = "post-image" width="425">
+        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image" width="425">
     </div>
 </div>
 <div id = "right-content">
@@ -42,9 +42,9 @@
     </div>
     <div class="post-buttons">
         
-        <button id="like-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-up"></i></button>  
-        <button id="dislike-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-thumbs-down"></i></button>   
-        <button id="bookmark-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-bookmark"></i></button>
+        <button id="like-btn" data-postId="{{ post['id'] }}" data-liked="{{ has_liked }}"><i class="fa-solid fa-thumbs-up"></i></button>  
+        <button id="dislike-btn" data-postId="{{ post['id'] }}" data-disliked="{{ has_disliked }}"><i class="fa-solid fa-thumbs-down"></i></button>   
+        <button id="bookmark-btn" data-postId="{{ post['id'] }}" data-bookmark="{{ has_bookmarked }}" ><i class="fa-solid fa-bookmark"></i></button>
         {% if loggedInUser.username == post.username%}
         <!-- <button id="delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button> -->
         <!-- Delete Post Button -->
@@ -52,28 +52,19 @@
             <i class="fa-solid fa-trash"></i>
         </button>
         {% else %}
-        <button id="report-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-flag"></i></button>
+        <button id="report-btn" data-postId="{{ post['id'] }}" data-toggle="modal" data-target="#exampleModal"><i class="fa-solid fa-flag"></i></button>
         {% endif %}
         <button id="copy-link-btn"><i class="fa-solid fa-link"></i></button>
         <a href="{{ url_for('get_remix', post_id=post.id ) }}">
             <button id="remix-btn" ><i class="fa-solid fa-file-pen"></i></button>
         </a> 
-        
-    </div>
-    
-    <div id="report-popup" class="comment-box">
-        <div class="popup-content">
-            <label for="comment">Reason for Report:</label><br>
-            <textarea id="report-text" placeholder="Enter your report"></textarea><br>
-            <button id="submit-btn" data-postId="{{ post['id'] }}">Submit</button>
-            <button id="cancel-btn">Cancel</button>
-        </div>
     </div>
 
     <form id="comment-form" data-postId="{{ post['id'] }}">
-        <label for="comment">Leave a Comment:</label><br>
-        <textarea id="comment-box" placeholder="Enter your comment"></textarea><br>
-        <input type="submit" value="Submit!">
+        <br>
+        <h5><label for="comment">Leave a Comment:</label><br></h5>
+        <textarea id="comment-box" placeholder="Enter your comment" class="form-control"></textarea><br>
+        <input type="submit" class = "btn btn-secondary" value="Submit!">
     </form>
     {% if loggedInUser.username == post.username %} 
         {% for report in post.reportsList %}
@@ -99,6 +90,11 @@
             <div class="comment-content">
                 <p><strong>{{ comment.username }}</strong>: {{ comment.content }}</p>
             </div>
+            {% if loggedInUser.username == comment.username or loggedInUser.username == post.username %} 
+            <button data-commentId="{{ comment.id }}" type="button" class="btn btn-danger" id="deleteCommentBtn" data-toggle="modal" data-target="#confirmCommentDeleteModal">
+                <i class="fa-solid fa-trash"></i> 
+            </button>
+            {% endif %} 
         </div>
     </div>
     
@@ -128,4 +124,48 @@
 </div>
 
 
+<!-- Comment Confirmation Modal -->
+<div class="modal fade" id="confirmCommentDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmCommentDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="display: flex; justify-content: space-between;">
+                <h5 class="modal-title" id="confirmCommentDeleteModalLabel">Confirmation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this comment?             
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <button  type="button" class="btn btn-danger" id="confirmCommentDeleteBtn">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          
+          <button type="button" class="close btn-outline-dark" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h5 class="modal-title text-left" id="exampleModalLabel">    Reason for Report:</h5>
+        </div>
+        <div class="modal-body">
+            <div class="popup-content">
+                <textarea id="report-text" class="form-control" placeholder="Enter your report"></textarea><br>
+            </div>  
+        </div>
+        <div class="modal-footer">
+            <button id="cancel-btn" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button id="submit-btn" class="btn btn-primary" data-postId="{{ post['id'] }}">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
