@@ -19,7 +19,7 @@
     <div class="px-4 pt-0 pb-4 cover" style="background-image: url('/static/images/users/{{ user.gccEmail }}/banner.png')"> 
         <div class="media align-items-end profile-head"> 
             <div class="profile mr-2">
-                <img id="pfp" src="/static/images/users/{{user.gccEmail}}/pfp.png" alt="..." width="130" class="rounded mb-2 img-thumbnail">
+                <img id="pfp" data-user="{{ user['gccEmail'] }}" src="/static/images/users/{{user.gccEmail}}/pfp.png" alt="..." width="130" class="rounded mb-2 img-thumbnail">
             </div>
             <div class="media-body mb-4"> 
                 <div class="d-flex justify-content-between align-items-center">
