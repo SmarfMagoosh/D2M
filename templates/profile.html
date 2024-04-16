@@ -18,7 +18,7 @@
     <div class="bg-white shadow rounded overflow-hidden"> 
     <div class="px-4 pt-0 pb-4 cover" style="background-image: url('/static/images/users/{{ user.gccEmail }}/banner.png')"> 
         <div class="media align-items-end profile-head"> 
-            <div class="profile mr-2">
+            <div class="profile mr-2" style="margin-bottom: 4.5rem;">
                 <img id="pfp" data-user="{{ user['gccEmail'] }}" src="/static/images/users/{{user.gccEmail}}/pfp.png" alt="..." width="130" class="rounded mb-2 img-thumbnail">
             </div>
             <div class="media-body mb-4"> 
@@ -57,8 +57,9 @@
                     </div>
                     {% endif %}
                 </div>
-
-                <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block" style="--bs-btn-border-color: var(--bs-tertiary-bg);">Edit profile</a>
+                {% if loggedInUser and loggedInUser.gccEmail == user.gccEmail %}
+                <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block" style="--bs-btn-border-color: var(--bs-tertiary-bg); width: 7rem;">Edit profile</a>
+                {% endif %}
 
                 <p class="small mb-4"></p>
             </div> 
