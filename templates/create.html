@@ -41,6 +41,22 @@
 
 {% block content %}
 <input id = "fileInput" type = "file" accept = "image/*">
+<div id = "save-display" class = "modal fade" tabindex="-1" role="dialog">
+    <div class = "modal-dialog" role="document">
+        <div class="modal-content">
+            <div class = "modal-header">
+                <h3 class="modal-title">Save your meme</h3>
+                <button id = "save-display-dismiss" class="btn btn-secondary">
+                    Close
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="assembled-meme" src = "" alt="it appears we're having issues getting that meme ready...">
+                <a id = "meme-download"><i class = "fa-solid fa-download"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
 <div id = "template-list" class = "modal fade" tabindex = "-1" role = "dialog">
     <div class = "modal-dialog" role = "document">
         <div class = "modal-content">
@@ -51,15 +67,15 @@
                     data-dismiss="modal"
                     data-target="#add-image"
                     data-toggle="modal">
-                    Or Upload your own!
+                    Upload your own!
                 </button>
-                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">Close</span>
+                <button id = "close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    Close
                 </button>
             </div>
             <div class = "modal-body">
                 {% for template in templates %}
-                <div class = "card mb-3" style = "max-width: 100%; height: 5rem; cursor: pointer;">
+                <div class = "card mb-3" style = "width: auto; height: 5rem; cursor: pointer;">
                     <div class = "row no-gutters">
                         <div class = "col-md-4">
                             <img src = "{{ template }}" style = "width: 12vw; height: 5rem; border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem;">
@@ -74,8 +90,8 @@
                 {% endfor %}
             </div>
             <div class = "modal-footer">
-                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">Close</span>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    Close
                 </button>
             </div>
         </div>
@@ -86,8 +102,8 @@
         <div class = "modal-content">
             <div class = "modal-header">
                 <h3 class = "modal-title">Insert Additional Image</h3>
-                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">Close</span>
+                <button id = "upload-close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    Close
                 </button>
             </div>
             <div class = "modal-body">
@@ -209,7 +225,11 @@
         </ul>
     </div>
     <div class = "d-flex justify-content-end">
+        {% if loggedInUser %}
         <button id = "post-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>
+        {% else %}
+        <button id = "save-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Save</button>
+        {%endif %}
         <a href = "/home/" class = "btn btn-danger" style="width: 6vw;">Cancel</a>
     </div>
 </div>

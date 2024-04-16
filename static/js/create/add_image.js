@@ -1,14 +1,21 @@
 function add_image_init(create) {
     create.images = []
+    $("#switch-btn").click(e => window.switching = true)
     $("#addImgBtn").click(e => $("#fileInput").click())
     $("#uploadImgBtn").hide()
+    $("#upload-close").click(e => {
+        if (window.switching) {
+            window.switching = false;
+            $(e.target).click()
+        }
+    })
 }
 
 function display_image(create, input) {
     const img = new Image()
     const canv = $("#added-image-preview")[0]
     const ctx = canv.getContext("2d")
-    const baseImg = create.baseImg === undefined ? true : false
+    const baseImg = window.switching
     const MAX_FILE_SIZE = baseImg ? 4_000_000 : 2_000_000
     if (FileReader && input.files && input.files.length) {
         const base = input.files[0]
@@ -69,7 +76,7 @@ const upload_extra_image = (create, img, display) => function(e) {
 
     $("#meme")
         .append($(`<div class = 'image-container' style = 'top: 0'></div>`).append(box));
-    $(".meme-component").each(enable_meme_component("image"))
+    $(".meme-component").each(enable_meme_component)
     $("#uploadImgBtn").hide()
     reset_canvas()
 
