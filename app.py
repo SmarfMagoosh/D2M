@@ -29,7 +29,7 @@ python -m flask run --host=0.0.0.0 --port=80
 """
 
 # for easy changing of defaults
-DEFAULT_POSTS_LOADED = 30
+DEFAULT_POSTS_LOADED = 100
 MINUTES_BETWEEN_REFRESH = 10
 
 # add the script directory to the python path
@@ -168,6 +168,18 @@ class User(db.Model) :
             "username": self.username,
             "pfp": pfp,
         }
+    
+    def profile_json(self):
+        pfp = "/static/images/users/default-pfp.png"
+        banner = "/static/images/users/default-banner.png"
+        if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
+            pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
+            banner = f"/static/images/users/{self.gccEmail}/banner.png"
+        return{
+            "username": self.username,
+            "pfp": pfp,
+            "banner": banner
+        }
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -253,6 +265,7 @@ class Post(db.Model) :
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
     numLikesD3 = db.Column(db.Integer) # [20,30) min ago
     tag = db.Column(db.String, db.ForeignKey('Tags.tag'))
+    template = db.Column(db.Boolean, default = False)
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -271,13 +284,14 @@ class Post(db.Model) :
             "backImage": self.backImage,
             "textBoxes": [t.to_json() for t in self.textBoxes],
             "extraImages": [i.to_json() for i in self.extraImage],
-            "draw": self.draw
+            "draw": self.draw,
+            "teamplte": self.template
         }
     def render_json(self):
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": f"thumbnails/{self.postID}.png",
+            "thumbnail": f"/images/thumbnails/{self.postID}.png",
             "username": self.username,
             "numLikes": self.numLikes,
         }
@@ -287,6 +301,7 @@ class Post(db.Model) :
             "title": self.title,
             "username": self.username,
             "backImage": self.backImage,
+            "thumbnail": f"images/thumbnails/{self.postID}.png",
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],# see above TODO 
@@ -297,12 +312,16 @@ class Post(db.Model) :
             "spacing": self.spacing,
             "title": self.title,
             "backImage": self.backImage,
+            "thumbnail": f"images/thumbnails/{self.postID}.png",
             "username": self.username,
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
             "reportsList": [r.to_json() for r in self.reportsList],
+            "tag": self.tag
         }
+    def thumbnail(self):
+        return f"images/thumbnails/{self.postID}.png"
     def search_result_json(self):
         return{
             "id": self.postID,
@@ -392,7 +411,7 @@ with app.app_context():
     tag3 = Tag(tag="tag3")
     tag4 = Tag(tag="tag4")
     tag5 = Tag(tag="jeff")
-    tag6 = Tag(tag="tag6")
+    tag6 = Tag(tag="bottom-text")
     
     u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
@@ -479,7 +498,12 @@ def get_post(post_id):
     # get the post with the id and pass the relevant data along to the frontend
     # just plain get might work better, not sure, but it would return None with a failure rather than aborting
     post = Post.query.get_or_404(post_id)
-    return render_template("post.html", post=post.to_json(), loggedInUser = load_user(session.get('customIdToken')))
+    user = load_user(session.get('customIdToken'))
+    has_liked = Like.query.filter_by(postID=post_id, userEmail= user.gccEmail, positive=True).first() is not None
+    has_disliked = Like.query.filter_by(postID=post_id, userEmail=user.gccEmail, positive=False).first() is not None
+    has_bookmarked = Bookmark.query.filter_by(postID=post_id, userEmail=user.gccEmail).first() is not None
+
+    return render_template("post.html", post=post.to_json(), loggedInUser = user, has_liked=has_liked,has_disliked = has_disliked, has_bookmarked=has_bookmarked)
 
 @app.get("/profile/")
 @app.get("/profile/<string:username>/")
@@ -506,7 +530,7 @@ def get_profile(username = None):
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
         return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
         
-@app.get('/getCurrentSettings')
+@app.get('/getCurrentSettings/')
 def getCurrentSettings():
     email = request.args.get('email')
     return redirect(url_for('get_settings')+ "email=" + str(email))
@@ -524,7 +548,7 @@ def get_settings():
             pfp = url_for('static', filename=f'images/users/{user.gccEmail}/pfp.png')
         if os.path.isfile(f"static/images/users/{user.gccEmail}/banner.png"):
             banner = url_for('static', filename=f'images/users/{user.gccEmail}/banner.png')
-        return render_template('settings.html', user=user, pfp=pfp, banner=banner)
+        return render_template('settings.html', user=user, pfp=pfp, banner=banner, loggedInUser=user)
     else:
         redirect(url_for("get_home"))
         return {'loggedout': True}
@@ -596,7 +620,7 @@ def load_user(userEmail):
     else:
         return None
     
-@app.get('/genResetToken')
+@app.get('/genResetToken/')
 def genResetToken():
     name = request.args.get('username')
     self = User.query.filter_by(username=name).first()
@@ -623,7 +647,7 @@ def genResetToken():
     else:
         return jsonify({'token': False})
 
-@app.get('/validate_reset_token')
+@app.get('/validate_reset_token/')
 def validate_reset_token():
     token = request.args.get('token')
 
@@ -641,7 +665,7 @@ def validate_reset_token():
 
     return jsonify({'valid': True})
 
-@app.get('/sendResetEmail')
+@app.get('/sendResetEmail/')
 def sendResetEmail():
     username = request.args.get('username')
     token = request.args.get('token')
@@ -652,9 +676,34 @@ def sendResetEmail():
     user.passwordResetToken = token
     db.session.commit()
 
+
+    # Email configuration
+    primary = sendEmailTo(user.gccEmail)
+    
+    if(user.backupEmail and user.backupEmail != ""):
+        if(primary and sendEmailTo(user.backupEmail)):
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False})
+
+    if(primary):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False})
+
+def sendEmailTo(email: str): 
+    username = request.args.get('username')
+    token = request.args.get('token')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return False
+
+    user.passwordResetToken = token
+    db.session.commit()
+
     # Email configuration
     sender_email = 'svc_CS_D2M@gcc.edu'
-    receiver_email = user.gccEmail
+    receiver_email = email
     password = 'Laq86937'
 
     # Create message container
@@ -681,25 +730,25 @@ def sendResetEmail():
 
     # Connect to SMTP server
     try:
-        with smtplib.SMTP('webmail.gcc.edu', 587, timeout=10) as server:
-            server = smtplib.SMTP('webmail.gcc.edu', 587)
+        with smtplib.SMTP('smtp.office365.com', 587, timeout=10) as server:
+            server = smtplib.SMTP('smtp.office365.com', 587)
             server.starttls()  # Secure the connection
             server.login(sender_email, password)
             text = msg.as_string()
             server.sendmail(sender_email, receiver_email, text)
             server.quit()  # Quit the SMTP server   
-            return jsonify({'success': True})
+            return True
     except smtplib.SMTPException as e:
         print("SMTP error:", e)
-        return jsonify({'success': False, 'error': str(e)})
+        return False
     except TimeoutError:
         print("SMTP connection timed out")
-        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
+        return False
     except Exception as e:
         print("Other error:", e)
-        return jsonify({'success': False, 'error': str(e)})
+        return False
 
-@app.get('/setPassword')
+@app.get('/setPassword/')
 def setPassword():
     token = request.args.get('token')
     newPassword = request.args.get('password')
@@ -814,10 +863,19 @@ def delete_entry(id):
         return 'Entry deleted successfully'
     else:
         return 'Entry not deleted'
-
-
-# def create_comment(commentData, u2Email):
-#     with app.app_context():
+    
+# Route to delete a comment by its ID
+@app.route('/deleteComment/<int:id>', methods=['GET', 'POST'])
+def delete_comment(id):
+    user = load_user(session.get('customIdToken'))
+    comment = Comment.query.get(id)
+    if user and comment and user.username == comment.username:
+        entry_to_delete = Comment.query.get_or_404(id)
+        db.session.delete(entry_to_delete)
+        db.session.commit()
+        return 'Entry deleted successfully'
+    else:
+        return 'Entry not deleted'
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect) 
@@ -830,8 +888,19 @@ def post_meme():
         if body["template"]:
             imgData = body["imgData"]
         else:
-            imgData = body["imgData"][body["imgData"].index(',')+1:] # TODO: save templates correctly
+            imgData = body["imgData"][body["imgData"].index(',')+1:]
+            print("base64 length: ", len(body["imgData"]))
         thumbnailData = body["thumbnailData"][body["thumbnailData"].index(',')+1:]
+        
+        tag = None
+        tags = Tag.query.filter_by(tag=body["tag"]).all()
+        if len(tags) >= 1:
+            tag = tags[0]
+        else:
+            tag = Tag(tag = body["tag"])
+            db.session.add(tag)
+            db.session.commit()
+        
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -839,13 +908,15 @@ def post_meme():
             backImage = "", #updated later
             timePosted = datetime.now(),
             username = body["user"],
-            draw = body["drawing"]
+            draw = body["drawing"],
+            template = body["template"],
+            tag = body["tag"]
         )
         db.session.add(post_inst)
         db.session.commit()
         
         if not body["template"]:
-            post_inst.backImage = f"{post_inst.postID}.png"
+            post_inst.backImage = f"/static/images/{post_inst.postID}.png"
             with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
                 file.write(base64.b64decode(imgData))
         else:
@@ -880,10 +951,6 @@ def post_meme():
                 src = image["src"]
             )
             db.session.add(image_inst)
-            db.session.commit()
-            with open(f"./static/images/extra_images/{image_inst.extraImageId}.png", "wb") as file:
-                file.write(base64.b64decode(imgData))
-            image_inst.image = f"{image_inst.extraImageId}.png"
             db.session.commit()
         user = load_user(session.get("customIdToken"))
         for f in user.followerList:
@@ -929,16 +996,13 @@ def add_user():
     return jsonify(returnVal)
 
 # Define a route to handle AJAX requests for creating comments
-@app.post('/create_comment')
+@app.post('/create_comment/')
 def create_comment_route():
     # Get the data from the AJAX request
     data = request.json
     content = data.get('content')
     username = data.get('username')
     postID = data.get('postID')
-    
-    post = Post.query.filter_by(postID=postID).first()
-    create_notification(post.owner.gccEmail, f"{username} has commented on {post.title}.", post.title, f"/post/{post.postID}")
 
     new_comment = Comment(
         content=content,
@@ -949,13 +1013,18 @@ def create_comment_route():
     )
     db.session.add(new_comment)
     db.session.commit()
+    
+    post = Post.query.get(postID)
+    poster = post.owner.gccEmail
+    create_notification(poster, f"{username} commented on {post.title}", f"{post.title}", f"/post/{postID}")
 
     # Return a response indicating success
     return {'message': 'Comment created successfully'}, 200
 
 # Define a route to handle AJAX requests for creating comments
-@app.post('/create_report')
+@app.post('/create_report/')
 def create_report_route():
+    
     # Get the data from the AJAX request
     data = request.json
     reason = data.get('reason')
@@ -975,7 +1044,7 @@ def create_report_route():
     return {'message': 'Report created successfully'}, 200
 
 # Define a route to handle AJAX requests for creating comments
-@app.post('/create_like')
+@app.post('/create_like/')
 def create_like_route():
     # Get the data from the AJAX request
     data = request.json
@@ -1017,20 +1086,20 @@ def create_like_route():
     # Return a response indicating success
     return {'message': 'Like created successfully'}, 200
 
-@app.post('/create_bookmark')
+@app.post('/create_bookmark/')
 def create_bookmark_route():
     # Get the data from the AJAX request
     data = request.json
     userEmail = data.get('userEmail')
     postID = data.get('postID')
 
-    new_like = Bookmark(
+    new_bookmark = Bookmark(
         postID=postID,
         userEmail = userEmail,
     )
-    db.session.add(new_like)
+    db.session.add(new_bookmark)
     db.session.commit()
-
+    
     # Return a response indicating success
     return {'message': 'Bookmark created successfully'}, 200
 
@@ -1215,7 +1284,7 @@ def check_user():
     else:
         return jsonify({'exists': False, 'username': ""})
     
-@app.get('/checkUsername')
+@app.get('/checkUsername/')
 def checkUsername():
     username = request.args.get('username')
 
@@ -1226,7 +1295,7 @@ def checkUsername():
     else:
         return jsonify({'exists': False, 'username': ""})
     
-@app.get('/getUsername')
+@app.get('/getUsername/')
 def getUsername():
     gccEmail = request.args.get('gccEmail')
     user = User.query.filter_by(gccEmail=gccEmail).first()
@@ -1235,7 +1304,13 @@ def getUsername():
     else:
         return ""
     
-@app.get('/getUserInfo')
+@app.route('/profile_json/<string:gccEmail>')
+def get_profile_json(gccEmail):
+    user = User.query.get_or_404(gccEmail)
+    profile_data = user.profile_json()
+    return jsonify(profile_data)
+
+@app.get('/getUserInfo/')
 def getUser():
     userEmail = session.get('customIdToken')
     if userEmail:
@@ -1247,7 +1322,7 @@ def getUser():
         
     return {'loggedIn': False}
     
-@app.get('/login')
+@app.get('/login/')
 def login():
     email = request.args.get('email')
     user = User.query.get(email)
@@ -1257,12 +1332,12 @@ def login():
     else:
         return {'success': False}
     
-@app.get('/logout')
+@app.get('/logout/')
 def logout():
     session.pop('customIdToken', None)
     return {}
     
-@app.get('/loginExisting')
+@app.get('/loginExisting/')
 def loginExisting():
     name = request.args.get('username')
     password = request.args.get('password')
@@ -1274,46 +1349,6 @@ def loginExisting():
     else:
         return jsonify({'exists': False, 'email': ""})
 
-# def create_comment(commentData, user_name):
-#     with app.app_context():
-       
-#         db.session.add(follow)
-#         db.session.commit()
-
-# @app.post("/API/like/")
-# def get_followed_posts():
-#     data = request.get_json()
-#     id = data.get('postID')
-#     post = Post.query.get_or_404(id)
-#     pos = data.get('positive')
-#     if pos:
-#         post.numLikes = post.numLikes+1
-#     else:
-#         post.numLikes = post.numLikes-1
-#     create_like(data.get('userEmail'), id, pos)
-#     return "", 200
-
-# @app.post("/API/comment/")
-# def get_followed_posts():
-#     data = request.get_json()
-#     id = data.get('postID')
-#     post = Post.query.get_or_404(id)
-#     pos = data.get('positive')
-#     if pos:
-#         post.numLikes = post.numLikes+1
-#     else:
-#         post.numLikes = post.numLikes-1
-#     create_like(data.get('userEmail'), id, pos)
-#     return "", 200
-
-# from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
-# with minor adjustments to make it work here
-# no longer necessary, but the code is helpful to have around
-# @app.get('/API/thumbnail/<int:postID>')
-# def get_thumbnail(postID):
-#     post = Post.query.get_or_404(postID)
-#     img = create_thumbnail(f"static/images/{post.backImage}")
-#     return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
