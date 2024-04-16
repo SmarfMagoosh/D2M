@@ -46,13 +46,11 @@ async function insert_notification(notification){
 
     const closeBtn = nDiv.querySelector(".btn-close");
     closeBtn.addEventListener("click", () => { 
-        fetch("/API/delete_notification", {
-            "method":"POST",
-            "headers": {"Content-Type": "application/json"},
-            "body": JSON.stringify({
-                "id" : notification.id
-            })
-        });
+        fetch(
+            `/API/delete_notification/${notification.id}`,
+            {method:"GET"}
+        )
+        nDiv.remove();
     });
     
 
