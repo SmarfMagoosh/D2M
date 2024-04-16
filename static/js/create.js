@@ -119,11 +119,18 @@ function post(create) {
             alert("You must upload an image before posting!")
         } else {
             // assemble meme
+            const textBoxes = []
+            $(".text-box").each((i, elem) => {
+                if ($(elem).attr("id") !== undefined) {
+                    const box = new MemeTextBox(create, elem)
+                    textBoxes.push(box)
+                }
+            })
             meme = {
                 template: create.template,
                 spacing: $("#spacer").val(),
                 space_arrangement: $("#space-arrangement").val(),
-                textboxes: $.map($(".text-box"), elem => new MemeTextBox(create, elem)),
+                textboxes: textBoxes,
                 images: create.images.map(img => new ExtraImage(create, img)),
                 imgData: create.baseImg.src,
                 title: $("#post-title").val(),
@@ -267,6 +274,7 @@ function init_remix(create) {
         draw.onload = () => create.drawing.ctx.drawImage(draw, 0, 0)
         
         // add extra images
+        console.log(create.remix)
         create.remix.extraImages.forEach((img, i) => {
             const cont = $(`<div class = 'image-container' style = "top: 0"></div>`)
             const em = new Image()
@@ -274,7 +282,7 @@ function init_remix(create) {
             const box = $(`<div class = 'meme-component' style = 'top: 0' id = "image-${i}"></div>`)
             cont.append(box)
             $("#meme").append(cont)
-            enable_meme_component("image")(0, box)
+            enable_meme_component(0, box)
             box.append($(em).width("100%").height("100$"))
             box.width(img.width).height(img.height).css("left", img.left).css("top", img.top)
         })
@@ -304,6 +312,7 @@ class MemeTextBox {
             has_shadow: $(`#shadow-${this.id}`).prop("checked"),
             is_capitalized: $(`#capitals-${this.id}`).prop("checked"),
         }
+        console.log()
     }
 }
 

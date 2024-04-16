@@ -893,9 +893,10 @@ def post_meme():
         db.session.commit()
         
         for tb in body["textboxes"]:
+            print(tb["settings"])
             tb_inst = TextBox(
                 postID = post_inst.postID,
-                alignment = tb["settings"]["alignment"],
+                alignment = tb["settings"].get("alignment", "center"), # TODO: fix
                 fontSize = int(tb["settings"]["font_size"]),
                 font = tb["settings"]["font"],
                 shadowColor = tb["settings"]["font_shadow"],
