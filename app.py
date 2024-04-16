@@ -4,6 +4,7 @@ import os, sys, json
 import string
 import secrets
 import re
+import traceback 
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -29,7 +30,7 @@ python -m flask run --host=0.0.0.0 --port=80
 """
 
 # for easy changing of defaults
-DEFAULT_POSTS_LOADED = 30
+DEFAULT_POSTS_LOADED = 100
 MINUTES_BETWEEN_REFRESH = 10
 
 # add the script directory to the python path
@@ -301,7 +302,8 @@ class Post(db.Model) :
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
             "textBoxes": [t.to_json() for t in self.textBoxes],
-            "reportsList": [r.to_json() for r in self.reportsList]
+            "reportsList": [r.to_json() for r in self.reportsList],
+            "tag": self.tag
         }
     def thumbnail(self):
         return f"images/thumbnails/{self.postID}.png"
@@ -393,8 +395,8 @@ with app.app_context():
     tag2 = Tag(tag="tag2")
     tag3 = Tag(tag="tag3")
     tag4 = Tag(tag="tag4")
-    tag5 = Tag(tag="tag5")
-    tag6 = Tag(tag="tag6")
+    tag5 = Tag(tag="jeff")
+    tag6 = Tag(tag="bottom-text")
     
     u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
@@ -877,6 +879,16 @@ def post_meme():
             imgData = body["imgData"][22:]
             print("base64 length: ", len(body["imgData"]))
         thumbnailData = body["thumbnailData"][22:]
+        
+        tag = None
+        tags = Tag.query.filter_by(tag=body["tag"]).all()
+        if len(tags) >= 1:
+            tag = tags[0]
+        else:
+            tag = Tag(tag = body["tag"])
+            db.session.add(tag)
+            db.session.commit()
+        
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -885,7 +897,8 @@ def post_meme():
             timePosted = datetime.now(),
             username = body["user"],
             draw = body["drawing"],
-            template = body["template"]
+            template = body["template"],
+            tag = body["tag"]
         )
         db.session.add(post_inst)
         db.session.commit()

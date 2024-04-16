@@ -195,8 +195,18 @@
     <div>
         <button id = "new-box-btn" class = "btn btn-dark">Add Text Area</button>
     </div>
-    <div>
-        <textarea placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
+    <div class="dropdown-center input-group my-3">
+        <input type="text" placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
+        <button id="c-tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="margin: unset; border-top-right-radius: var(--bs-border-radius);border-bottom-right-radius: var(--bs-border-radius);">no tag</button>
+        <ul class="dropdown-menu px-3" style="width: 20rem;">
+            <li>
+                <input type="text" id="cTagInput" placeholder="Enter tag..." class="form-control">
+            </li>
+            <li class="dropdown-divider"></li>
+            <div id="newTaglist">
+                <button class="btn badge mb-1 c-tag-badge" id="create-tag-template" style="margin-left: unset;" hidden>template</button>
+            </div>
+        </ul>
     </div>
     <div class = "d-flex justify-content-end">
         <button id = "post-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>

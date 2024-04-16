@@ -51,6 +51,47 @@ $("document").ready(() => {
             init_remix(create);
         }
     }, 125);
+
+    create.colors = ["primary", /*"secondary",*/ "success", "warning", "info"/*, "danger"*/];
+    create.tagTemplate = $("#create-tag-template");
+    create.tagDropdownBtn = $("#c-tag-dropdown-btn");
+    create.tagSearchBar = $("#cTagInput");
+
+    cInsertTag(create, "no tag", "secondary");
+    fetch(`/API/taglist/`)
+        .then(validateJSON)
+        .then(data => {
+                for (const tag of data) {
+                    cInsertTag(create, `#${tag}`, getCColor(create, tag));
+                }
+            }
+        );
+    
+    const tagList = document.getElementsByClassName("c-tag-badge");
+    create.tagSearchBar.on('input', event => {
+        const query = event.target.value.toLowerCase();
+        create.tagDropdownBtn[0].innerText = query==="" ? "no tag" : `#${query}`;
+
+        const classList = create.tagDropdownBtn.attr("class").split(' ')
+        for (let i=0; i<classList.length; i++){
+            if(classList[i].includes("btn-")) {
+                create.tagDropdownBtn.removeClass(classList[i]).addClass(`btn-${query==="" ? "secondary" : getCColor(create, query)}`)
+                break;
+            }
+        }
+
+        let count = 0;
+        for (let i = 0; i < tagList.length; i++) {
+            if(tagList[i].innerText === "template") continue;
+            if(tagList[i].innerText === "no tag" && query !== ""){
+                tagList[i].hidden = true;
+                continue;
+            }
+            const tagContainsQuery = tagList[i].innerText.toLowerCase().includes(query);
+            tagList[i].hidden = !tagContainsQuery || count >= maxtagsvisible;
+            if(tagContainsQuery) count++;
+        }
+    });
 })
 
 function adjust_spacing(create, value, position) {
@@ -88,7 +129,8 @@ function post(create) {
                 imgData: create.baseImg.src,
                 title: $("#post-title").val(),
                 user: create.user.username,
-                drawing: create.drawing.canv.toDataURL()
+                drawing: create.drawing.canv.toDataURL(),
+                tag: create.tagDropdownBtn.text() === "no tag" ? "" : create.tagDropdownBtn.text().substring(1)
             }
 
             // take screenshot for saving
@@ -250,4 +292,47 @@ class ExtraImage {
         this.width = img.width()
         this.height = img.height()
     }
+}
+
+function getCColor(create, text){
+    return create.colors[Math.abs(text.hashCode())%create.colors.length]
+}
+
+//Thanks to esmiralha on stackoverflow for this
+//https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+String.prototype.hashCode = function() {
+    var hash = 0,
+      i, chr;
+    if (this.length === 0) return hash;
+    for (i = 0; i < this.length; i++) {
+      chr = this.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  }
+
+function cInsertTag(create, tag, color){
+    const new_tag = create.tagTemplate.clone();
+
+    new_tag.text(tag).addClass(`btn-${color}`).attr("hidden", false)
+    // new_tag.innerText = tag;
+    // new_tag.classList.add(`btn-${color}`);
+    // new_tag.hidden = false;
+
+    new_tag.click(() => {
+        const classList = create.tagDropdownBtn.attr("class").split(' ')
+        for (let i=0; i<classList.length; i++){
+            if(classList[i].includes("btn-")) {
+                create.tagDropdownBtn.removeClass(classList[i]).addClass(`btn-${color}`)
+                break;
+            }
+        }
+        create.tagDropdownBtn[0].innerText = tag;
+        create.tagSearchBar[0].value = tag==="no tag" ? "" : tag.substring(1);
+    });
+
+    new_tag.attr("id", "");
+
+    create.tagTemplate.parent().append(new_tag);
 }

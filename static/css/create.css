@@ -135,14 +135,13 @@ input::-moz-color-swatch {
 
 textarea.form-control, #post-title {
     display: inline-block;
-    width: 20rem;
     min-height: 1rem;
     height: 2.5rem;
     resize: none;
 }
 
 #post-title {
-    width: 25.5rem;
+    width: 14rem;
 }
 
 #right-content > div {
@@ -271,3 +270,7 @@ textarea.form-control, #post-title {
     border-radius: 0.25rem;
     border: solid black 1px;
 }
+
+.c-tag-badge {
+    margin-right: .4em;
+  }

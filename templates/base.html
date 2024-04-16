@@ -37,7 +37,7 @@
         <div class="collapse navbar-collapse d-flex justify-content-center" id="navbarSupportedContent">
             <div class="form-inline my-2 my-lg-0">
             <div class="form-control mr-sm-2 d-flex justify-content-around input-group">
-                <input type="text" id="searchInput" placeholder="Search by name" class="form-control" style="width: 35vw; border-top-right-radius: 0%;  border-bottom-right-radius: 0%;">
+                <input type="text" id="searchInput" placeholder="Search by name" class="form-control" style="width: 35vw; border-top-right-radius: 0%;  border-bottom-right-radius: 0%;" maxlength="30">
                 <button id="tag-dropdown-btn" class="btn btn-secondary rounded dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="margin-right: 1rem; border-top-left-radius: 0% !important;  border-bottom-left-radius: 0% !important; width: 10vw;">no tag</button>
                 <ul class="dropdown-menu px-3" style="width: 20rem; right:0; left:auto;">
                     <li>
@@ -91,7 +91,7 @@
                     <div id="notif-template" hidden>
                         <li class="dropdown-divider"></li>
                         <li class="container row">
-                            <a class="col-10 notif-link" href="#">
+                            <a class="col-10 notif-link" href="#" style="text-decoration: unset;">
                                 <p style="text-wrap: wrap;">
                                     <span class="notif-time"></span><br>
                                     <strong><span class="notif-title"></span></strong><br>
