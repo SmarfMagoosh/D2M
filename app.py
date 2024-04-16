@@ -87,14 +87,6 @@ def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
     img = Image.open(BytesIO(base64.b64decode(image_data)))
     img.thumbnail(dimensions)
     img.save(filepath)
-    
-#from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
-#potentially necessary in future, but not at the moment
-# def serve_pil_image(pil_img):
-#     img_io = BytesIO()
-#     pil_img.save(img_io, 'PNG', quality=70)
-#     img_io.seek(0)
-#     return send_file(img_io, mimetype='image/jpeg')
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
@@ -408,8 +400,6 @@ with app.app_context():
                  backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
     post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
                  backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    # follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
-    # follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
     like11 = Like(user=u1, postID=10)
     like12 = Like(user=u1, postID=30)
     like13 = Like(user=u1, postID=20, positive=False)
@@ -860,10 +850,6 @@ def delete_comment(id):
         return 'Entry deleted successfully'
     else:
         return 'Entry not deleted'
-
-
-# def create_comment(commentData, u2Email):
-#     with app.app_context():
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # POST ROUTES (return a redirect) 
@@ -1330,22 +1316,6 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
-
-
-
-
-
-
-
-
-# from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
-# with minor adjustments to make it work here
-# no longer necessary, but the code is helpful to have around
-# @app.get('/API/thumbnail/<int:postID>')
-# def get_thumbnail(postID):
-#     post = Post.query.get_or_404(postID)
-#     img = create_thumbnail(f"static/images/{post.backImage}")
-#     return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN

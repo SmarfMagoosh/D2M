@@ -51,7 +51,7 @@ $("document").ready(() => {
         }
     }, 50);
 
-    create.colors = ["primary", /*"secondary",*/ "success", "warning", "info"/*, "danger"*/];
+    create.colors = ["primary", "success", "warning", "info"];
     create.tagTemplate = $("#create-tag-template");
     create.tagDropdownBtn = $("#c-tag-dropdown-btn");
     create.tagSearchBar = $("#cTagInput");
@@ -339,9 +339,6 @@ function cInsertTag(create, tag, color){
     const new_tag = create.tagTemplate.clone();
 
     new_tag.text(tag).addClass(`btn-${color}`).attr("hidden", false)
-    // new_tag.innerText = tag;
-    // new_tag.classList.add(`btn-${color}`);
-    // new_tag.hidden = false;
 
     new_tag.click(() => {
         const classList = create.tagDropdownBtn.attr("class").split(' ')

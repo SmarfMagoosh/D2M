@@ -55,11 +55,6 @@ const loginRequest = {
  * between applications by providing a "login_hint" property.
  */
 
-// const silentRequest = {
-//   scopes: ["openid", "profile"],
-//   loginHint: "example@domain.net"
-// };
-
 // exporting config object for jest
 if (typeof exports !== 'undefined') {
   module.exports = {
@@ -76,7 +71,6 @@ function logout() {
         // Choose which account to logout from by passing a username.
         const logoutRequest = {
             account: myMSALObj.getAllAccounts()[0]//getAccountByUsername(username),
-            // postLogoutRedirectUri: 'http://localhost', // Simply remove this line if you would like navigate to index page after logout.
         };
 
         myMSALObj.logoutRedirect(logoutRequest);

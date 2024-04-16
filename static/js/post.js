@@ -130,11 +130,6 @@ document.getElementById('copy-link-btn').addEventListener('click', () => {
     
     // Alert the copied text
     alert("Copied the text: " + copyText);
-    // Provide some visual feedback to the user
-    // copyButton.textContent = 'URL Copied!';
-    // setTimeout(() => {
-    //     copyButton.textContent = 'Copy Link';
-    // }, 2000); // Reset button text after 2 seconds
 });
 
 
@@ -146,8 +141,6 @@ document.getElementById('comment-form').addEventListener('submit', function(even
     // Get the value of the comment input field
     const commentValue = document.getElementById('comment-box').value;
   
-
-
     // You also need to retrieve the username and postID from somewhere
     var postId = this.getAttribute('data-postId');
 
