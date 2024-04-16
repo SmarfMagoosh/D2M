@@ -68,10 +68,10 @@
     </form>
     {% if loggedInUser.username == post.username %} 
         {% for report in post.reportsList %}
-        <div class="comment-box">
+        <div class="alert alert-warning comment-box">
             <div class="comment">
                 <div class="comment-content">
-                    <p>your post was reported: {{ report.reason }}</p>
+                    <p>your post was reported: {{ report.reawqson }}</p>
                 </div>
             </div>
         </div>
