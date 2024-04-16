@@ -4,15 +4,15 @@ function textbox_init(create) {
 
 function add_text_box(create) {
     const textbox = $(`
-    <div>
+    <div style = "display: flex; justify-content: left">
         <textarea placeholder = "Enter Text" id = "text-${create.textboxes.length}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
         <div class = "dropdown">
-            <button class = "btn settings-menu" type = "button"><i class = "fa fa-gear"></i></button>
+            <button class = "btn btn-dark settings-menu" type = "button"><i class = "fa-solid fa-gear"></i></button>
             <div class = "dropdown-menu">${settings_menu(create.textboxes.length)}</div>
         </div>
-        <button class = "btn trash-btn"><i class = "fa fa-trash"></i></button>
+        <button class = "btn btn-danger trash-btn"><i class = "fa-solid fa-trash"></i></button>
     </div>`)
-    $("#right-content").children()[0].append(textbox[0]);
+    $("#text-tool-bar").append(textbox[0]);
 
     $("#meme").append($(`
         <div class = 'text-box-container' style = 'top: 0'>
@@ -23,7 +23,7 @@ function add_text_box(create) {
     $(".meme-component").each(enable_meme_component("text-box"))
 
     $(".text-box").on("input", e => $(`#meme-${e.target.id}`).text(e.target.value))
-    $(".trash-btn").click(e => delete_box(e.target))
+    $(".trash-btn").click(e => delete_box(create, e.target))
 
     textbox.children(".dropdown").children(".settings-menu").click(e => {
         if (e.target.tagName == "I") {
@@ -55,11 +55,12 @@ function add_text_box(create) {
     })
 }
 
-function delete_box(btn) {
+function delete_box(create, btn) {
     btn = $(btn).closest("div")
     const id = btn[0].children[0].id
     btn.remove()
     $(`#meme-${id}`).parents(".text-box-container").remove()
+    delete create.textboxes[id.split("-")[1]]
 }
 
 function settings_menu(x) {
