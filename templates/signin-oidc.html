@@ -1,141 +1,223 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!DOCTYPE html>
+<!-- Coding by CodingLab | www.codinglabweb.com-->
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title> Responsive Login and Signup Form </title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <!-- CSS -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/signin-oidc.css') }}">
 
-    <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
+        <!-- Boxicons CSS -->
+        <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styling.css') }}">
-    <!-- <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script> -->
-    <script src = "{{url_for('static', filename='js/notification.js')}}"></script>
-    <script src = "{{url_for('static', filename='js/colorMode.js')}}"></script>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/logo.png') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+        <!-- msal.min.js can be used in the place of msal.js; included msal.js to make debug easy -->
+        <script id="load-msal" src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.js"
+        integrity="sha384-BO4qQ2RTxj2akCJc7t6IdU9aRg6do4LGIkVVa01Hm33jxM+v2G+4q+vZjmOCywYq"
+        crossorigin="anonymous"></script>
 
-    <title>Hello, world!</title>
-  </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">       
-        <a class="navbar-brand" href="{{ url_for('get_home') }}" style = "margin-left: .75rem;">
-            <img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:3rem;height:3rem;border-radius: 10px;">
-        </a>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styling.css') }}">
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/logo.png') }}">
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-      
-        <div class="collapse navbar-collapse d-flex justify-content-center" id="navbarSupportedContent">
-          
-          
-          <!--  -->
-            <div class="form-inline my-2 my-lg-0">
-            <div class="form-control mr-sm-2 d-flex justify-content-around input-group dropdown-center">
-                <input type="text" id="searchInput" placeholder="Search by name" class="form-control" style="border-top-right-radius: 0%;  border-bottom-right-radius: 0%;">
-                <button id="tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style = "margin-right: 1rem; border-top-left-radius: 0%;  border-bottom-left-radius: 0%;">no tag</button>
-                <ul class="dropdown-menu px-3" style="width: 20rem;">
-                    <li>
-                        <input type="text" id="tagInput" placeholder="Enter tag..." class="form-control"> <!-- style="padding-left: .25rem;"-->
-                    </li>
-                    <li class="dropdown-divider"></li>
-                    <div id="taglist">
-                        <button class="btn badge mb-1 tag-badge" hidden>template</button>
+                        
+    </head>
+    <body>
+        <nav class="navbar" style="position: fixed">
+            <a href="{{ url_for('get_home') }}"><img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:3rem;height:3rem; border-radius: 10px;"></a>
+        </nav>
+        <section id="formMode" class="container forms">
+            <div class="form login">
+                <div class="form-content">
+                    <header>Login</header>
+                    <form action="#">
+                        <div class="field input-field">
+                            <input id="existingUsername" type="username" placeholder="Username" class="input">
+                        </div>
+
+                        <div class="field input-field">
+                            <input id="existingPassword" type="password" placeholder="Password" class="password">
+                            <i class='bx bx-hide eye-icon'></i>
+                        </div>
+
+                        <style>
+                            #incorrectCredentials {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="incorrectCredentials">*The username/password is incorrect*</b>
+                        </div>
+
+                        <div class="form-link">
+                            <a id="resetLink" href="#" class="reseter forgot-pass">Forgot password?</a>
+                        </div>
+
+                        <div class="field button-field">
+                            <button type = "button" onclick="loginExisting()">Login</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <div>Don't have an account?</div>
+                        <a onclick="signIn()" class="signup-link">Sign up with your school email</a>
                     </div>
-                </ul>
+                </div>
 
-                <button id="searchButton" onclick="search()"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </div>
-            <div class="container" id="searchResultsDropdown" hidden>
-                <h3 id="no-results" hidden>No Results</h3>
-                <div class="col-6" id="postResultTemplate" hidden>
-                    <a href="/post/10" class="resultslink rounded">
-                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
-                        <span><strong>post name</strong></span>
-                        by
-                        <span><em>username</em></span>
+                <div class="line"></div>
+
+                <div class="media-options">
+                    <a href="#" onclick="signIn()" class="field google">
+                        <!-- <img src="../static/images/google.png" alt="" class="google-img"> -->
+                        <span style = "cursor: pointer;">Login with School Email</span>
                     </a>
                 </div>
-                <div id="userResultTemplate" hidden>
-                    <a href="/profile/u1" class="resultslink rounded">
-                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
-                        <span><strong>username</strong></span>
-                    </a>
-                </div>
-                <div class="col-8 px-2">
-                    <h4 id="search-posts-label">Posts</h4>
-                    <div class="row" id="search-post-results">
-                        
-                    </div>
-                </div>
-                <div class="col-4 px-2" id="user-results">
-                    <h4 id="search-users-label">Users</h4>
-                    <div id="search-user-results">
-                        
+
+            </div>
+
+            <!-- Signup Form -->
+
+            <div class="form signup">
+                <div class="form-content">
+                    <header>Signup</header>
+                    <form action="#">
+                        <!-- <div class="field input-field">
+                            <input type="email" placeholder="GCC Email" class="input">
+                        </div>
+
+                        <div class="field input-field">
+                            <input type="username" placeholder="Username" class="input">
+                        </div>
+
+                        <div class="field input-field">
+                            <input type="password" placeholder="Password" class="password">
+                            <i class='bx bx-hide eye-icon'></i>
+                        </div> -->
+
+                        <div class="field button-field">
+                            <button type = "button" onclick="signIn()">Signup</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
                     </div>
                 </div>
             </div>
 
-            <div class="dropdown" id="notifications" hidden>
-                <a href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                    <img src="{{url_for('static', filename='images/bell.png')}}" alt="Notification Bell" style="width:2rem;height:2rem;">
-                </a>
-                <span class="badge text-bg-warning rounded-pill translate-middle" id="notif-count" hidden>0</span>
-                <ul class="dropdown-menu" style="width: 20vw;" id="notif-dropdown">
-                    <li style="text-align: center;">You have <strong id="notif-count-dd">0</strong> pending notifications</li>
-                    <div id="notif-template" hidden>
-                        <li class="dropdown-divider"></li>
-                        <li class="container row">
-                            <a class="col-10 notif-link" href="#">
-                                <p style="text-wrap: wrap;">
-                                    <span class="notif-time"></span><br>
-                                    <strong><span class="notif-title"></span></strong><br>
-                                    <span class="notif-text"></span>
-                                </p>
-                            </a>
-                            <!-- TODO: remove hidden attribute -->
-                            <span class="col-2"><button type="button" class="btn-close" hidden></button></span>
-                        </li>
-                    </div>
-                </ul>
-            </div>
-          </div>
-        </div>
+            <!-- Show registration -->
 
-        <div class="btn-group" style="margin-right: 1rem; height: 3rem;">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                {% if loggedInUser %}
-                loggedInUser.username
-                {% else %}
-                <i class="fa-regular fa-user"></i>
-                {% endif %}
-            </button>
-            <div class="dropdown-menu" style="right:0; left:auto;">
-                {% if loggedInUser %}
-                <a class="dropdown-item" id="profileButton" href="{{ url_for('get_profile') }}">Profile</a>
-                <a class="dropdown-item" id="settingsButton" onclick="goToSettings()">Settings</a>
-                <a class="dropdown-item" id="logoutButton" onclick="signOut()">Logout</a>
-                {% else %}
-                <a class="dropdown-item" id="loginButton" href="{{ url_for('get_login') }}">Login</a>
-                {% endif %}
-                <li class="dropdown-divider"></li>
-                <div class="dropdown-item form-check form-switch">
-                    <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
-                    <input class="form-check-input pull-right" type="checkbox" role="switch" id="darkModeToggle" onclick="dmToggleFlip()">
+            <div class="form register">
+                <div class="form-content">
+                    <header>Register</header>
+                    <form action="#" id = "registerForm">
+                        <!-- <div class="field input-field">
+                            <input type="email" placeholder="GCC Email" class="input">
+                        </div> -->
+
+                        <div class="field input-field">
+                            <input id="newUsernameField" type="text" placeholder="Username" class="input">
+                        </div>
+
+                        <div class="field input-field">
+                            <input id="newPasswordField" type="password" placeholder="Password" class="password">
+                            <i class='bx bx-hide eye-icon'></i>
+                        </div>
+
+                        <style>
+                            #invalidUsername {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidUsername">*This username has already been taken*</b>
+                        </div>
+
+                        <style>
+                            #invalidPassword {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="invalidPassword">*The password must be at least 8 characters*</b>
+                        </div>
+
+                        <div class="field button-field">
+                            <!-- <button onclick="signIn()">Register</button> -->
+                            <button type = "button" onclick="register()">Register</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <span>Already have an account? <a onclick="signOut()" class="link login-link">Login</a></span>
+                    </div>
                 </div>
             </div>
-        </div>
-      </nav>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-  </body>
+            <!-- Password reset -->
+
+            <div class="form reset">
+                <div class="form-content">
+                    <header>Reset Password</header>
+                    <form action="#" id = "resetForm">
+                        <div class="field input-field">
+                            <input id="resetUsername" type="text" placeholder="Username" class="input">
+                        </div>
+
+                        <style>
+                            #usernameDNE {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="alert">
+                            <b id="usernameDNE">*This username does not exist*</b>
+                        </div>
+
+                        <style>
+                            #emailSuccess {
+                                display: none;
+                                color:green;
+                                font-size: 12px;
+                                text-align: center;
+                                margin-top: 10px;
+                            }
+                        </style>
+
+                        <div>
+                            <b id="emailSuccess">*Email successfully sent. Follow the link in the email to reset your password.*</b>
+                        </div>
+
+                        <style>
+                            #emailError {
+                                display: none;
+                            }
+                        </style>
+        
+                        <div id="emailError" class="alert">
+                            <span>*There was an issue sending the email*</span>
+                        </div>
+
+                        <div class="field button-field">
+                            <button type="button" onclick="sendEmail()">Send Email</button>
+                        </div>
+                    </form>
+
+                    <div class="form-link">
+                        <a id="resetLink" href="#" class="reseter reset-link">Login/Signin</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- JavaScript -->
+        <!-- importing app scripts (load order is important) -->
+        <script type="text/javascript" src="{{ url_for('static', filename='js/authConfig.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/authRedirect.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/signin-oidc.js') }}"></script>
+    </body>
 </html>
