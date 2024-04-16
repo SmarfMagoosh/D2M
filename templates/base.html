@@ -115,7 +115,7 @@
                 <i class="fa-regular fa-user"></i>
                 {% endif %}
             </button>
-            <div class="dropdown-menu" style="right:0; left:auto;">
+            <div class="dropdown-menu" style="right:0; left:auto; width: 10rem; padding-left: 0rem; padding-right: 0rem; padding-top: 0.5rem; padding-bottom: 0.5rem; margin-bottom: 0rem;">
                 {% if loggedInUser %}
                 <a class="dropdown-item" id="profileButton" href="{{ url_for('get_profile') }}">Profile</a>
                 <a class="dropdown-item" id="settingsButton" onclick="goToSettings()">Settings</a>
