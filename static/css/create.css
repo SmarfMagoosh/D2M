@@ -1,16 +1,11 @@
 /* main page structure */
 
-body {
-    background-color: dimgray;
-}
-
 #main-content-div {
     margin: 2rem auto;
+    padding: 1rem;
     width: 90%;
-    display: grid;
-    grid-template-columns: 50% 50%;
-    background-color: white;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
+    min-height: 40vh;
 }
 
 #left-content, #right-content {
@@ -27,11 +22,11 @@ body {
 #meme-img {
     display: block;
     margin: auto;
-    border: solid black 1px;
+    background-color: white;
 }
 
 #meme {
-    margin: 1rem auto;
+    margin: 0 auto 1rem;
     display: block;
     position: relative;
 }
@@ -84,16 +79,14 @@ body {
 /* left tool bar */
 
 #image-tool-bar {
-    margin: auto;
-    margin-top: 1rem;
+    margin: 0rem auto 1rem;
     width: calc(100% - 12px);
     display: flex;
     justify-content: space-between;
 }
 
-#image-tool-bar > span {
-    display: flex;
-    width: fit-content;
+#image-tool-bar > button {
+    width: 33%;
 }
 
 #image-tools > div {
@@ -126,29 +119,38 @@ input::-moz-color-swatch {
 
 /* right tools */
 #text-tool-bar > div {
-    margin: 0.5rem;
-    padding: 0.5rem;
-    height: 3.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#right-content > div {
+    width: 25.5rem;
+}
+
+.settings-menu, .trash-btn, .img-trash-btn {
+    margin-left: 0.25rem;
+    height: 2.5rem;
+    width: 2.5rem;
 }
 
 textarea.form-control, #post-title {
     display: inline-block;
-    width: 60%;
+    width: 20rem;
     min-height: 1rem;
     height: 2.5rem;
     resize: none;
 }
 
 #post-title {
-    margin: 1rem;
+    width: 25.5rem;
+}
+
+#right-content > div {
+    margin-bottom: 1rem;
 }
 
 .btn {
     padding: 0.5;
-}
-
-#right-content div .btn-secondary, #right-content div .btn-primary {
-    margin-left: 1rem;
 }
 
 .dropdown-menu {
@@ -195,6 +197,10 @@ textarea.form-control, #post-title {
 
 .modal-footer button {
     display: flex;
+}
+
+#new-box-btn {
+    width: 25.5rem;
 }
 
 /* UI RESIZABLE CHANGESE */
