@@ -945,6 +945,7 @@ def add_user():
 @app.post('/create_comment/')
 def create_comment_route():
     # Get the data from the AJAX request
+    print("hi!")
     data = request.json
     content = data.get('content')
     username = data.get('username')
