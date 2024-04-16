@@ -647,9 +647,34 @@ def sendResetEmail():
     user.passwordResetToken = token
     db.session.commit()
 
+
+    # Email configuration
+    primary = sendEmailTo(user.gccEmail)
+    
+    if(user.backupEmail and user.backupEmail != ""):
+        if(primary and sendEmailTo(user.backupEmail)):
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False})
+
+    if(primary):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False})
+
+def sendEmailTo(email: str): 
+    username = request.args.get('username')
+    token = request.args.get('token')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return False
+
+    user.passwordResetToken = token
+    db.session.commit()
+
     # Email configuration
     sender_email = 'svc_CS_D2M@gcc.edu'
-    receiver_email = user.gccEmail
+    receiver_email = email
     password = 'Laq86937'
 
     # Create message container
@@ -683,16 +708,16 @@ def sendResetEmail():
             text = msg.as_string()
             server.sendmail(sender_email, receiver_email, text)
             server.quit()  # Quit the SMTP server   
-            return jsonify({'success': True})
+            return True
     except smtplib.SMTPException as e:
         print("SMTP error:", e)
-        return jsonify({'success': False, 'error': str(e)})
+        return False
     except TimeoutError:
         print("SMTP connection timed out")
-        return jsonify({'success': False, 'error': 'SMTP connection timed out'})
+        return False
     except Exception as e:
         print("Other error:", e)
-        return jsonify({'success': False, 'error': str(e)})
+        return False
 
 @app.get('/setPassword/')
 def setPassword():
