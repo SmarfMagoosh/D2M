@@ -1,11 +1,9 @@
 $("document").ready(() => {
-    if (localStorage.theme == "dark") {
-        $(".btn-dark").removeClass("btn-dark").addClass("btn-light")
-    } else {
-        $(".btn-light").removeClass("btn-light").addClass("btn-dark")
-    }
+    window.switching = false;
 
     const create = {}
+    create.btns = localStorage.theme === "dark" ? "light" : "dark"
+    $(".btn-dark").removeClass("btn-dark").addClass(`btn-${create.btns}`)
     fetch("/getUserInfo/")
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => create.user = data)
@@ -14,12 +12,11 @@ $("document").ready(() => {
     add_image_init(create)
     $("#main-content-div").toggleClass("row shadow")
 
-    window.get_create = () => create
     $("#image-tool-bar").hide()
     $(".image-tool").click(e => {
         const btns = $(".image-tool")
         btns.removeClass().addClass(["image-tool", "btn", "btn-secondary"])
-        $(e.target).removeClass("btn-secondary").addClass("btn-dark")
+        $(e.target).removeClass("btn-secondary").addClass(`btn-${create.btns}`)
     })
     $("#new-box-btn").attr("disabled", true)
     $("#spacing-tools").hide()
@@ -32,8 +29,10 @@ $("document").ready(() => {
     create.ctx = create.canvas.getContext("2d")
 
     $("#post-btn").click(post(create))
+    $("#save-btn").click(save(create))
     $("#new-box-btn").click(e => add_text_box(create))
     $(".image-tool").click(e => update_tools(e.target.innerText))
+    $("#save-display-dismiss").click(e => $("#save-display").modal("toggle"))
 
     $("#switch-btn").hide()
     $("#fileInput").change(e => display_image(create, e.target))
@@ -41,7 +40,7 @@ $("document").ready(() => {
         const img = new Image()
         img.src = $(e.target).closest(".card").find("img").attr("src").replace("/template-thumbnails", "/meme-templates")
         img.onload = upload_base_image(create, img, null)
-        $(".close").click()
+        $("#close").click()
     })
 
     setTimeout(() => {
@@ -50,7 +49,7 @@ $("document").ready(() => {
             delete window.remix;
             init_remix(create);
         }
-    }, 125);
+    }, 100);
 })
 
 function adjust_spacing(create, value, position) {
@@ -71,12 +70,12 @@ function adjust_spacing(create, value, position) {
 
 function post(create) {
     return function(e) {
-        if ($("#post-title").val() == "") {
+        if (create.user === undefined) {
+            alert("You must be signed in to post a meme!")
+        } else if ($("#post-title").val() == "") {
             alert("You must give your post a title before posting!")
-            // TODO: fix
         } else if (create.baseImg == undefined) {
             alert("You must upload an image before posting!")
-            // TODO: fix
         } else {
             // assemble meme
             meme = {
@@ -114,6 +113,29 @@ function post(create) {
         } 
 }
 
+function save(create) {
+    return function(e) {
+        if (create.baseImg == undefined) {
+            alert("You must upload an image before posting!")
+        } else {
+            // take screenshot for saving
+            $(".meme-component").css("border", "none")
+            $("#meme-img").css("border", "none")
+            html2canvas($("#meme")[0], {useCORS: true, allowTaint: true}).then(display_save)
+        }
+    } 
+}
+
+function display_save(canvas) {
+    $("#save-display").modal('toggle')
+    const a = $("#meme-download")
+    const img = $("#assembled-meme").width("100%")
+    const src = canvas.toDataURL("image/png")
+    a.attr("href", src.replace("image/png", "image/octet-stream"))
+        .attr("download", "your-meme.png")
+    img.attr("src", src)
+}
+
 function update_tools(tool_bar) {
     $("#image-tools").children().hide()
     if (tool_bar == "Adjust Spacing") {
@@ -122,9 +144,11 @@ function update_tools(tool_bar) {
         $(".meme-component").each(enable_meme_component)
     } else if (tool_bar == "Draw") {
         $("#drawing-tools").show()
-        $(".image-container").each(enable_meme_component("image"))
-        $("text-box-container").each(enable_meme_component("text-box"))
+        $(".meme-component").each(disable_meme_component)
         bring_to_front($("#drawing"))
+    } else {
+        $(".text-box-container").each((i, elem) => bring_to_front($(elem)))
+        $(".meme-component").each(enable_meme_component)
     }
 }
 
@@ -134,22 +158,21 @@ function bring_to_front(elem) {
     p.append(elem)
 }
 
-function enable_meme_component(type) {
-    return (i, elem) => {
-        try {
-            $(elem).resizable("option", "disabled")
-        } catch (error) {
-            $(elem)
-                .draggable({containment: "parent"})
-                .resizable({containment: "parent", handles: "all"})
-                .mouseover(e => bring_to_front($(e.target).parents(`.${type}-container`)))
-        }
+function enable_meme_component(i, elem) {
+    const type = $(elem).parent().hasClass("image-container") ? "image" : "text-box"
+    try {
+        $(elem).resizable("option", "disabled")
+    } catch (error) {
+        $(elem)
+            .draggable({containment: "parent"})
+            .resizable({containment: "parent", handles: "all"})
+            .mouseover(e => bring_to_front($(e.target).parents(`.${type}-container`)))
     }
 }
 
 function disable_meme_component(i, elem) {
     try {
-        $(elem).off("click").resizable("destroy").draggable("destroy")
+        $(elem).off("mouseover").resizable("destroy").draggable("destroy")
     } catch (error) {}
 }
 

@@ -7,7 +7,7 @@ function add_text_box(create) {
     <div style = "display: flex; justify-content: left">
         <textarea placeholder = "Enter Text" id = "text-${create.textboxes.length}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
         <div class = "dropdown">
-            <button class = "btn btn-dark settings-menu" type = "button"><i class = "fa-solid fa-gear"></i></button>
+            <button class = "btn btn-${create.btns} settings-menu" type = "button"><i class = "fa-solid fa-gear"></i></button>
             <div class = "dropdown-menu">${settings_menu(create.textboxes.length)}</div>
         </div>
         <button class = "btn btn-danger trash-btn"><i class = "fa-solid fa-trash"></i></button>
@@ -20,7 +20,7 @@ function add_text_box(create) {
                 <div class = 'meme-text' id = 'meme-text-${create.textboxes.length}'></div>
             </div>
         </div>`))
-    $(".meme-component").each(enable_meme_component("text-box"))
+    $(".meme-component").each(enable_meme_component)
 
     $(".text-box").on("input", e => $(`#meme-${e.target.id}`).text(e.target.value))
     $(".trash-btn").click(e => delete_box(create, e.target))
