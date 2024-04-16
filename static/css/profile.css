@@ -9,8 +9,8 @@
 }
 
 body {
-    background: #a34e4e;
-    background: #fffcfc;
+    /* background: #a34e4e;
+    background: #fffcfc; */
     min-height: 100vh;
     overflow-x:hidden;
 }
