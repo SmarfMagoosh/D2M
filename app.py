@@ -155,6 +155,18 @@ class User(db.Model) :
             "username": self.username,
             "pfp": pfp,
         }
+    
+    def profile_json(self):
+        pfp = "/static/images/users/default-pfp.png"
+        banner = "/static/images/users/default-banner.png"
+        if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
+            pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
+            banner = f"/static/images/users/{self.gccEmail}/banner.png"
+        return{
+            "username": self.username,
+            "pfp": pfp,
+            "banner": banner
+        }
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -958,6 +970,7 @@ def add_user():
 @app.post('/create_comment/')
 def create_comment_route():
     # Get the data from the AJAX request
+    print("hi!")
     data = request.json
     content = data.get('content')
     username = data.get('username')
@@ -1260,6 +1273,12 @@ def getUsername():
     else:
         return ""
     
+@app.route('/profile_json/<string:gccEmail>')
+def get_profile_json(gccEmail):
+    user = User.query.get_or_404(gccEmail)
+    profile_data = user.profile_json()
+    return jsonify(profile_data)
+
 @app.get('/getUserInfo/')
 def getUser():
     userEmail = session.get('customIdToken')

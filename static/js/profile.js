@@ -5,6 +5,24 @@
  there is a logged in user the json contains basic user info.
  ~Bryce */
 
+ document.addEventListener('DOMContentLoaded', function() {
+  checkImages();
+});
+
+
+ function checkImages() {
+  gccEmail = document.getElementById('pfp').getAttribute('data-user')
+  fetch(`/profile_json/${gccEmail}`)
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('pfp').src = data.pfp; 
+      document.querySelector('.cover').style.backgroundImage = `url('${data.banner}')`;
+    })
+    .catch(error => {
+      console.error('Error fetching profile data:', error);
+    });
+}
+
 
 
 function openTab(evt, tabName) {

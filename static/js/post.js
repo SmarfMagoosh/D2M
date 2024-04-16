@@ -83,10 +83,6 @@ $("#submit-btn").click(e => {
     const user = getCurrentUser();  // Assuming you have a function to get the current user
     const postID = $(e.target).attr('data-postId');
 
-    if (reportValue == None){
-        return;
-    }
-
     getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
         var currentUsernameEmail = result.gccEmail;
@@ -138,9 +134,7 @@ document.getElementById('comment-form').addEventListener('submit', function(even
 
     // Get the value of the comment input field
     const commentValue = document.getElementById('comment-box').value;
-    if (commentValue == None){
-        return;
-    }
+  
 
 
     // You also need to retrieve the username and postID from somewhere
@@ -157,12 +151,12 @@ document.getElementById('comment-form').addEventListener('submit', function(even
             }
             // Handle successful response
             // Optionally, update the UI to reflect the new like
+            (window.location.reload());
         })
         .catch(error => {
             // Handle fetch errors
             console.error('Fetch error:', error);
         });
-        window.location.reload();
     })
 });
 var likeButton = document.getElementById('like-btn');
