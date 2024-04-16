@@ -8,12 +8,12 @@
     <!--JQuery and JQuery UI-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
 
     <!--Modal libraries-->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>   <!-- this version of boostrap is also hurting Bryce's navbar -->
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
@@ -28,7 +28,15 @@
     <script src = "../static/js/create/drawing.js"></script>
     <script src = "../static/js/create/add_image.js"></script>
     <script src = "../static/js/create.js"></script>
-    <link rel = "stylesheet" href = "../static/css/create.css">
+    <link rel = "stylesheet" href = "../static/css/create.css"> <!-- this hurts Bryce's navbar dropdown :'( ' -->
+
+    {% if post %}
+    <script>
+        $(document).ready(() => {
+            window.remix = JSON.parse(`{{post}}`.replaceAll('&#39;', '"').replaceAll("True", "true").replaceAll("False", "false"))
+        })
+    </script>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -50,22 +58,20 @@
                 </button>
             </div>
             <div class = "modal-body">
-                <table>
-                    <colgroup>
-                        <col style = "width: 30%;">
-                        <col style = "width: 70%">
-                    </colgroup>
-                    <tbody>
-                        {% for template in templates %}
-                        <tr>
-                            <td type="button" class="btn btn-light modal-button" data-dismiss="modal" aria-label="Close">
-                                <img src = "{{ template }}" class = "template-card">
-                            </td>
-                            <td>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                {% for template in templates %}
+                <div class = "card mb-3" style = "max-width: 100%; height: 5rem; cursor: pointer;">
+                    <div class = "row no-gutters">
+                        <div class = "col-md-4">
+                            <img src = "{{ template }}" style = "width: 12vw; height: 5rem; border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem;">
+                        </div>
+                        <div class = "col-md-8">
+                            <div class = "card-body">
+                                <p>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             <div class = "modal-footer">
                 <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
@@ -107,24 +113,15 @@
         </div>
     </div>
 </div>
-<div id = "left-content">
+<div id = "left-content" class = "col-lg">
     <div id = "image-tool-bar">
-        <span>
-            <button class = "btn btn-dark image-tool">Adjust Spacing</button>
-        </span>
-        <span>
-            <button 
-                class = "btn btn-dark image-tool"
-                data-toggle = "modal"
-                data-target = "#add-image"
-                id = "image-modal-button">Add Image</button>
-        </span>
-        <span>
-            <button class = "btn btn-dark image-tool">Draw</button>
-        </span>
-        <!-- <span>
-            <button class = "btn btn-dark image-tool">Filters</button>
-        </span> -->
+        <button class = "btn btn-secondary image-tool">Adjust Spacing</button>
+        <button 
+            class = "btn btn-secondary image-tool"
+            data-toggle = "modal"
+            data-target = "#add-image"
+            id = "image-modal-button">Add Image</button>
+        <button class = "btn btn-secondary image-tool">Draw</button>
     </div>
     <div id = "image-tools">
         <div id = "drawing-tools">
@@ -143,23 +140,23 @@
         <div id = "spacing-tools">
             <div>
                 <select id = "space-arrangement" class = "form-control">
-                    <option value = "1.0">Top</option>
+                    <option value = "0.99">Top</option>
                     <option value = "0.5">Top and Bottom</option>
                     <option value = "0">Bottom</option>
                 </select>
             </div>
             <div>
                 <select id = "spacer" class = "form-control">
-                    <option value = ".0">0% </option>
-                    <option value = ".1">10%</option>
-                    <option value = ".2">20%</option>
-                    <option value = ".3">30%</option>
-                    <option value = ".4">40%</option>
-                    <option value = ".5">50%</option>
-                    <option value = ".6">60%</option>
-                    <option value = ".7">70%</option>
-                    <option value = ".8">80%</option>
-                    <option value = ".9">90%</option>
+                    <option value = "0.0">0% </option>
+                    <option value = "0.1">10%</option>
+                    <option value = "0.2">20%</option>
+                    <option value = "0.3">30%</option>
+                    <option value = "0.4">40%</option>
+                    <option value = "0.5">50%</option>
+                    <option value = "0.6">60%</option>
+                    <option value = "0.7">70%</option>
+                    <option value = "0.8">80%</option>
+                    <option value = "0.9">90%</option>
                 </select>
             </div>
         </div>
@@ -179,29 +176,31 @@
                 Or use a template!
             </button>
         </div>
-        <canvas id = "meme-img" height = "0"></canvas>
+        <canvas id = "meme-img" height = "0" class = "border"></canvas>
         <canvas id = "drawing" height = "0"></canvas>
     </div>
-    <button
-        id = "switch-btn"
-        class = "btn btn-primary" 
-        data-target="#template-list" 
-        data-toggle="modal">
-        Switch Template
-    </button>
 </div>
-<div id = "right-content">
-    <div id = "text-tool-bar">
-    </div>
+<div id = "right-content" class = "col-lg">
     <div>
-        <button id = "new-box-btn" class = "btn btn-secondary">Add Text Area</button>
+        <button
+            id = "switch-btn"
+            class = "btn btn-primary" 
+            data-target="#template-list" 
+            data-toggle="modal"
+            style="width: 100%;">
+            Switch Template
+        </button>
+    </div>
+    <div id = "text-tool-bar"></div>
+    <div>
+        <button id = "new-box-btn" class = "btn btn-dark">Add Text Area</button>
     </div>
     <div>
         <textarea placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
     </div>
-    <div>
-        <button id = "post-btn" class = "btn btn-primary">Post</button>
-        <a href = "/home/" class = "btn btn-danger">Cancel</a>
+    <div class = "d-flex justify-content-end">
+        <button id = "post-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>
+        <a href = "/home/" class = "btn btn-danger" style="width: 6vw;">Cancel</a>
     </div>
 </div>
 </div>

@@ -4,16 +4,15 @@ function textbox_init(create) {
 
 function add_text_box(create) {
     const textbox = $(`
-    <div>
+    <div style = "display: flex; justify-content: left">
         <textarea placeholder = "Enter Text" id = "text-${create.textboxes.length}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
         <div class = "dropdown">
-            <button class = "btn settings-menu" type = "button"><i class = "fa fa-gear"></i></button>
+            <button class = "btn btn-dark settings-menu" type = "button"><i class = "fa-solid fa-gear"></i></button>
             <div class = "dropdown-menu">${settings_menu(create.textboxes.length)}</div>
         </div>
-        <button class = "btn trash-btn"><i class = "fa fa-trash"></i></button>
-    </div>
-    `)
-    $("#right-content").children()[0].append(textbox[0]);
+        <button class = "btn btn-danger trash-btn"><i class = "fa-solid fa-trash"></i></button>
+    </div>`)
+    $("#text-tool-bar").append(textbox[0]);
 
     $("#meme").append($(`
         <div class = 'text-box-container' style = 'top: 0'>
@@ -24,7 +23,7 @@ function add_text_box(create) {
     $(".meme-component").each(enable_meme_component("text-box"))
 
     $(".text-box").on("input", e => $(`#meme-${e.target.id}`).text(e.target.value))
-    $(".trash-btn").click(e => delete_box(e.target))
+    $(".trash-btn").click(e => delete_box(create, e.target))
 
     textbox.children(".dropdown").children(".settings-menu").click(e => {
         if (e.target.tagName == "I") {
@@ -41,20 +40,27 @@ function add_text_box(create) {
     $(".settings-font-size").off("change").change(e => $(`#meme-text-${id(e)}`).css("font-size", `${e.target.value}px`))
     $(".settings-font").off("change").change(e => $(`#meme-text-${id(e)}`).css({"font-family": e.target.value}))
     $(".settings-font-color").off("change").change(e => $(`#meme-text-${id(e)}`).css("color", e.target.value))
-    $(".settings-font-shadow").off("change").change(e => $(`#meme-text-${id(e)}`).css("-webkit-text-stroke", `${e.target.value} 1px`))
+    $(".settings-font-shadow").off("change").change(e => $(`#meme-text-${id(e)}`).css("-webkit-text-stroke", `${e.target.value} 2px`))
     $(".settings-bold").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("bold"))
     $(".settings-italics").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("italics"))
     $(".settings-underline").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("underline"))
     $(".settings-strikethrough").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("strike"))
     $(".settings-capitals").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("all-caps"))
-    $(".settings-shadow").off("change").change(e => $(`#meme-text-${id(e)}`).toggleClass("no-shadow"))
+    $(".settings-shadow").off("change").change(e => {
+        if ($(e.target).prop("checked")) {
+            $(`#meme-text-${id(e)}`).css("-webkit-text-stroke", `${$(`#fontshadow-${id(e)}`).val()} 2px`)
+        } else {
+            $(`#meme-text-${id(e)}`).css("-webkit-text-stroke", "white 0px")
+        }
+    })
 }
 
-function delete_box(btn) {
+function delete_box(create, btn) {
     btn = $(btn).closest("div")
     const id = btn[0].children[0].id
     btn.remove()
     $(`#meme-${id}`).parents(".text-box-container").remove()
+    delete create.textboxes[id.split("-")[1]]
 }
 
 function settings_menu(x) {
@@ -128,11 +134,11 @@ function settings_menu(x) {
 </div>
 <div class = "two-items">
     <div>
-        <input type = "checkbox" id = "shadow-${x}" class = "form-check-input settings-shadow" checked>
+        <input type = "checkbox" id = "shadow-${x}" class = "form-check-input settings-shadow">
         <label for = "shadow-${x}">Shadow</label>
     </div>
     <div>
-        <input type = "checkbox" id = "capitals-${x}" class = "form-check-input settings-capitals" checked>
+        <input type = "checkbox" id = "capitals-${x}" class = "form-check-input settings-capitals">
         <label for = "capitals-${x}">All Caps</label>
     </div>
 </div>`
