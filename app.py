@@ -498,11 +498,7 @@ def get_profile(username = None):
                 following = True
             if Block.query.filter_by(user1=loggedInUser.gccEmail, user2=user.gccEmail).first():
                 blocked = True
-
-        print(loggedInUser)
-        print(user)
-        print(following)
-        print(blocked)
+                
         # Get the liked posts associated with the user
         liked_post_ids = [like.postID for like in Like.query.filter_by(userEmail=user.gccEmail).all()]
         # Get the bookmarked posts associated with the user
@@ -789,8 +785,6 @@ def unfollow():
     otherUser = load_user(otherUserEmail)
     currUser = load_user(session.get('customIdToken'))
 
-    print(currUser)
-    print(otherUser)
     if currUser and otherUser:
         # Check if user1 is already following user2
         existing_follow = Follow.query.filter_by(user1=currUser.gccEmail, user2=otherUser.gccEmail).first()
