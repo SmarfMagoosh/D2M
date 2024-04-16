@@ -129,11 +129,14 @@
                     <input type="checkbox" role="switch" id="darkModeToggle" onclick="dmToggleFlip()">
                 </div>
             </div>
-        </div>
 
-        <a href="{{ url_for('get_create') }}" class="circular-button-link">
-            <button class="circular-button">+</button>
-        </a>
+            {% if not templates %}
+            <a href="{{ url_for('get_create') }}" class="circular-button-link">
+                <button class="circular-button">+</button>
+            </a>
+            {% endif %}
+            
+        </div>
       </nav>
 
     <div id = "main-content-div">

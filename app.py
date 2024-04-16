@@ -237,6 +237,7 @@ class Post(db.Model) :
     numLikesD2 = db.Column(db.Integer) # [10,20) min ago
     numLikesD3 = db.Column(db.Integer) # [20,30) min ago
     tag = db.Column(db.String, db.ForeignKey('Tags.tag'))
+    template = db.Column(db.Boolean, default = False)
 
     # objects that use this class for a foreign key, allows access to list
     # also allows the classes that use the foreign key to use <class>.parentPost
@@ -255,7 +256,8 @@ class Post(db.Model) :
             "backImage": self.backImage,
             "textBoxes": [t.to_json() for t in self.textBoxes],
             "extraImages": [i.to_json() for i in self.extraImage],
-            "draw": self.draw
+            "draw": self.draw,
+            "teamplte": self.template
         }
     def render_json(self):
         return {
@@ -490,7 +492,7 @@ def get_profile(username = None):
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
         return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
         
-@app.get('/getCurrentSettings')
+@app.get('/getCurrentSettings/')
 def getCurrentSettings():
     email = request.args.get('email')
     return redirect(url_for('get_settings')+ "email=" + str(email))
@@ -580,7 +582,7 @@ def load_user(userEmail):
     else:
         return None
     
-@app.get('/genResetToken')
+@app.get('/genResetToken/')
 def genResetToken():
     name = request.args.get('username')
     self = User.query.filter_by(username=name).first()
@@ -607,7 +609,7 @@ def genResetToken():
     else:
         return jsonify({'token': False})
 
-@app.get('/validate_reset_token')
+@app.get('/validate_reset_token/')
 def validate_reset_token():
     token = request.args.get('token')
 
@@ -625,7 +627,7 @@ def validate_reset_token():
 
     return jsonify({'valid': True})
 
-@app.get('/sendResetEmail')
+@app.get('/sendResetEmail/')
 def sendResetEmail():
     username = request.args.get('username')
     token = request.args.get('token')
@@ -683,7 +685,7 @@ def sendResetEmail():
         print("Other error:", e)
         return jsonify({'success': False, 'error': str(e)})
 
-@app.get('/setPassword')
+@app.get('/setPassword/')
 def setPassword():
     token = request.args.get('token')
     newPassword = request.args.get('password')
@@ -813,7 +815,8 @@ def post_meme():
         if body["template"]:
             imgData = body["imgData"]
         else:
-            imgData = body["imgData"][22:] # TODO: save templates correctly
+            imgData = body["imgData"][22:]
+            print("base64 length: ", len(body["imgData"]))
         thumbnailData = body["thumbnailData"][22:]
         post_inst = Post(
             spacing = body["spacing"],
@@ -822,13 +825,14 @@ def post_meme():
             backImage = "", #updated later
             timePosted = datetime.now(),
             username = body["user"],
-            draw = body["drawing"]
+            draw = body["drawing"],
+            template = body["template"]
         )
         db.session.add(post_inst)
         db.session.commit()
         
         if not body["template"]:
-            post_inst.backImage = f"{post_inst.postID}.png"
+            post_inst.backImage = f"/static/images/{post_inst.postID}.png"
             with open(f"./static/images/{post_inst.postID}.png", "wb") as file:
                 file.write(base64.b64decode(imgData))
         else:
@@ -863,10 +867,6 @@ def post_meme():
                 src = image["src"]
             )
             db.session.add(image_inst)
-            db.session.commit()
-            with open(f"./static/images/extra_images/{image_inst.extraImageId}.png", "wb") as file:
-                file.write(base64.b64decode(imgData))
-            image_inst.image = f"{image_inst.extraImageId}.png"
             db.session.commit()
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
@@ -908,7 +908,7 @@ def add_user():
     return jsonify(returnVal)
 
 # Define a route to handle AJAX requests for creating comments
-@app.post('/create_comment')
+@app.post('/create_comment/')
 def create_comment_route():
     # Get the data from the AJAX request
     data = request.json
@@ -930,7 +930,7 @@ def create_comment_route():
     return {'message': 'Comment created successfully'}, 200
 
 # Define a route to handle AJAX requests for creating comments
-@app.post('/create_report')
+@app.post('/create_report/')
 def create_report_route():
     # Get the data from the AJAX request
     data = request.json
@@ -951,7 +951,7 @@ def create_report_route():
     return {'message': 'Report created successfully'}, 200
 
 # Define a route to handle AJAX requests for creating comments
-@app.post('/create_like')
+@app.post('/create_like/')
 def create_like_route():
     # Get the data from the AJAX request
     data = request.json
@@ -993,7 +993,7 @@ def create_like_route():
     # Return a response indicating success
     return {'message': 'Like created successfully'}, 200
 
-@app.post('/create_bookmark')
+@app.post('/create_bookmark/')
 def create_bookmark_route():
     # Get the data from the AJAX request
     data = request.json
@@ -1193,7 +1193,7 @@ def check_user():
     else:
         return jsonify({'exists': False, 'username': ""})
     
-@app.get('/checkUsername')
+@app.get('/checkUsername/')
 def checkUsername():
     username = request.args.get('username')
 
@@ -1204,7 +1204,7 @@ def checkUsername():
     else:
         return jsonify({'exists': False, 'username': ""})
     
-@app.get('/getUsername')
+@app.get('/getUsername/')
 def getUsername():
     gccEmail = request.args.get('gccEmail')
     user = User.query.filter_by(gccEmail=gccEmail).first()
@@ -1213,7 +1213,7 @@ def getUsername():
     else:
         return ""
     
-@app.get('/getUserInfo')
+@app.get('/getUserInfo/')
 def getUser():
     userEmail = session.get('customIdToken')
     if userEmail:
@@ -1225,7 +1225,7 @@ def getUser():
         
     return {'loggedIn': False}
     
-@app.get('/login')
+@app.get('/login/')
 def login():
     email = request.args.get('email')
     user = User.query.get(email)
@@ -1235,12 +1235,12 @@ def login():
     else:
         return {'success': False}
     
-@app.get('/logout')
+@app.get('/logout/')
 def logout():
     session.pop('customIdToken', None)
     return {}
     
-@app.get('/loginExisting')
+@app.get('/loginExisting/')
 def loginExisting():
     name = request.args.get('username')
     password = request.args.get('password')

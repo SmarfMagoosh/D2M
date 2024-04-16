@@ -12,6 +12,7 @@ function display_image(create, input) {
     const MAX_FILE_SIZE = baseImg ? 4_000_000 : 2_000_000
     if (FileReader && input.files && input.files.length) {
         const base = input.files[0]
+        img.id = base.name
         if (base.size < MAX_FILE_SIZE) {
             const reader = new FileReader();
             reader.onload = () => {
@@ -35,12 +36,13 @@ function display_image(create, input) {
             }
             reader.readAsDataURL(base);
         } else {
-            alert(`That file is too large! We only accept files < ${MAX_FILE_SIZE / 1_000_000}MB`)
+            alert(`That file is too large! We only accept files less than ${MAX_FILE_SIZE / 1_000_000}MB`)
         }
     }
 }
 
 const upload_base_image = (create, img, display) => function(e) {
+    console.log(img.id)
     cropBaseImage(create, img, display, $("#cropper"));
 
     $("#img-btns").hide()
@@ -71,7 +73,26 @@ const upload_extra_image = (create, img, display) => function(e) {
     $("#uploadImgBtn").hide()
     reset_canvas()
 
-    // TODO: add img bar to left hand tools so it can be deleted
+    const tool = $(`
+    <div style = "display: flex; justify-content: left;">
+        <textarea style = "width: 22.75rem" class = "form-control text-box" readonly = "true">${img.id}</textarea>
+        <button class = "btn btn-danger img-trash-btn"><i class = "fa-solid fa-trash"></i></button>
+    </div>`)
+    $("#text-tool-bar").append(tool)
+    $(".img-trash-btn").click(e => {
+        const name = $(e.target).parents("#text-tool-bar > div").children("textarea").val()
+        for (let i = 0; i < create.images.length; i++) {
+            if (create.images[i] === undefined) {
+                continue;
+            }
+            if (create.images[i].children("img").attr("id") == name) {
+                $(create.images[i]).parents(".image-container").remove()
+                $(e.target).parents("#text-tool-bar > div").remove()
+                delete create.images[i];
+                break;
+            }
+        }
+    })
 }
 
 function reset_canvas() {
@@ -145,11 +166,12 @@ function cropExtraImage(create, img, display, crop) {
     const croppedImg = new Image()
     croppedImg.src = canv[0].toDataURL();
 
+    croppedImg.id = img.id
+
     const cont = $(`<div class = 'meme-component' style = 'top: 0'></div>`);
     cont.width(canv[0].width).height(canv[0].height).append($(croppedImg))
     $(croppedImg).width("100%").height("100%")
 
     create.images.push(cont)
-
     return cont;
 }
