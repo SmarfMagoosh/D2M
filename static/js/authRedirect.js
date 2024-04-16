@@ -98,7 +98,6 @@ function register() {
         if ((data.uniqueUsername) && (data.goodPassword)) {
             fetch(`/login?email=${email}`)
             .then(response => {
-            // sessionStorage.setItem("customIdToken", email)
             window.location.href = "../home";
             })
         }

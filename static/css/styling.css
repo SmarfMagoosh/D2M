@@ -103,6 +103,8 @@
 }
 .resultslink:hover {
   background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+  text-decoration: none;
 }
 
 .resultsdiv{

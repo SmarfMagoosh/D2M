@@ -2,14 +2,18 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Assuming you have a script tag somewhere in your HTML where you can embed JavaScript
     window.post = {}
-    
-//THE REPORT BUTTON
 
-// Get references to elements
-// Get the report button and report popup elements
-const reportPopup = document.getElementById('report-popup');
-reportPopup.style.display = 'none'; 
-
+    // get correct color for the tag
+    const tag = $("#post-tag").text().substring(1);
+    var hash = 0, i, chr;
+    if (tag.length === 0) return hash;
+    for (i = 0; i < tag.length; i++) {
+      chr = tag.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    const colors = ["primary", /*"secondary",*/ "success", "warning", "info"/*, "danger"*/];
+    $("#post-tag").addClass(`badge-${colors[Math.abs(hash)%colors.length]}`)
 
 $(document).ready(function() {
     // Event listener for delete button click
@@ -46,15 +50,39 @@ $(document).ready(function() {
             console.error('Error:', error);
         });
     });
+        var commentId
+    $('#deleteCommentBtn').click(function() {
+        // Show the confirmation modal
+        $('#confirmCommentDeleteModal').modal('show');
+        commentId = this.getAttribute('data-commentId');
+    });
+
+    $('#confirmCommentDeleteBtn').click(function() {
+        // Submit the delete post form
+        const commentID = commentId;
+        console.log("Id: " + commentId)
+        fetch('/deleteComment/' + commentID, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(function(data) {
+            window.location.reload();
+        })
+        .catch(function(error) {
+            // Handle network errors or server errors
+            console.error('Error:', error);
+        });
+    });
 });
 
-$("#report-btn").click(e => {
-    reportPopup.style.display = 'block';
-});
-
-$("#cancel-btn").click(e => {
-    reportPopup.style.display = 'none';    
-});
 
 $("#submit-btn").click(e => {
     e.preventDefault();
@@ -102,11 +130,6 @@ document.getElementById('copy-link-btn').addEventListener('click', () => {
     
     // Alert the copied text
     alert("Copied the text: " + copyText);
-    // Provide some visual feedback to the user
-    // copyButton.textContent = 'URL Copied!';
-    // setTimeout(() => {
-    //     copyButton.textContent = 'Copy Link';
-    // }, 2000); // Reset button text after 2 seconds
 });
 
 
@@ -117,7 +140,7 @@ document.getElementById('comment-form').addEventListener('submit', function(even
 
     // Get the value of the comment input field
     const commentValue = document.getElementById('comment-box').value;
-
+  
     // You also need to retrieve the username and postID from somewhere
     var postId = this.getAttribute('data-postId');
 
@@ -132,18 +155,52 @@ document.getElementById('comment-form').addEventListener('submit', function(even
             }
             // Handle successful response
             // Optionally, update the UI to reflect the new like
+            (window.location.reload());
         })
         .catch(error => {
             // Handle fetch errors
             console.error('Fetch error:', error);
         });
-        window.location.reload();
     })
 });
+var likeButton = document.getElementById('like-btn');
+var dislikeButton = document.getElementById('dislike-btn');
+var bookmarkButton = document.getElementById('bookmark-btn');
+
+function toggleButtonColor(buttonId) {
+    var button = document.getElementById(buttonId);
+    
+    if (button === likeButton) {
+        if (button.style.backgroundColor !== 'red') {
+            button.style.backgroundColor = 'red';
+            dislikeButton.style.backgroundColor = '#9c9c9c';
+        } else {
+            button.style.backgroundColor = '';
+            dislikeButton.style.backgroundColor = '';
+        }
+    } else if(button === dislikeButton) {
+        if (button.style.backgroundColor !== 'red') {
+            button.style.backgroundColor = 'red';
+            likeButton.style.backgroundColor = '#9c9c9c';
+        } else {
+            button.style.backgroundColor = '';
+            likeButton.style.backgroundColor = '';
+        }
+    }
+    else{
+        if (button.style.backgroundColor !== 'red') {
+            button.style.backgroundColor = 'red';
+        } else {
+            button.style.backgroundColor = '';
+        }
+    }
+}
+
 
 
 document.getElementById('like-btn').addEventListener('click', function() {
     // Retrieve the post ID associated with the button
+    toggleButtonColor('like-btn');
     const postId = this.getAttribute('data-postId');
      getCurrentUser().then(function(result) {
         // Assuming 'attribute' is the attribute you want to grab from the result
@@ -165,6 +222,7 @@ document.getElementById('like-btn').addEventListener('click', function() {
 });
 
 document.getElementById('dislike-btn').addEventListener('click', function() {
+    toggleButtonColor('dislike-btn');
     // Retrieve the post ID associated with the button
     const postId = this.getAttribute('data-postId');
      getCurrentUser().then(function(result) {
@@ -187,6 +245,7 @@ document.getElementById('dislike-btn').addEventListener('click', function() {
 });
 
 document.getElementById('bookmark-btn').addEventListener('click', function() {
+    toggleButtonColor('bookmark-btn');
     // Retrieve the post ID associated with the button
     const postId = this.getAttribute('data-postId');
     getCurrentUser().then(function(result) {
@@ -212,7 +271,7 @@ document.getElementById('bookmark-btn').addEventListener('click', function() {
 
 
 function createBookmark(userEmail, postID) {
-    return fetch('/create_like', {
+    return fetch('/create_bookmark', {
         method: 'POST',
         body: JSON.stringify({ userEmail: userEmail, postID: postID}),
         headers: {
@@ -308,6 +367,26 @@ function createComment(content, username, postID) {
     });
 }
 
+async function toggleButtons() {
+    const currentUser = await getCurrentUser();
+    const userId = currentUser.id; // Assuming the user object has an 'id' property
+
+    const userLikedPost = likeButton.getAttribute('data-liked');
+    const userDislikedPost = dislikeButton.getAttribute('data-disliked');
+    const userBookmarkedPost = bookmarkButton.getAttribute('data-bookmark');
+
+    if (userLikedPost == true ) {
+        likeButton.style.backgroundColor = 'red';
+        dislikeButton.style.backgroundColor = '';
+    } else if (userDislikedPost == true){
+        likeButton.style.backgroundColor = '';
+        dislikeButton.style.backgroundColor = 'red';
+    }
+    if (userBookmarkedPost == true) {
+        bookmarkButton.style.backgroundColor = 'red';
+    }
+}
+
 async function getCurrentUser() {
     try {
         const response = await fetch('/getUserInfo');
@@ -328,4 +407,6 @@ async function getCurrentUser() {
         return null;
     }
 }
+
+toggleButtons();
 });

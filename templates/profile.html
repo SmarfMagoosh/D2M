@@ -16,16 +16,16 @@
     <div class=" mx-auto">
     <!-- Profile widget --> 
     <div class="bg-white shadow rounded overflow-hidden"> 
-    <div class="px-4 pt-0 pb-4 cover"> 
+    <div class="px-4 pt-0 pb-4 cover" style="background-image: url('/static/images/users/{{ user.gccEmail }}/banner.png')"> 
         <div class="media align-items-end profile-head"> 
-            <div class="profile mr-3">
-                <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80" alt="..." width="130" class="rounded mb-2 img-thumbnail">
+            <div class="profile mr-2" style="margin-bottom: 4.5rem;">
+                <img id="pfp" data-user="{{ user['gccEmail'] }}" src="/static/images/users/{{user.gccEmail}}/pfp.png" alt="..." width="130" class="rounded mb-2 img-thumbnail">
             </div>
-            <div class="media-body mb-5 text-white"> 
+            <div class="media-body mb-4"> 
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h2 class="mt-0 mb-0" id="username">{{user.username}}</h2>
-                        <h2 class="mt-1" id="email">{{user.gccEmail}}</h2>
+                        <h5 class="mt-1" id="email">({{user.gccEmail}})</h5>
                     </div>
                     {% if loggedInUser and loggedInUser.gccEmail != user.gccEmail %}
                     <div>
@@ -57,7 +57,10 @@
                     </div>
                     {% endif %}
                 </div>
-                <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block">Edit profile</a>
+                {% if loggedInUser and loggedInUser.gccEmail == user.gccEmail %}
+                <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block" style="--bs-btn-border-color: var(--bs-tertiary-bg); width: 7rem;">Edit profile</a>
+                {% endif %}
+
                 <p class="small mb-4"></p>
             </div> 
         </div>
@@ -83,48 +86,40 @@
                          </ul>  -->
                     </div> 
                     <div class="px-4 py-3"> 
-                        <h5 class="mb-0">Bio</h5> 
-                         <div class="p-4 rounded shadow-sm bg-light"> 
+                        <h5 class="mb-0" style="color: black;">Bio</h5>
+                         <div class="p-4 rounded shadow-sm" style="background-color: var(--bs-tertiary-bg);">
                              <p class="font-italic mb-0">{{user.bio}} </p> 
-                         </div> <div class="py-4 px-4"> 
-                             <div class="d-flex align-items-center justify-content-between mb-3"> 
-                                 <h5 class="mb-0">Recent photos</h5>
-                                 <a href="#" class="btn btn-link text-muted">Show all</a> 
-                             </div> 
-                        </div> 
+                         </div>
 
-                  <div class="tab">
+                  <div class="tab" style="background-color: var(--bs-secondary-bg);">
                    <button class="tablinks" onclick="openTab(event, 'Created')">Created</button>
                     <button class="tablinks" onclick="openTab(event, 'Liked')">Liked</button>
                     <button class="tablinks" onclick="openTab(event, 'Bookmarked')">Bookmarked </button>
                   </div>
                               
-                  <div id="Created" class="tabcontent">
+                  <div id="Created" class="tabcontent" style="background-color: var(--bs-secondary-bg);">
                     {% for post in user.postList  %}
                     <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                    <img src="../static/images/{{post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                    <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
                     </a>
-                    {{post.title}}
                     <br>
                    {% endfor %}
                   </div>
                               
-                  <div id="Liked" class="tabcontent">
+                  <div id="Liked" class="tabcontent" style="background-color: var(--bs-secondary-bg);">
                    {% for post in liked_posts %}
                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="../static/images/{{post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
                    </a>
-                   {{post.title}}
                    <br>
                     {% endfor %}
                   </div>
                               
-                  <div id="Bookmarked" class="tabcontent">
+                  <div id="Bookmarked" class="tabcontent" style="background-color: var(--bs-secondary-bg);">
                     {% for post in bookmarked_posts %}
                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="../static/images/{{post.render_json().thumbnail }}" alt="" width="425" class="image-link">
+                   <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
                    </a>
-                   {{post.title}}
                    <br>
                     {% endfor %}
 

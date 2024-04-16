@@ -17,10 +17,8 @@
 
   {% for post in posts %}
   <a href="{{ url_for('get_post', post_id=post.id) }}">
-    <img src="../../static/images/{{post['thumbnail']}}" alt="" width="425" class="image-link">
+    <img src="{{ url_for('static', filename=post['thumbnail']) }}" alt="" width="425" class="image-link">
   </a>
-  {{post.title}}
-
   {% endfor %}
   
   <div class="row" data-masonry="{&quot;percentPosition&quot;: true }" style="position: relative; height: 1064.66px;">

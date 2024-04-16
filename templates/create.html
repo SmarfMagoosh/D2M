@@ -8,7 +8,7 @@
     <!--JQuery and JQuery UI-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery_ui.css"/>
 
     <!--Modal libraries-->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
@@ -41,6 +41,22 @@
 
 {% block content %}
 <input id = "fileInput" type = "file" accept = "image/*">
+<div id = "save-display" class = "modal fade" tabindex="-1" role="dialog">
+    <div class = "modal-dialog" role="document">
+        <div class="modal-content">
+            <div class = "modal-header">
+                <h3 class="modal-title">Save your meme</h3>
+                <button id = "save-display-dismiss" class="btn btn-secondary">
+                    Close
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="assembled-meme" src = "" alt="it appears we're having issues getting that meme ready...">
+                <a id = "meme-download"><i class = "fa-solid fa-download"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
 <div id = "template-list" class = "modal fade" tabindex = "-1" role = "dialog">
     <div class = "modal-dialog" role = "document">
         <div class = "modal-content">
@@ -51,33 +67,31 @@
                     data-dismiss="modal"
                     data-target="#add-image"
                     data-toggle="modal">
-                    Or Upload your own!
+                    Upload your own!
                 </button>
-                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">Close</span>
+                <button id = "close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    Close
                 </button>
             </div>
             <div class = "modal-body">
-                <table>
-                    <colgroup>
-                        <col style = "width: 30%;">
-                        <col style = "width: 70%">
-                    </colgroup>
-                    <tbody>
-                        {% for template in templates %}
-                        <tr>
-                            <td type="button" class="btn btn-light modal-button" data-dismiss="modal" aria-label="Close">
-                                <img src = "{{ template }}" class = "template-card">
-                            </td>
-                            <td>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                {% for template in templates %}
+                <div class = "card mb-3" style = "width: auto; height: 5rem; cursor: pointer;">
+                    <div class = "row no-gutters">
+                        <div class = "col-md-4">
+                            <img src = "{{ template }}" style = "width: 12vw; height: 5rem; border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem;">
+                        </div>
+                        <div class = "col-md-8">
+                            <div class = "card-body">
+                                <p>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             <div class = "modal-footer">
-                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">Close</span>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    Close
                 </button>
             </div>
         </div>
@@ -88,8 +102,8 @@
         <div class = "modal-content">
             <div class = "modal-header">
                 <h3 class = "modal-title">Insert Additional Image</h3>
-                <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">Close</span>
+                <button id = "upload-close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    Close
                 </button>
             </div>
             <div class = "modal-body">
@@ -115,24 +129,15 @@
         </div>
     </div>
 </div>
-<div id = "left-content">
+<div id = "left-content" class = "col-lg">
     <div id = "image-tool-bar">
-        <span>
-            <button class = "btn btn-dark image-tool">Adjust Spacing</button>
-        </span>
-        <span>
-            <button 
-                class = "btn btn-dark image-tool"
-                data-toggle = "modal"
-                data-target = "#add-image"
-                id = "image-modal-button">Add Image</button>
-        </span>
-        <span>
-            <button class = "btn btn-dark image-tool">Draw</button>
-        </span>
-        <!-- <span>
-            <button class = "btn btn-dark image-tool">Filters</button>
-        </span> -->
+        <button class = "btn btn-secondary image-tool">Adjust Spacing</button>
+        <button 
+            class = "btn btn-secondary image-tool"
+            data-toggle = "modal"
+            data-target = "#add-image"
+            id = "image-modal-button">Add Image</button>
+        <button class = "btn btn-secondary image-tool">Draw</button>
     </div>
     <div id = "image-tools">
         <div id = "drawing-tools">
@@ -187,29 +192,45 @@
                 Or use a template!
             </button>
         </div>
-        <canvas id = "meme-img" height = "0"></canvas>
+        <canvas id = "meme-img" height = "0" class = "border"></canvas>
         <canvas id = "drawing" height = "0"></canvas>
     </div>
-    <button
-        id = "switch-btn"
-        class = "btn btn-primary" 
-        data-target="#template-list" 
-        data-toggle="modal">
-        Switch Template
-    </button>
 </div>
-<div id = "right-content">
-    <div id = "text-tool-bar">
-    </div>
+<div id = "right-content" class = "col-lg">
     <div>
-        <button id = "new-box-btn" class = "btn btn-secondary">Add Text Area</button>
+        <button
+            id = "switch-btn"
+            class = "btn btn-primary" 
+            data-target="#template-list" 
+            data-toggle="modal"
+            style="width: 100%;">
+            Switch Template
+        </button>
     </div>
+    <div id = "text-tool-bar"></div>
     <div>
-        <textarea placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
+        <button id = "new-box-btn" class = "btn btn-dark">Add Text Area</button>
     </div>
-    <div>
-        <button id = "post-btn" class = "btn btn-primary">Post</button>
-        <a href = "/home/" class = "btn btn-danger">Cancel</a>
+    <div class="dropdown-center input-group my-3">
+        <input type="text" placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
+        <button id="c-tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="margin: unset; border-top-right-radius: var(--bs-border-radius);border-bottom-right-radius: var(--bs-border-radius);">no tag</button>
+        <ul class="dropdown-menu px-3" style="width: 20rem;">
+            <li>
+                <input type="text" id="cTagInput" placeholder="Enter tag..." class="form-control">
+            </li>
+            <li class="dropdown-divider"></li>
+            <div id="newTaglist">
+                <button class="btn badge mb-1 c-tag-badge" id="create-tag-template" style="margin-left: unset;" hidden>template</button>
+            </div>
+        </ul>
+    </div>
+    <div class = "d-flex justify-content-end">
+        {% if loggedInUser %}
+        <button id = "post-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>
+        {% else %}
+        <button id = "save-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Save</button>
+        {%endif %}
+        <a href = "/home/" class = "btn btn-danger" style="width: 6vw;">Cancel</a>
     </div>
 </div>
 </div>

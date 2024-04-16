@@ -4,6 +4,7 @@ import os, sys, json
 import string
 import secrets
 import re
+import traceback 
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -29,6 +30,7 @@ python -m flask run --host=0.0.0.0 --port=80
 """
 
 # for easy changing of defaults
+DEFAULT_POSTS_LOADED = 100
 DEFAULT_POSTS_LOADED = 100
 MINUTES_BETWEEN_REFRESH = 10
 
@@ -98,22 +100,10 @@ def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
     img = Image.open(BytesIO(base64.b64decode(image_data)))
     img.thumbnail(dimensions)
     img.save(filepath)
-    
-#from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
-#potentially necessary in future, but not at the moment
-# def serve_pil_image(pil_img):
-#     img_io = BytesIO()
-#     pil_img.save(img_io, 'PNG', quality=70)
-#     img_io.seek(0)
-#     return send_file(img_io, mimetype='image/jpeg')
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-with app.app_context():
-    db.drop_all()
-    db.create_all()
 
 #define db classes and tables here
 
@@ -167,6 +157,18 @@ class User(db.Model) :
         return{
             "username": self.username,
             "pfp": pfp,
+        }
+    
+    def profile_json(self):
+        pfp = "/static/images/users/default-pfp.png"
+        banner = "/static/images/users/default-banner.png"
+        if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
+            pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
+            banner = f"/static/images/users/{self.gccEmail}/banner.png"
+        return{
+            "username": self.username,
+            "pfp": pfp,
+            "banner": banner
         }
     
     def profile_json(self):
@@ -285,7 +287,7 @@ class Post(db.Model) :
             "textBoxes": [t.to_json() for t in self.textBoxes],
             "extraImages": [i.to_json() for i in self.extraImage],
             "draw": self.draw,
-            "teamplte": self.template
+            "template": self.template
         }
     def render_json(self):
         return {
@@ -301,6 +303,7 @@ class Post(db.Model) :
             "title": self.title,
             "username": self.username,
             "backImage": self.backImage,
+            "thumbnail": f"images/thumbnails/{self.postID}.png",
             "thumbnail": f"images/thumbnails/{self.postID}.png",
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
@@ -401,46 +404,43 @@ class Comment(db.Model) :
 		}
 
 with app.app_context():
-    db.drop_all()
     db.create_all()
 
-        # Create posts  to be inserted
+    #     # Create posts  to be inserted
         
-    tag1 = Tag(tag="tag1")
-    tag2 = Tag(tag="tag2")
-    tag3 = Tag(tag="tag3")
-    tag4 = Tag(tag="tag4")
-    tag5 = Tag(tag="jeff")
-    tag6 = Tag(tag="bottom-text")
+    # tag1 = Tag(tag="tag1")
+    # tag2 = Tag(tag="tag2")
+    # tag3 = Tag(tag="tag3")
+    # tag4 = Tag(tag="tag4")
+    # tag5 = Tag(tag="jeff")
+    # tag6 = Tag(tag="bottom-text")
     
-    u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
-    u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
-    u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
+    # u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
+    # u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
+    # u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
     
-    post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
-                 backImage = "4 rules.png", owner = u2, numLikes=9, tag=tag1.tag)
-    post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
-                 backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
-    post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
-                 backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    follow12 = Follow(follower = u1, user2 = "u2@gcc.edu")
-    # follow13 = Follow(follower = u1, user2 = "u3@gcc.edu")
-    like11 = Like(user=u1, postID=10)
-    like12 = Like(user=u1, postID=30)
-    like13 = Like(user=u1, postID=20, positive=False)
-    bm11 = Bookmark(user=u1, postID=10)
-    bm12 = Bookmark(user=u1, postID=30)
-    bm13 = Bookmark(user=u1, postID=20)
-    notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM", link="#")
+    # post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
+    #              backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
+    # post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
+    #              backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
+    # post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
+    #              backImage = "Stop doing databases.png", owner = u3, numLikes=100)
+    # like11 = Like(user=u1, postID=10)
+    # like12 = Like(user=u1, postID=30)
+    # like13 = Like(user=u1, postID=20, positive=False)
+    # bm11 = Bookmark(user=u1, postID=10)
+    # bm12 = Bookmark(user=u1, postID=30)
+    # bm13 = Bookmark(user=u1, postID=20)
+    # notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
-    # Add all of these records to the session and commit changes
-    db.session.add_all((u1,u2,u3))
-    db.session.add_all((post1, post2, post3))
-    db.session.add_all((like11,like12,like13))
-    db.session.add_all((bm11,bm12,bm13))
-    db.session.add(notif)
-    db.session.add_all((tag1,tag2,tag3,tag4,tag5,tag6))
-    db.session.commit()
+    # # Add all of these records to the session and commit changes
+    # db.session.add_all((u1,u2,u3))
+    # db.session.add_all((post1, post2, post3))
+    # db.session.add_all((like11,like12,like13))
+    # db.session.add_all((bm11,bm12,bm13))
+    # db.session.add(notif)
+    # db.session.add_all((tag1,tag2,tag3,tag4,tag5,tag6))
+    # db.session.commit()
 
 # for the update to like counts every 10 minutes
 scheduler = BackgroundScheduler()
@@ -888,19 +888,8 @@ def post_meme():
         if body["template"]:
             imgData = body["imgData"]
         else:
-            imgData = body["imgData"][body["imgData"].index(',')+1:]
-            print("base64 length: ", len(body["imgData"]))
-        thumbnailData = body["thumbnailData"][body["thumbnailData"].index(',')+1:]
-        
-        tag = None
-        tags = Tag.query.filter_by(tag=body["tag"]).all()
-        if len(tags) >= 1:
-            tag = tags[0]
-        else:
-            tag = Tag(tag = body["tag"])
-            db.session.add(tag)
-            db.session.commit()
-        
+            imgData = body["imgData"][22:] # TODO: save templates correctly
+        thumbnailData = body["thumbnailData"][22:]
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -952,10 +941,10 @@ def post_meme():
             )
             db.session.add(image_inst)
             db.session.commit()
-        user = load_user(session.get("customIdToken"))
-        for f in user.followerList:
-            u = f.follower
-            create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {u.username}", f"/post/{post_inst.postID}")
+            with open(f"./static/images/extra_images/{image_inst.extraImageId}.png", "wb") as file:
+                file.write(base64.b64decode(imgData))
+            image_inst.image = f"{image_inst.extraImageId}.png"
+            db.session.commit()
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
         return {"message" : "posted successfully"}, 200
@@ -999,6 +988,7 @@ def add_user():
 @app.post('/create_comment/')
 def create_comment_route():
     # Get the data from the AJAX request
+    print("hi!")
     data = request.json
     content = data.get('content')
     username = data.get('username')
@@ -1349,6 +1339,59 @@ def loginExisting():
     else:
         return jsonify({'exists': False, 'email': ""})
 
+# def create_comment(commentData, user_name):
+#     with app.app_context():
+       
+#         db.session.add(follow)
+#         db.session.commit()
+
+# @app.post("/API/like/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
+
+
+# Testing code from thumbnail, might be useful for future tests 
+@app.get("/temp/")
+def temp():
+    return render_template("temp.html")
+@app.post("/temp/")
+def post_temp():
+    body: dict = request.json
+    thumbnailData = body["thumbnailData"][22:]
+    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
+    return render_template("temp.html")
+
+
+# @app.post("/API/comment/")
+# def get_followed_posts():
+#     data = request.get_json()
+#     id = data.get('postID')
+#     post = Post.query.get_or_404(id)
+#     pos = data.get('positive')
+#     if pos:
+#         post.numLikes = post.numLikes+1
+#     else:
+#         post.numLikes = post.numLikes-1
+#     create_like(data.get('userEmail'), id, pos)
+#     return "", 200
+
+# from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
+# with minor adjustments to make it work here
+# no longer necessary, but the code is helpful to have around
+# @app.get('/API/thumbnail/<int:postID>')
+# def get_thumbnail(postID):
+#     post = Post.query.get_or_404(postID)
+#     img = create_thumbnail(f"static/images/{post.backImage}")
+#     return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN

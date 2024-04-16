@@ -1,18 +1,22 @@
 $("document").ready(() => {
+    window.switching = false;
+
     const create = {}
-    fetch("/getUserInfo")
+    create.btns = localStorage.theme === "dark" ? "light" : "dark"
+    $(".btn-dark").removeClass("btn-dark").addClass(`btn-${create.btns}`)
+    fetch("/getUserInfo/")
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => create.user = data)
     drawing_init(create)
     textbox_init(create)
     add_image_init(create)
+    $("#main-content-div").toggleClass("row shadow")
 
-    window.get_create = () => create
     $("#image-tool-bar").hide()
     $(".image-tool").click(e => {
         const btns = $(".image-tool")
-        btns.removeClass().addClass(["image-tool", "btn", "btn-dark"])
-        $(e.target).removeClass("btn-dark").addClass("btn-secondary")
+        btns.removeClass().addClass(["image-tool", "btn", "btn-secondary"])
+        $(e.target).removeClass("btn-secondary").addClass(`btn-${create.btns}`)
     })
     $("#new-box-btn").attr("disabled", true)
     $("#spacing-tools").hide()
@@ -25,15 +29,18 @@ $("document").ready(() => {
     create.ctx = create.canvas.getContext("2d")
 
     $("#post-btn").click(post(create))
+    $("#save-btn").click(save(create))
     $("#new-box-btn").click(e => add_text_box(create))
     $(".image-tool").click(e => update_tools(e.target.innerText))
+    $("#save-display-dismiss").click(e => $("#save-display").modal("toggle"))
 
     $("#switch-btn").hide()
     $("#fileInput").change(e => display_image(create, e.target))
-    $(".template-card").click(e => {
+    $(".card").click(e => {
         const img = new Image()
-        img.src = e.target.src.replace("/template-thumbnails", "/meme-templates")
+        img.src = $(e.target).closest(".card").find("img").attr("src").replace("/template-thumbnails", "/meme-templates")
         img.onload = upload_base_image(create, img, null)
+        $("#close").click()
     })
 
     setTimeout(() => {
@@ -42,13 +49,55 @@ $("document").ready(() => {
             delete window.remix;
             init_remix(create);
         }
-    }, 125);
+    }, 50);
+
+    create.colors = ["primary", "success", "warning", "info"];
+    create.tagTemplate = $("#create-tag-template");
+    create.tagDropdownBtn = $("#c-tag-dropdown-btn");
+    create.tagSearchBar = $("#cTagInput");
+
+    cInsertTag(create, "no tag", "secondary");
+    fetch(`/API/taglist/`)
+        .then(validateJSON)
+        .then(data => {
+                for (const tag of data) {
+                    cInsertTag(create, `#${tag}`, getCColor(create, tag));
+                }
+            }
+        );
+    
+    const tagList = document.getElementsByClassName("c-tag-badge");
+    create.tagSearchBar.on('input', event => {
+        const query = event.target.value.toLowerCase();
+        create.tagDropdownBtn[0].innerText = query==="" ? "no tag" : `#${query}`;
+
+        const classList = create.tagDropdownBtn.attr("class").split(' ')
+        for (let i=0; i<classList.length; i++){
+            if(classList[i].includes("btn-")) {
+                create.tagDropdownBtn.removeClass(classList[i]).addClass(`btn-${query==="" ? "secondary" : getCColor(create, query)}`)
+                break;
+            }
+        }
+
+        let count = 0;
+        for (let i = 0; i < tagList.length; i++) {
+            if(tagList[i].innerText === "template") continue;
+            if(tagList[i].innerText === "no tag" && query !== ""){
+                tagList[i].hidden = true;
+                continue;
+            }
+            const tagContainsQuery = tagList[i].innerText.toLowerCase().includes(query);
+            tagList[i].hidden = !tagContainsQuery || count >= maxtagsvisible;
+            if(tagContainsQuery) count++;
+        }
+    });
 })
 
 function adjust_spacing(create, value, position) {
     const drawings = new Image()
     drawings.src = create.drawing.canv.toDataURL()
 
+    value = value === null ? 0 : value
     create.canvas.height = create.dimensions.height * (1 + parseFloat(value))
     create.drawing.canv.height = create.dimensions.height * (1 + parseFloat(value))
 
@@ -62,12 +111,12 @@ function adjust_spacing(create, value, position) {
 
 function post(create) {
     return function(e) {
-        if ($("#post-title").val() == "") {
+        if (create.user === undefined) {
+            alert("You must be signed in to post a meme!")
+        } else if ($("#post-title").val() == "") {
             alert("You must give your post a title before posting!")
-            // TODO: fix
         } else if (create.baseImg == undefined) {
             alert("You must upload an image before posting!")
-            // TODO: fix
         } else {
             // assemble meme
             meme = {
@@ -79,7 +128,8 @@ function post(create) {
                 imgData: create.baseImg.src,
                 title: $("#post-title").val(),
                 user: create.user.username,
-                drawing: create.drawing.canv.toDataURL()
+                drawing: create.drawing.canv.toDataURL(),
+                tag: create.tagDropdownBtn.text() === "no tag" ? "" : create.tagDropdownBtn.text().substring(1)
             }
 
             // take screenshot for saving
@@ -105,6 +155,29 @@ function post(create) {
         } 
 }
 
+function save(create) {
+    return function(e) {
+        if (create.baseImg == undefined) {
+            alert("You must upload an image before posting!")
+        } else {
+            // take screenshot for saving
+            $(".meme-component").css("border", "none")
+            $("#meme-img").css("border", "none")
+            html2canvas($("#meme")[0], {useCORS: true, allowTaint: true}).then(display_save)
+        }
+    } 
+}
+
+function display_save(canvas) {
+    $("#save-display").modal('toggle')
+    const a = $("#meme-download")
+    const img = $("#assembled-meme").width("100%")
+    const src = canvas.toDataURL("image/png")
+    a.attr("href", src.replace("image/png", "image/octet-stream"))
+        .attr("download", "your-meme.png")
+    img.attr("src", src)
+}
+
 function update_tools(tool_bar) {
     $("#image-tools").children().hide()
     if (tool_bar == "Adjust Spacing") {
@@ -113,9 +186,11 @@ function update_tools(tool_bar) {
         $(".meme-component").each(enable_meme_component)
     } else if (tool_bar == "Draw") {
         $("#drawing-tools").show()
-        $(".image-container").each(enable_meme_component("image"))
-        $("text-box-container").each(enable_meme_component("text-box"))
+        $(".meme-component").each(disable_meme_component)
         bring_to_front($("#drawing"))
+    } else {
+        $(".text-box-container").each((i, elem) => bring_to_front($(elem)))
+        $(".meme-component").each(enable_meme_component)
     }
 }
 
@@ -125,30 +200,30 @@ function bring_to_front(elem) {
     p.append(elem)
 }
 
-function enable_meme_component(type) {
-    return (i, elem) => {
-        try {
-            $(elem).resizable("option", "disabled")
-        } catch (error) {
-            $(elem)
-                .draggable({containment: "parent"})
-                .resizable({containment: "parent", handles: "all"})
-                .mouseover(e => bring_to_front($(e.target).parents(`.${type}-container`)))
-        }
+function enable_meme_component(i, elem) {
+    const type = $(elem).parent().hasClass("image-container") ? "image" : "text-box"
+    try {
+        $(elem).resizable("option", "disabled")
+    } catch (error) {
+        $(elem)
+            .draggable({containment: "parent"})
+            .resizable({containment: "parent", handles: "all"})
+            .mouseover(e => bring_to_front($(e.target).parents(`.${type}-container`)))
     }
 }
 
 function disable_meme_component(i, elem) {
     try {
-        $(elem).off("click").resizable("destroy").draggable("destroy")
+        $(elem).off("mouseover").resizable("destroy").draggable("destroy")
     } catch (error) {}
 }
 
 function init_remix(create) {
     // upload base image
     const remixed_img = new Image()
-    remixed_img.src = `${window.location.origin}/static/images/${create.remix.backImage}`
+    remixed_img.src = create.remix.backImage
     remixed_img.onload = () => {
+        console.log("uploading")
         upload_base_image(create, remixed_img, null)(null)
 
         // remove default text boxes
@@ -240,4 +315,44 @@ class ExtraImage {
         this.width = img.width()
         this.height = img.height()
     }
+}
+
+function getCColor(create, text){
+    return create.colors[Math.abs(text.hashCode())%create.colors.length]
+}
+
+//Thanks to esmiralha on stackoverflow for this
+//https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+String.prototype.hashCode = function() {
+    var hash = 0,
+      i, chr;
+    if (this.length === 0) return hash;
+    for (i = 0; i < this.length; i++) {
+      chr = this.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  }
+
+function cInsertTag(create, tag, color){
+    const new_tag = create.tagTemplate.clone();
+
+    new_tag.text(tag).addClass(`btn-${color}`).attr("hidden", false)
+
+    new_tag.click(() => {
+        const classList = create.tagDropdownBtn.attr("class").split(' ')
+        for (let i=0; i<classList.length; i++){
+            if(classList[i].includes("btn-")) {
+                create.tagDropdownBtn.removeClass(classList[i]).addClass(`btn-${color}`)
+                break;
+            }
+        }
+        create.tagDropdownBtn[0].innerText = tag;
+        create.tagSearchBar[0].value = tag==="no tag" ? "" : tag.substring(1);
+    });
+
+    new_tag.attr("id", "");
+
+    create.tagTemplate.parent().append(new_tag);
 }
