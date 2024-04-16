@@ -1,18 +1,25 @@
 $("document").ready(() => {
+    if (localStorage.theme == "dark") {
+        $(".btn-dark").removeClass("btn-dark").addClass("btn-light")
+    } else {
+        $(".btn-light").removeClass("btn-light").addClass("btn-dark")
+    }
+
     const create = {}
-    fetch("/getUserInfo")
+    fetch("/getUserInfo/")
         .then(response => response.ok ? response.json() : Promise.reject(response))
         .then(data => create.user = data)
     drawing_init(create)
     textbox_init(create)
     add_image_init(create)
+    $("#main-content-div").toggleClass("row shadow")
 
     window.get_create = () => create
     $("#image-tool-bar").hide()
     $(".image-tool").click(e => {
         const btns = $(".image-tool")
-        btns.removeClass().addClass(["image-tool", "btn", "btn-dark"])
-        $(e.target).removeClass("btn-dark").addClass("btn-secondary")
+        btns.removeClass().addClass(["image-tool", "btn", "btn-secondary"])
+        $(e.target).removeClass("btn-secondary").addClass("btn-dark")
     })
     $("#new-box-btn").attr("disabled", true)
     $("#spacing-tools").hide()
@@ -30,10 +37,11 @@ $("document").ready(() => {
 
     $("#switch-btn").hide()
     $("#fileInput").change(e => display_image(create, e.target))
-    $(".template-card").click(e => {
+    $(".card").click(e => {
         const img = new Image()
-        img.src = e.target.src.replace("/template-thumbnails", "/meme-templates")
+        img.src = $(e.target).closest(".card").find("img").attr("src").replace("/template-thumbnails", "/meme-templates")
         img.onload = upload_base_image(create, img, null)
+        $(".close").click()
     })
 
     setTimeout(() => {
@@ -49,6 +57,7 @@ function adjust_spacing(create, value, position) {
     const drawings = new Image()
     drawings.src = create.drawing.canv.toDataURL()
 
+    value = value === null ? 0 : value
     create.canvas.height = create.dimensions.height * (1 + parseFloat(value))
     create.drawing.canv.height = create.dimensions.height * (1 + parseFloat(value))
 
@@ -147,8 +156,9 @@ function disable_meme_component(i, elem) {
 function init_remix(create) {
     // upload base image
     const remixed_img = new Image()
-    remixed_img.src = `${window.location.origin}/static/images/${create.remix.backImage}`
+    remixed_img.src = create.remix.backImage
     remixed_img.onload = () => {
+        console.log("uploading")
         upload_base_image(create, remixed_img, null)(null)
 
         // remove default text boxes

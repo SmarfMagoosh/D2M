@@ -58,22 +58,20 @@
                 </button>
             </div>
             <div class = "modal-body">
-                <table>
-                    <colgroup>
-                        <col style = "width: 30%;">
-                        <col style = "width: 70%">
-                    </colgroup>
-                    <tbody>
-                        {% for template in templates %}
-                        <tr>
-                            <td type="button" class="btn btn-light modal-button" data-dismiss="modal" aria-label="Close">
-                                <img src = "{{ template }}" class = "template-card">
-                            </td>
-                            <td>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                {% for template in templates %}
+                <div class = "card mb-3" style = "max-width: 100%; height: 5rem; cursor: pointer;">
+                    <div class = "row no-gutters">
+                        <div class = "col-md-4">
+                            <img src = "{{ template }}" style = "width: 12vw; height: 5rem; border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem;">
+                        </div>
+                        <div class = "col-md-8">
+                            <div class = "card-body">
+                                <p>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             <div class = "modal-footer">
                 <button type="button" class="close btn btn-secondary" data-dismiss="modal" aria-label="Close">
@@ -115,24 +113,15 @@
         </div>
     </div>
 </div>
-<div id = "left-content">
+<div id = "left-content" class = "col-lg">
     <div id = "image-tool-bar">
-        <span>
-            <button class = "btn btn-dark image-tool">Adjust Spacing</button>
-        </span>
-        <span>
-            <button 
-                class = "btn btn-dark image-tool"
-                data-toggle = "modal"
-                data-target = "#add-image"
-                id = "image-modal-button">Add Image</button>
-        </span>
-        <span>
-            <button class = "btn btn-dark image-tool">Draw</button>
-        </span>
-        <!-- <span>
-            <button class = "btn btn-dark image-tool">Filters</button>
-        </span> -->
+        <button class = "btn btn-secondary image-tool">Adjust Spacing</button>
+        <button 
+            class = "btn btn-secondary image-tool"
+            data-toggle = "modal"
+            data-target = "#add-image"
+            id = "image-modal-button">Add Image</button>
+        <button class = "btn btn-secondary image-tool">Draw</button>
     </div>
     <div id = "image-tools">
         <div id = "drawing-tools">
@@ -187,29 +176,31 @@
                 Or use a template!
             </button>
         </div>
-        <canvas id = "meme-img" height = "0"></canvas>
+        <canvas id = "meme-img" height = "0" class = "border"></canvas>
         <canvas id = "drawing" height = "0"></canvas>
     </div>
-    <button
-        id = "switch-btn"
-        class = "btn btn-primary" 
-        data-target="#template-list" 
-        data-toggle="modal">
-        Switch Template
-    </button>
 </div>
-<div id = "right-content">
-    <div id = "text-tool-bar">
-    </div>
+<div id = "right-content" class = "col-lg">
     <div>
-        <button id = "new-box-btn" class = "btn btn-secondary">Add Text Area</button>
+        <button
+            id = "switch-btn"
+            class = "btn btn-primary" 
+            data-target="#template-list" 
+            data-toggle="modal"
+            style="width: 100%;">
+            Switch Template
+        </button>
+    </div>
+    <div id = "text-tool-bar"></div>
+    <div>
+        <button id = "new-box-btn" class = "btn btn-dark">Add Text Area</button>
     </div>
     <div>
         <textarea placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
     </div>
-    <div>
-        <button id = "post-btn" class = "btn btn-primary">Post</button>
-        <a href = "/home/" class = "btn btn-danger">Cancel</a>
+    <div class = "d-flex justify-content-end">
+        <button id = "post-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>
+        <a href = "/home/" class = "btn btn-danger" style="width: 6vw;">Cancel</a>
     </div>
 </div>
 </div>

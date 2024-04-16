@@ -116,9 +116,11 @@
             <h4 class="bold-text white-text"><span id="username" class="text-light"></span>{{loggedInUser.username}}</h4>
             <!-- {% endif %} -->
 
+            {% if not templates %}
             <a href="{{ url_for('get_create') }}" class="circular-button-link">
                 <button class="circular-button">+</button>
             </a>
+            {% endif %}
         </div>
     </nav>
     <div id = "main-content-div">
