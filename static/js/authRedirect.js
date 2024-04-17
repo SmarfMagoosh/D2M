@@ -31,8 +31,8 @@ function handleMSALLogin(response) {
     .then(data => {
         if (data.exists) {
             fetch(`/login?email=${email}`)
-            // sessionStorage.setItem("customIdToken", email)
-            window.location.href = "../home";
+            .then(response => {
+                window.location.href = "/";})
         } else {
             formMode = document.getElementById("formMode");
             formMode.classList.toggle("show-register");
@@ -57,13 +57,11 @@ function loginExisting() {
             password: password,
         })
     })
-    // fetch(`/loginExisting?username=${username}&password=${password}`)
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
             fetch(`/login?email=${data.email}`)
             .then(response => {
-                // sessionStorage.setItem("customIdToken", data.email)
                 window.location.href = "../home";
             })
         } else {
