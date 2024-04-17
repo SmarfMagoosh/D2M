@@ -16,7 +16,7 @@ import base64
 import atexit
 import time
 import math
-import bcrypt
+from argon2 import PasswordHasher
 
 import base64
 
