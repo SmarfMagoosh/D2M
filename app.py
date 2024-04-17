@@ -1341,10 +1341,11 @@ def logout():
     session.pop('customIdToken', None)
     return {}
     
-@app.get('/loginExisting/')
+@app.post('/loginExisting/')
 def loginExisting():
-    name = request.args.get('username')
-    password = request.args.get('password')
+    data = request.get_json()
+    name=data['username']
+    password=data['password']
 
     user = User.query.filter_by(username=name).first()
 

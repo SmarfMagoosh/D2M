@@ -49,7 +49,15 @@ function loginExisting() {
     username = usernameField.value
     password = passwordField.value
 
-    fetch(`/loginExisting?username=${username}&password=${password}`)
+    fetch('/loginExisting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            username: username,
+            password: password,
+        })
+    })
+    // fetch(`/loginExisting?username=${username}&password=${password}`)
     .then(response => response.json())
     .then(data => {
         if (data.exists) {
