@@ -381,6 +381,7 @@ with app.app_context():
     # db.drop_all()
     db.create_all()
 
+
     #     # Create posts  to be inserted
         
     # tag1 = Tag(tag="tag1")
