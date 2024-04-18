@@ -1,5 +1,5 @@
 $("document").ready(() => {
-    window.switching = false;
+    window.switching = true;
 
     const create = {}
     create.btns = localStorage.theme === "dark" ? "light" : "dark"
@@ -274,7 +274,6 @@ function init_remix(create) {
         draw.onload = () => create.drawing.ctx.drawImage(draw, 0, 0)
         
         // add extra images
-        console.log(create.remix)
         create.remix.extraImages.forEach((img, i) => {
             const cont = $(`<div class = 'image-container' style = "top: 0"></div>`)
             const em = new Image()
