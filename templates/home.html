@@ -14,16 +14,15 @@
 {% endblock %}
 
 {% block content %}
-
+  
+<div class="row" data-masonry='{"percentPosition": true }' style="width: 100%; margin: 10px;">
   {% for post in posts %}
-  <a href="{{ url_for('get_post', post_id=post.id) }}">
-    <img src="{{ url_for('static', filename=post['thumbnail']) }}" alt="" width="425" class="image-link">
-  </a>
-  {% endfor %}
-  
-  <div class="row" data-masonry="{&quot;percentPosition&quot;: true }" style="position: relative; height: 1064.66px;">
-    
-    
+  <div class="column" style="width: 30%; margin: 10px; float: left;">
+    <a href="{{ url_for('get_post', post_id=post.id) }}">
+        <img src="{{ url_for('static', filename=post['thumbnail']) }}" alt="" style="width: 100%;">
+    </a>
   </div>
-  
+  {% endfor %}
+</div>
+ 
 {% endblock %}
