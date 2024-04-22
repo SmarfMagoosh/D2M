@@ -85,6 +85,14 @@ def create_notification(email, text, title, link = "#"):
         notif = Notification(userEmail = email, text = text, title=title, time=time, link=link)
         db.session.add(notif)
         db.session.commit()
+
+def create_tag(tag):
+    if tag == "" or Tag.query.filter_by(tag=tag).first() is not None:
+        return
+    with app.app_context():
+        ret = Tag(tag = tag)
+        db.session.add(ret)
+        db.session.commit()
         
 # takes in the byte data of an image, and saves the thumbnail version
 def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
@@ -412,7 +420,9 @@ with app.app_context():
     # u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     # u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
     # u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
-    
+    # u4 = User(username="u4", gccEmail = "u4@gcc.edu", backupPasswordHash = bcrypt.hashpw("u4".encode('utf-8'), bcrypt.gensalt()))
+    # u5 = User(username="u5", gccEmail = "u5@gcc.edu", backupPasswordHash = bcrypt.hashpw("u5".encode('utf-8'), bcrypt.gensalt()))
+
     # post1 = Post(postID= 1, spacing = 0 , title="excel is not a valid database!!!",
     #              backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
     # post2 = Post(postID= 2, spacing = 0 , title="get gimbal locked idiot",
@@ -428,7 +438,7 @@ with app.app_context():
     # notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
     # # Add all of these records to the session and commit changes
-    # db.session.add_all((u1,u2,u3))
+    # db.session.add_all((u4, u5))
     # db.session.add_all((post1, post2, post3))
     # db.session.add_all((like11,like12,like13))
     # db.session.add_all((bm11,bm12,bm13))
@@ -799,7 +809,7 @@ def toggle_follow_status():
             db.session.add(new_follow)
             db.session.commit()
             is_following = True
-            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower")
+            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower", f"/profile/{otherUser.username}")
 
         # Reload user1 instance to update followList
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
@@ -898,6 +908,7 @@ def post_meme():
         else:
             imgData = body["imgData"][22:] # TODO: save templates correctly
         thumbnailData = body["thumbnailData"][22:]
+        create_tag(body["tag"])
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -957,7 +968,7 @@ def post_meme():
         user = load_user(session.get("customIdToken"))
         for f in user.followerList:
             u = f.follower
-            create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {u.username}", f"/post/{post_inst.postID}")
+            create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {user.username}", f"/post/{post_inst.postID}")
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
         return {"message" : "posted successfully"}, 200
@@ -1353,60 +1364,6 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
-
-# def create_comment(commentData, user_name):
-#     with app.app_context():
-       
-#         db.session.add(follow)
-#         db.session.commit()
-
-# @app.post("/API/like/")
-# def get_followed_posts():
-#     data = request.get_json()
-#     id = data.get('postID')
-#     post = Post.query.get_or_404(id)
-#     pos = data.get('positive')
-#     if pos:
-#         post.numLikes = post.numLikes+1
-#     else:
-#         post.numLikes = post.numLikes-1
-#     create_like(data.get('userEmail'), id, pos)
-#     return "", 200
-
-
-# Testing code from thumbnail, might be useful for future tests 
-@app.get("/temp/")
-def temp():
-    return render_template("temp.html")
-@app.post("/temp/")
-def post_temp():
-    body: dict = request.json
-    thumbnailData = body["thumbnailData"][22:]
-    create_thumbnail(thumbnailData, f"./static/images/thumbnails/{999999999999999}.png")
-    return render_template("temp.html")
-
-
-# @app.post("/API/comment/")
-# def get_followed_posts():
-#     data = request.get_json()
-#     id = data.get('postID')
-#     post = Post.query.get_or_404(id)
-#     pos = data.get('positive')
-#     if pos:
-#         post.numLikes = post.numLikes+1
-#     else:
-#         post.numLikes = post.numLikes-1
-#     create_like(data.get('userEmail'), id, pos)
-#     return "", 200
-
-# from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
-# with minor adjustments to make it work here
-# no longer necessary, but the code is helpful to have around
-# @app.get('/API/thumbnail/<int:postID>')
-# def get_thumbnail(postID):
-#     post = Post.query.get_or_404(postID)
-#     img = create_thumbnail(f"static/images/{post.backImage}")
-#     return serve_pil_image(img)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN
