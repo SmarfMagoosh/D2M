@@ -4,7 +4,6 @@ import os, sys, json
 import string
 import secrets
 import re
-import traceback 
 
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -48,6 +47,7 @@ db = SQLAlchemy(app)
 
 # setup queue for sorting by likes
 update_times = [0, 0, 0]
+like_milestones = [10, 25, 50, 100, 250, 500, 1000]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # NON-ROUTE FUNCTIONS
@@ -63,6 +63,14 @@ def update_like_backend():
     global update_times
     update_times.append(math.floor(time.time()))
     update_times.pop(0)
+    
+    #check for posts crossing like thresholds
+    global like_milestones
+    with app.app_context():
+        for milestone in like_milestones:
+            passed = Post.query.filter(Post.numLikesD1 >= milestone, Post.numLikesD2 < milestone).all()
+            for post in passed:
+                create_notification(post.owner.gccEmail, f"{post.title} has gained {milestone} likes!", post.title, f"/post/{post.postID}")
 
 def create_like(username, post, up):
     with app.app_context():
@@ -71,15 +79,19 @@ def create_like(username, post, up):
         db.session.commit()
         
 
-def create_notification(email, text, title, time):
+def create_notification(email, text, title, link = "#"):
     with app.app_context():
-        notif = Notification(userEmail = email, text = text, title=title, time=time)
+        time = datetime.now().strftime("%m/%d/%Y %I:%M %p")
+        notif = Notification(userEmail = email, text = text, title=title, time=time, link=link)
         db.session.add(notif)
         db.session.commit()
 
-def delete_notification(notif):
+def create_tag(tag):
+    if tag == "" or Tag.query.filter_by(tag=tag).first() is not None:
+        return
     with app.app_context():
-        db.session.delete(notif)
+        ret = Tag(tag = tag)
+        db.session.add(ret)
         db.session.commit()
         
 # takes in the byte data of an image, and saves the thumbnail version
@@ -91,6 +103,10 @@ def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DATABASE SETUP
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+with app.app_context():
+    # db.drop_all()
+    db.create_all()
 
 #define db classes and tables here
 
@@ -116,6 +132,7 @@ class User(db.Model) :
     notificationList = db.relationship('Notification', backref='user')
     # advanced backref to deal with multiple references to the same table
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
+    followerList = db.relationship('Follow', back_populates='followed', foreign_keys='Follow.user2')
     blockList = db.relationship('Block', back_populates='blocker', foreign_keys='Block.user1')
 
     def postlist_to_json(self):
@@ -156,6 +173,18 @@ class User(db.Model) :
             "pfp": pfp,
             "banner": banner
         }
+    
+    def profile_json(self):
+        pfp = "/static/images/users/default-pfp.png"
+        banner = "/static/images/users/default-banner.png"
+        if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
+            pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
+            banner = f"/static/images/users/{self.gccEmail}/banner.png"
+        return{
+            "username": self.username,
+            "pfp": pfp,
+            "banner": banner
+        }
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -177,6 +206,7 @@ class Notification(db.Model) :
     userEmail = db.Column(db.String, db.ForeignKey('Users.gccEmail'))
     title = db.Column(db.String)
     text = db.Column(db.String)
+    link = db.Column(db.String)
     # format: mm/dd/yy hh:mm AM/PM
     # ex: 3/7/24 5:30 AM
     time = db.Column(db.String)
@@ -185,7 +215,8 @@ class Notification(db.Model) :
             "title": self.title,
             "text" : self.text,
             "time" : self.time,
-            "id" : self.NotificationID
+            "id" : self.NotificationID,
+            "link": self.link 
 		}
 
 class Like(db.Model):
@@ -210,6 +241,7 @@ class Follow(db.Model):
     user2 = db.Column(db.String, db.ForeignKey('Users.gccEmail'), primary_key=True)
     # advanced backref because of 2 foreign keys from same table
     follower = db.relationship('User', back_populates='followList', foreign_keys=[user1])
+    followed = db.relationship('User', back_populates='followerList', foreign_keys=[user2])
 
 class Block(db.Model):
     __tablename__ = 'Blocks'
@@ -228,7 +260,7 @@ class Post(db.Model) :
     postID = db.Column(db.Integer, primary_key = True, autoincrement = True)
     spacing = db.Column(db.Float, nullable = False, default = 0.0)
     space_arrangement = db.Column(db.Float, default = 0.0)
-    title = db.Column(db.String, nullable = True)
+    title = db.Column(db.String)
     backImage = db.Column(db.String, nullable = False)
     timePosted = db.Column(db.DateTime)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
@@ -258,13 +290,13 @@ class Post(db.Model) :
             "textBoxes": [t.to_json() for t in self.textBoxes],
             "extraImages": [i.to_json() for i in self.extraImage],
             "draw": self.draw,
-            "teamplte": self.template
+            "template": self.template
         }
     def render_json(self):
         return {
             "id": self.postID,
             "title": self.title,
-            "thumbnail": f"images/thumbnails/{self.postID}.png",
+            "thumbnail": f"/images/thumbnails/{self.postID}.png",
             "username": self.username,
             "numLikes": self.numLikes,
         }
@@ -274,6 +306,7 @@ class Post(db.Model) :
             "title": self.title,
             "username": self.username,
             "backImage": self.backImage,
+            "thumbnail": f"images/thumbnails/{self.postID}.png",
             "thumbnail": f"images/thumbnails/{self.postID}.png",
             "numLikes": self.numLikes,
             "comments": [c.to_json() for c in self.comments],
@@ -374,10 +407,9 @@ class Comment(db.Model) :
 		}
 
 with app.app_context():
+    # db.drop_all()
     db.create_all()
 
-    #     # Create posts  to be inserted
-        
     # tag1 = Tag(tag="tag1")
     # tag2 = Tag(tag="tag2")
     # tag3 = Tag(tag="tag3")
@@ -388,23 +420,25 @@ with app.app_context():
     # u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     # u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
     # u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
-    
-    # post1 = Post(postID= 10, spacing = 0 , title="excel is not a valid database!!!",
+    # u4 = User(username="u4", gccEmail = "u4@gcc.edu", backupPasswordHash = bcrypt.hashpw("u4".encode('utf-8'), bcrypt.gensalt()))
+    # u5 = User(username="u5", gccEmail = "u5@gcc.edu", backupPasswordHash = bcrypt.hashpw("u5".encode('utf-8'), bcrypt.gensalt()))
+
+    # post1 = Post(postID= 1, spacing = 0 , title="excel is not a valid database!!!",
     #              backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
-    # post2 = Post(postID= 20, spacing = 0 , title="get gimbal locked idiot",
+    # post2 = Post(postID= 2, spacing = 0 , title="get gimbal locked idiot",
     #              backImage = "Gimbal_Lock_Plane.gif", owner = u1, numLikes=1)
-    # post3 = Post(postID= 30, spacing = 0 , title="why must I do this?",
+    # post3 = Post(postID= 3, spacing = 0 , title="why must I do this?",
     #              backImage = "Stop doing databases.png", owner = u3, numLikes=100)
-    # like11 = Like(user=u1, postID=10)
-    # like12 = Like(user=u1, postID=30)
-    # like13 = Like(user=u1, postID=20, positive=False)
-    # bm11 = Bookmark(user=u1, postID=10)
-    # bm12 = Bookmark(user=u1, postID=30)
-    # bm13 = Bookmark(user=u1, postID=20)
+    # like11 = Like(user=u1, postID=1)
+    # like12 = Like(user=u1, postID=3)
+    # like13 = Like(user=u1, postID=2, positive=False)
+    # bm11 = Bookmark(user=u1, postID=1)
+    # bm12 = Bookmark(user=u1, postID=3)
+    # bm13 = Bookmark(user=u1, postID=2)
     # notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
     # # Add all of these records to the session and commit changes
-    # db.session.add_all((u1,u2,u3))
+    # db.session.add_all((u4, u5))
     # db.session.add_all((post1, post2, post3))
     # db.session.add_all((like11,like12,like13))
     # db.session.add_all((bm11,bm12,bm13))
@@ -469,9 +503,14 @@ def get_post(post_id):
     # just plain get might work better, not sure, but it would return None with a failure rather than aborting
     post = Post.query.get_or_404(post_id)
     user = load_user(session.get('customIdToken'))
-    has_liked = Like.query.filter_by(postID=post_id, userEmail= user.gccEmail, positive=True).first() is not None
-    has_disliked = Like.query.filter_by(postID=post_id, userEmail=user.gccEmail, positive=False).first() is not None
-    has_bookmarked = Bookmark.query.filter_by(postID=post_id, userEmail=user.gccEmail).first() is not None
+    if user:
+        has_liked = Like.query.filter_by(postID=post_id, userEmail= user.gccEmail, positive=True).first() is not None
+        has_disliked = Like.query.filter_by(postID=post_id, userEmail=user.gccEmail, positive=False).first() is not None
+        has_bookmarked = Bookmark.query.filter_by(postID=post_id, userEmail=user.gccEmail).first() is not None
+    else:
+        has_liked = False
+        has_disliked = False
+        has_bookmarked = False
 
     return render_template("post.html", post=post.to_json(), loggedInUser = user, has_liked=has_liked,has_disliked = has_disliked, has_bookmarked=has_bookmarked)
 
@@ -770,6 +809,7 @@ def toggle_follow_status():
             db.session.add(new_follow)
             db.session.commit()
             is_following = True
+            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower", f"/profile/{otherUser.username}")
 
         # Reload user1 instance to update followList
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
@@ -866,19 +906,9 @@ def post_meme():
         if body["template"]:
             imgData = body["imgData"]
         else:
-            imgData = body["imgData"][22:]
-            print("base64 length: ", len(body["imgData"]))
+            imgData = body["imgData"][22:] # TODO: save templates correctly
         thumbnailData = body["thumbnailData"][22:]
-        
-        tag = None
-        tags = Tag.query.filter_by(tag=body["tag"]).all()
-        if len(tags) >= 1:
-            tag = tags[0]
-        else:
-            tag = Tag(tag = body["tag"])
-            db.session.add(tag)
-            db.session.commit()
-        
+        create_tag(body["tag"])
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -931,6 +961,14 @@ def post_meme():
             )
             db.session.add(image_inst)
             db.session.commit()
+            with open(f"./static/images/extra_images/{image_inst.extraImageId}.png", "wb") as file:
+                file.write(base64.b64decode(imgData))
+            image_inst.image = f"{image_inst.extraImageId}.png"
+            db.session.commit()
+        user = load_user(session.get("customIdToken"))
+        for f in user.followerList:
+            u = f.follower
+            create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {user.username}", f"/post/{post_inst.postID}")
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
         return {"message" : "posted successfully"}, 200
@@ -979,6 +1017,10 @@ def create_comment_route():
     content = data.get('content')
     username = data.get('username')
     postID = data.get('postID')
+    
+    post = Post.query.get(postID)
+    if username != post.owner.username:
+        create_notification(post.owner.gccEmail, f"{username} has commented on {post.title}", post.title, f"/post/{post.postID}")
 
     new_comment = Comment(
         content=content,
@@ -996,6 +1038,7 @@ def create_comment_route():
 # Define a route to handle AJAX requests for creating comments
 @app.post('/create_report/')
 def create_report_route():
+    
     # Get the data from the AJAX request
     data = request.json
     reason = data.get('reason')
@@ -1169,27 +1212,26 @@ def get_bookmarked(gccEmail):
     bookmarks =  bookmarks[0:count] #reduce to count or less elements
     return [l.post.render_json() for l in bookmarks]
 
-@app.get("/API/get_notifications/<string:gccEmail>")
 @app.get("/API/get_notifications/")
-def get_notifications(gccEmail=None):
-    if gccEmail == None: 
-        gccEmail = session.get('customIdToken')
+def get_notifications():
+    gccEmail = session.get('customIdToken')
     notifications = Notification.query.filter_by(userEmail=gccEmail).all()
     return {"logged_in": gccEmail != None, "list": [n.to_json() for n in notifications]}
 
 # posts to this route will contain this json:
 # {"id" : notification id}
-@app.post("/API/delete_notification")
-def delete_notifications():
-    data = request.get_json()
-    notif = Notification.query.get_or_404(data.get("id"))
-    user = User.query.get_or_404(session.get('customIdToken'))
+@app.get("/API/delete_notification/<int:id>")
+def delete_notifications(id):
+    notif = Notification.query.get(id)
+    user = load_user(session.get('customIdToken'))
     
     if notif.userEmail == user.gccEmail:
-        delete_notification(notif)
-        return 200, ""
+        entry_to_delete = Notification.query.get_or_404(id)
+        db.session.delete(entry_to_delete)
+        db.session.commit()
+        return ""
     else:
-        return 401, ""
+        return ""
 
 # max_likes is an optional field (after question mark), specifies the like count to start from (default: no filter)
 # timestamp is an optional field (after question mark), determines the time period to load likes from (default most recent)
@@ -1331,10 +1373,11 @@ def logout():
     session.pop('customIdToken', None)
     return {}
     
-@app.get('/loginExisting/')
+@app.post('/loginExisting/')
 def loginExisting():
-    name = request.args.get('username')
-    password = request.args.get('password')
+    data = request.get_json()
+    name=data['username']
+    password=data['password']
 
     user = User.query.filter_by(username=name).first()
 

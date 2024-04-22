@@ -79,7 +79,8 @@ function search() {
         numargs++;
         query = `query=${query}`
     }
-
+    // to satisfy acceptance test 3.3
+    if(numargs == 0) return;
     // Make an AJAX request to your Flask route
     fetch(`/search${numargs !== 0 ? "?":""}${query}${numargs === 2 ? "&" : ""}${tag}`)
         .then(response => response.json())

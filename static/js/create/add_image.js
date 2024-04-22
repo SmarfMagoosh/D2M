@@ -1,13 +1,17 @@
 function add_image_init(create) {
     create.images = []
-    $("#switch-btn").click(e => window.switching = true)
+    $("#switch-btn").click(e => {
+        console.log("toggling on")
+        window.switching = true
+    })
     $("#addImgBtn").click(e => $("#fileInput").click())
     $("#uploadImgBtn").hide()
     $("#upload-close").click(e => {
         if (window.switching) {
             window.switching = false;
-            $(e.target).click()
         }
+        $(`#${$(e.target).attr("data-dismiss")}`).modal("close")
+        console.log("toggling off")
     })
 }
 

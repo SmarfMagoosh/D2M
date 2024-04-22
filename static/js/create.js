@@ -1,5 +1,5 @@
 $("document").ready(() => {
-    window.switching = false;
+    window.switching = true;
 
     const create = {}
     create.btns = localStorage.theme === "dark" ? "light" : "dark"
@@ -24,8 +24,9 @@ $("document").ready(() => {
     $("#space-arrangement").change(e => adjust_spacing(create, $("#spacer").val(), e.target.value))
 
     create.canvas =  $("#meme-img")[0]
-    create.canvas.width = create.canvas.parentNode.clientWidth - 20
-    create.drawing.canv.width = create.canvas.parentNode.clientWidth - 20
+    create.canvas.width = create.canvas.parentNode.clientWidth
+    create.drawing.canv.width = create.canvas.width
+    $("#meme").css("width", create.canvas.width)
     create.ctx = create.canvas.getContext("2d")
 
     $("#post-btn").click(post(create))
@@ -101,6 +102,10 @@ function adjust_spacing(create, value, position) {
     create.canvas.height = create.dimensions.height * (1 + parseFloat(value))
     create.drawing.canv.height = create.dimensions.height * (1 + parseFloat(value))
 
+    create.canvas.width = create.canvas.parentNode.clientWidth
+    create.drawing.canv.width = create.canvas.width
+    $("#meme").css("width", create.canvas.width)
+
     create.ctx.drawImage(
         create.baseImg, create.cropData.left, 
         create.cropData.top, create.cropData.width, 
@@ -141,7 +146,7 @@ function post(create) {
 
             // take screenshot for saving
             $(".meme-component").css("border", "none")
-            $("#meme-img").css("border", "none")
+            $("#meme-img").removeClass("border")
             html2canvas($("#meme")[0], {useCORS: true, allowTaint: true})
                 .then(canvas => meme.thumbnailData = canvas.toDataURL('image/png'))
                 .then(() => {
@@ -274,7 +279,6 @@ function init_remix(create) {
         draw.onload = () => create.drawing.ctx.drawImage(draw, 0, 0)
         
         // add extra images
-        console.log(create.remix)
         create.remix.extraImages.forEach((img, i) => {
             const cont = $(`<div class = 'image-container' style = "top: 0"></div>`)
             const em = new Image()
