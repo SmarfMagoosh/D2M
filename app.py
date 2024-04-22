@@ -87,7 +87,7 @@ def create_notification(email, text, title, link = "#"):
         db.session.commit()
 
 def create_tag(tag):
-    if Tag.query.filter_by(tag=tag).first() is not None:
+    if tag == "" or Tag.query.filter_by(tag=tag).first() is not None:
         return
     with app.app_context():
         ret = Tag(tag = tag)
@@ -420,7 +420,9 @@ with app.app_context():
     # u1 = User(username="u1", gccEmail = "u1@gcc.edu", backupPasswordHash = bcrypt.hashpw("u1".encode('utf-8'), bcrypt.gensalt()))
     # u2 = User(username="u2", gccEmail = "u2@gcc.edu", backupPasswordHash = bcrypt.hashpw("u2".encode('utf-8'), bcrypt.gensalt()))
     # u3 = User(username="u3", gccEmail = "u3@gcc.edu", backupPasswordHash = bcrypt.hashpw("u3".encode('utf-8'), bcrypt.gensalt()))
-    
+    # u4 = User(username="u4", gccEmail = "u4@gcc.edu", backupPasswordHash = bcrypt.hashpw("u4".encode('utf-8'), bcrypt.gensalt()))
+    # u5 = User(username="u5", gccEmail = "u5@gcc.edu", backupPasswordHash = bcrypt.hashpw("u5".encode('utf-8'), bcrypt.gensalt()))
+
     # post1 = Post(postID= 1, spacing = 0 , title="excel is not a valid database!!!",
     #              backImage = "4 rules.png", owner = u2, numLikes=10, tag=tag1.tag)
     # post2 = Post(postID= 2, spacing = 0 , title="get gimbal locked idiot",
@@ -436,7 +438,7 @@ with app.app_context():
     # notif = Notification(user = u1, title="Title", text="really long text that I don't feel like typing", time="3/13/2024 9:23 PM")
 
     # # Add all of these records to the session and commit changes
-    # db.session.add_all((u1,u2,u3))
+    # db.session.add_all((u4, u5))
     # db.session.add_all((post1, post2, post3))
     # db.session.add_all((like11,like12,like13))
     # db.session.add_all((bm11,bm12,bm13))
