@@ -97,7 +97,9 @@ def create_tag(tag):
 # takes in the byte data of an image, and saves the thumbnail version
 def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
     img = Image.open(BytesIO(base64.b64decode(image_data)))
-    img.thumbnail(dimensions)
+    width, height = img.size
+    img.crop((0, 0, width, height))
+    #img.thumbnail(dimensions)
     img.save(filepath)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
