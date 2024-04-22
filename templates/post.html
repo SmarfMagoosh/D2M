@@ -38,16 +38,15 @@
             <h4>{{ post.username }}</h4>
         </a>      
         <h5> 
-            {{ post["numLikes"] }} like{%if post["numLikes"] != 1%}s{%endif%}
-            <span class="badge" id = "post-tag" {% if not post["tag"] %}hidden{%endif%}>#{{ post["tag"] }}</span>
+            <span id="num-likes">{{ post["numLikes"] }}</span> like{% if post["numLikes"] != 1 %}s{% endif %}
+            <span class="badge" id="post-tag" {% if not post["tag"] %}hidden{% endif %}>#{{ post["tag"] }}</span>
         </h5>
             
     </div>
     <div class="post-buttons">
-        
-        <button id="like-btn" data-postId="{{ post['id'] }}" data-liked="{{ has_liked }}"><i class="fa-solid fa-thumbs-up"></i></button>  
-        <button id="dislike-btn" data-postId="{{ post['id'] }}" data-disliked="{{ has_disliked }}"><i class="fa-solid fa-thumbs-down"></i></button>   
-        <button id="bookmark-btn" data-postId="{{ post['id'] }}" data-bookmark="{{ has_bookmarked }}" ><i class="fa-solid fa-bookmark"></i></button>
+        <button id="like-btn" data-postId="{{ post['id'] }}" data-liked="{{ has_liked }}"><i class="fa-solid fa-thumbs-up"></i></button>  {{ has_liked }}
+        <button id="dislike-btn" data-postId="{{ post['id'] }}" data-disliked="{{ has_disliked }}"><i class="fa-solid fa-thumbs-down"></i></button>   {{ has_disliked }}
+        <button id="bookmark-btn" data-postId="{{ post['id'] }}" data-bookmark="{{ has_bookmarked }}" ><i class="fa-solid fa-bookmark"></i></button> {{ has_bookmarked }}
         {% if loggedInUser.username == post.username%}
         <!-- <button id="delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button> -->
         <!-- Delete Post Button -->

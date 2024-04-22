@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Assuming you have a script tag somewhere in your HTML where you can embed JavaScript
     window.post = {}
 
+    setButtons();
     // get correct color for the tag
     const tag = $("#post-tag").text().substring(1);
     var hash = 0, i, chr;
@@ -303,13 +304,15 @@ function createLike(userEmail, postID, positive) {
             throw new Error('Network response was not ok');
         }
         // Handle successful response
-        // Optionally, update the UI or perform other actions
+        fetchNumLikes(postID);
         return response;
     })
     .catch(error => {
         // Handle fetch errors
         console.error('Fetch error:', error);
+        fetchNumLikes(postID);
     });
+    
 }
 
 function createReport(reason, userEmail, postID) {
@@ -367,13 +370,14 @@ function createComment(content, username, postID) {
     });
 }
 
-async function toggleButtons() {
-    const currentUser = await getCurrentUser();
-    const userId = currentUser.id; // Assuming the user object has an 'id' property
-
+async function setButtons() {
     const userLikedPost = likeButton.getAttribute('data-liked');
     const userDislikedPost = dislikeButton.getAttribute('data-disliked');
     const userBookmarkedPost = bookmarkButton.getAttribute('data-bookmark');
+
+    console.log("Liked: "+userLikedPost);
+    console.log("Disiked: "+userDislikedPost);
+    console.log("Bookmarked: "+userBookmarkedPost);
 
     if (userLikedPost == true ) {
         likeButton.style.backgroundColor = 'red';
@@ -408,5 +412,24 @@ async function getCurrentUser() {
     }
 }
 
-toggleButtons();
+
+//DOES NOT WORK YET
+function fetchNumLikes(postID) {
+    // Make an AJAX request to the backend to retrieve the number of likes
+    $.ajax({
+        url: '/get_num_likes/',
+        method: 'GET',
+        data: { postID: postID },
+        success: function(response) {
+            // Update the UI with the fetched number of likes
+            $('#num-likes').text(response.numLikes);
+            // Here you can update your UI with the fetched number of likes
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching number of likes:', error);
+        }
+    });
+}
+
+
 });
