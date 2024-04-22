@@ -168,6 +168,16 @@ var likeButton = document.getElementById('like-btn');
 var dislikeButton = document.getElementById('dislike-btn');
 var bookmarkButton = document.getElementById('bookmark-btn');
 
+function getLikeButton() {
+    return document.getElementById('like-btn');
+}
+function getDislikeButton() {
+    return document.getElementById('dislike-btn');
+}
+function getBookmarkButton() {
+    return document.getElementById('bookmark-btn');
+}
+
 function toggleButtonColor(buttonId) {
     var button = document.getElementById(buttonId);
     
@@ -371,23 +381,23 @@ function createComment(content, username, postID) {
 }
 
 async function setButtons() {
-    const userLikedPost = likeButton.getAttribute('data-liked');
-    const userDislikedPost = dislikeButton.getAttribute('data-disliked');
-    const userBookmarkedPost = bookmarkButton.getAttribute('data-bookmark');
+    const userLikedPost = getLikeButton().getAttribute('data-liked');
+    const userDislikedPost = getDislikeButton().getAttribute('data-disliked');
+    const userBookmarkedPost = getBookmarkButton().getAttribute('data-bookmark');
 
     console.log("Liked: "+userLikedPost);
     console.log("Disiked: "+userDislikedPost);
     console.log("Bookmarked: "+userBookmarkedPost);
 
-    if (userLikedPost == true ) {
-        likeButton.style.backgroundColor = 'red';
-        dislikeButton.style.backgroundColor = '';
-    } else if (userDislikedPost == true){
-        likeButton.style.backgroundColor = '';
-        dislikeButton.style.backgroundColor = 'red';
+    if (userLikedPost === 'True') {
+        getLikeButton().style.backgroundColor = 'red';
+        getDislikeButton().style.backgroundColor = '';
+    } else if (userDislikedPost === 'True'){
+        getLikeButton().style.backgroundColor = '';
+        getDislikeButton().style.backgroundColor = 'red';
     }
-    if (userBookmarkedPost == true) {
-        bookmarkButton.style.backgroundColor = 'red';
+    if (userBookmarkedPost === 'True') {
+        getBookmarkButton().style.backgroundColor = 'red';
     }
 }
 

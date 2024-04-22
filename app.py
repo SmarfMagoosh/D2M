@@ -1075,15 +1075,25 @@ def create_bookmark_route():
     userEmail = data.get('userEmail')
     postID = data.get('postID')
 
-    new_bookmark = Bookmark(
-        postID=postID,
-        userEmail = userEmail,
-    )
-    db.session.add(new_bookmark)
-    db.session.commit()
-    
-    # Return a response indicating success
-    return {'message': 'Bookmark created successfully'}, 200
+    # Check if there's an existing bookmark by the same user for the same post
+    existing_bookmark = Bookmark.query.filter_by(postID=postID, userEmail=userEmail).first()
+
+    if existing_bookmark:
+        # If an identical bookmark exists, return without making a new one
+        db.session.delete(existing_bookmark)
+        db.session.commit()
+        return {'message': 'Identical bookmark already exists'}, 200
+    else:
+        # Otherwise, create a new bookmark
+        new_bookmark = Bookmark(
+            postID=postID,
+            userEmail=userEmail,
+        )
+        db.session.add(new_bookmark)
+        db.session.commit()
+
+        # Return a response indicating success
+        return {'message': 'Bookmark created successfully'}, 200
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
