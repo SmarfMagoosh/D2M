@@ -14,14 +14,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const icon = document.getElementById('icon');
     icon_img = document.getElementById('icon_img');
     icon.addEventListener('change', (event) => loadImg(event, icon_img));
-    if (icon_img.src != ""){
+    if (icon_img.src.charAt(icon_img.src.length - 1) !== "#"){
         icon_img.hidden = false;
     }
 
     const banner = document.getElementById('banner');
     banner_img = document.getElementById('banner_img');
     banner.addEventListener('change', (event) => loadImg(event, banner_img));
-    if (banner_img.src != ""){
+    if (banner_img.src.charAt(banner_img.src.length - 1) !== "#"){
         banner_img.hidden = false;
     }
 
