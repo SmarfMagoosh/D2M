@@ -113,3 +113,19 @@
 .comment-content {
     margin-top: 5px;
 }
+
+/* Default styles */
+#left-content,
+#right-content {
+    float: left;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    #left-content,
+    #right-content {
+        width: 100%; /* Stack both divs vertically */
+        float: none; /* Clear the float */
+    }
+}
+

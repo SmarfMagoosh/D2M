@@ -1058,7 +1058,7 @@ def create_report_route():
     # Return a response indicating success
     return {'message': 'Report created successfully'}, 200
 
-# Define a route to handle AJAX requests for creating comments
+# Define a route to handle AJAX requests for creating likes
 @app.post('/create_like/')
 def create_like_route():
     # Get the data from the AJAX request
@@ -1075,11 +1075,21 @@ def create_like_route():
         if existing_like.positive == positive:
             # Remove both likes if they have the same polarity
             db.session.delete(existing_like)
+            post = Post.query.filter_by(postID=postID).first()
+            if positive:
+                post.numLikes -= 1
+            else:
+                post.numLikes += 1
             db.session.commit()
             return {'message': 'Existing like removed due to same polarity'}, 200
         else:
             # Switch the polarity of the existing like if they have different polarities
             existing_like.positive = not existing_like.positive
+            post = Post.query.filter_by(postID=postID).first()
+            if not positive:
+                post.numLikes -= 2
+            else:
+                post.numLikes += 2
             db.session.commit()
             return {'message': 'Existing like polarity switched'}, 200
     else:
@@ -1090,16 +1100,17 @@ def create_like_route():
             positive=positive
         )
 
-    db.session.add(new_like)
-    post = Post.query.filter_by(postID=postID).first()
-    if (positive):
-       post.numLikes += 1
-    else:
-        post.numLikes -= 1
-    db.session.commit()
+        db.session.add(new_like)
+        post = Post.query.filter_by(postID=postID).first()
+        if positive:
+            post.numLikes += 1
+        else:
+            post.numLikes -= 1
+        db.session.commit()
 
     # Return a response indicating success
     return {'message': 'Like created successfully'}, 200
+
 
 @app.post('/create_bookmark/')
 def create_bookmark_route():
@@ -1108,15 +1119,25 @@ def create_bookmark_route():
     userEmail = data.get('userEmail')
     postID = data.get('postID')
 
-    new_bookmark = Bookmark(
-        postID=postID,
-        userEmail = userEmail,
-    )
-    db.session.add(new_bookmark)
-    db.session.commit()
-    
-    # Return a response indicating success
-    return {'message': 'Bookmark created successfully'}, 200
+    # Check if there's an existing bookmark by the same user for the same post
+    existing_bookmark = Bookmark.query.filter_by(postID=postID, userEmail=userEmail).first()
+
+    if existing_bookmark:
+        # If an identical bookmark exists, return without making a new one
+        db.session.delete(existing_bookmark)
+        db.session.commit()
+        return {'message': 'Identical bookmark already exists'}, 200
+    else:
+        # Otherwise, create a new bookmark
+        new_bookmark = Bookmark(
+            postID=postID,
+            userEmail=userEmail,
+        )
+        db.session.add(new_bookmark)
+        db.session.commit()
+
+        # Return a response indicating success
+        return {'message': 'Bookmark created successfully'}, 200
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

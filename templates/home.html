@@ -5,6 +5,7 @@
 
 {% block head %}
 
+<script src = "{{ url_for('static', filename='js/home.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
 <link rel = "stylesheet" href = "{{ url_for('static', filename='css/home.css') }}">
 <script src="https://kit.fontawesome.com/e79fbaa553.js" crossorigin="anonymous"></script>
@@ -14,16 +15,16 @@
 {% endblock %}
 
 {% block content %}
+  
 
+<div class="row post-container" data-masonry='{"percentPosition": true }' style="width: 100%; margin: 10px;">
   {% for post in posts %}
-  <a href="{{ url_for('get_post', post_id=post.id) }}">
-    <img src="{{ url_for('static', filename=post['thumbnail']) }}" alt="" width="425" class="image-link">
-  </a>
-  {% endfor %}
-  
-  <div class="row post-container" data-masonry="{&quot;percentPosition&quot;: true }" style="position: relative; height: 1064.66px;">
-    
-    
+  <div class="column" style="width: 30%; margin: 10px; float: left;">
+    <a href="{{ url_for('get_post', post_id=post.id) }}">
+        <img src="{{ url_for('static', filename=post['thumbnail']) }}" class= "image-link" alt="" style="width: 100%;">
+    </a>
   </div>
-  
+  {% endfor %}
+</div>
+ 
 {% endblock %}
