@@ -25,13 +25,13 @@
 
 {% block content %}
 
-<div id = "left-content">
+<div id = "left-content" class="border border-3 rounded">
     <div id = "meme">
         <!-- put the image source here!-->
-        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image" style="width: 100%;">
+        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image">
     </div>
 </div>
-<div id = "right-content">
+<div id = "right-content"class="border border-3 rounded">
     <div id = "details">
         <!-- put the meme details here!-->
         <h2> {{ post["title"] }} </h2>
@@ -87,7 +87,7 @@
     <h1> Comments:</h1>
 
     {% for comment in post.comments %}
-    <div class="comment-box">
+    <div class="comment-box border rounded">
         <div class="comment">
             <p class="comment-time">{{ comment.timePosted }}</p>
             <div class="comment-content">
