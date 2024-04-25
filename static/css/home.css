@@ -23,3 +23,7 @@ body {
   .image-link {
       margin-right: 20px; /* Adjust the margin value to add spacing */
   }
+
+  .post-container{
+    margin: 0px !important;
+  }

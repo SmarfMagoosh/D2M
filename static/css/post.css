@@ -99,8 +99,8 @@
 }
 
 .comment-box {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    /* background-color: #f9f9f9; */
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
     padding: 10px;
     margin-bottom: 10px;
 }
