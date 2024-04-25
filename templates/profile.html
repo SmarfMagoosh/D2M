@@ -7,15 +7,16 @@
 {% block head %}
     <script src = "../../static/js/profile.js"></script>
     <script src = "../../static/js/navBar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
     <link rel = "stylesheet" href = "../../static/css/profile.css">
     <link rel="stylesheet" href="../../static/css/styling.css">
 {% endblock %}
 
 {% block content %}
-<div class="row px-4"> 
+<div class="row px-4" > 
     <div class=" mx-auto">
     <!-- Profile widget --> 
-    <div class="shadow rounded overflow-hidden"> 
+    <div class="shadow rounded overflow-hidden" style="background-color: var(--bs-secondary-bg);"> 
     <div class="px-4 pt-0 pb-4 cover" style="background-image: url('/static/images/users/{{ user.gccEmail }}/banner.png')"> 
         <div class="media align-items-end profile-head"> 
             <div class="profile mr-2" style="margin-bottom: 4.5rem;">
@@ -60,8 +61,6 @@
                 {% if loggedInUser and loggedInUser.gccEmail == user.gccEmail %}
                 <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block" style="--bs-btn-border-color: var(--bs-tertiary-bg); width: 7rem;">Edit profile</a>
                 {% endif %}
-
-                <p class="small mb-4"></p>
             </div> 
         </div>
         
@@ -97,30 +96,35 @@
                     <button class="tablinks" onclick="openTab(event, 'Bookmarked')">Bookmarked </button>
                   </div>
                               
-                  <div id="Created" class="tabcontent" style="background-color: var(--bs-body-bg);">
+                  <div id="Created" class="tabcontent row" data-masonry='{"percentPosition": true }' style="background-color: var(--bs-body-bg); width: 100%;">
                     {% for post in user.postList  %}
-                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                    <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
-                    </a>
-                    <br>
+                    <div class="column" style="width: 31%; margin: 10px; float: left;">
+                        <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                            <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" class="image-link">
+                            </a>
+                      </div>
                    {% endfor %}
                   </div>
+
+
                               
-                  <div id="Liked" class="tabcontent" style="background-color: var(--bs-secondary-bg);">
+                  <div id="Liked" class="tabcontent row" data-masonry='{"percentPosition": true }' style="background-color: var(--bs-secondary-bg); width: 100%;">
                    {% for post in liked_posts %}
-                   <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
-                   </a>
-                   <br>
+                   <div class="column" style="width: 31%; margin: 10px; float: left; border-radius: 20px;">
+                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                        <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
+                        </a>
+                  </div>
                     {% endfor %}
                   </div>
                               
-                  <div id="Bookmarked" class="tabcontent" style="background-color: var(--bs-secondary-bg);">
+                  <div id="Bookmarked" class="tabcontent row" data-masonry='{"percentPosition": true }' style="background-color: var(--bs-secondary-bg); width: 100%;">
                     {% for post in bookmarked_posts %}
-                   <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                   <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
-                   </a>
-                   <br>
+                   <div class="column" style="width: 31%; margin: 10px; float: left; border-radius: 20px;">
+                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
+                        <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
+                        </a>
+                  </div>
                     {% endfor %}
 
                   </div>

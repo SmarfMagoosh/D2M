@@ -14,11 +14,15 @@ body {
   }
   
   .row {
-
+    margin: 0px;
     /* data-masonry: '{"percentPosition": true }'; */
     text-decoration: none;
   }
 
   .post-container{
     margin: 0px !important;
+  }
+  /* CSS for the image links */
+  .image-link {
+    border-radius: 1rem; /* Adjust the value as needed */
   }
