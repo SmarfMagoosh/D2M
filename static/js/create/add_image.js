@@ -1,18 +1,22 @@
 function add_image_init(create) {
     create.images = []
     $("#switch-btn").click(e => {
-        console.log("toggling on")
         window.switching = true
+        $("#insert-modal-title").text("Upload Base Image")
     })
-    $("#addImgBtn").click(e => $("#fileInput").click())
-    $("#uploadImgBtn").hide()
     $("#upload-close").click(e => {
         if (window.switching) {
             window.switching = false;
+            $("#insert-modal-title").text("Upload Base Image")
         }
         $(`#${$(e.target).attr("data-dismiss")}`).modal("close")
-        console.log("toggling off")
     })
+    $("#image-modal-button").click(e => {
+        window.switching = false;
+        $("#insert-modal-title").text("Upload Base Image")
+    })
+    $("#addImgBtn").click(e => $("#fileInput").click())
+    $("#uploadImgBtn").hide()
 }
 
 function display_image(create, input) {
@@ -27,23 +31,22 @@ function display_image(create, input) {
         if (base.size < MAX_FILE_SIZE) {
             const reader = new FileReader();
             reader.onload = () => {
+                
                 img.src = reader.result
                 img.onload = () => {
                     const aspectRatio = img.naturalHeight / img.naturalWidth
                     canv.height = aspectRatio * canv.width;
                     ctx.drawImage(img, 0, 0, canv.width, canv.height)
-                    const cont = $(`<div class = 'text-box-container' style = 'backdrop-filter: brightness(50%);'></div>`).width(canv.width);
-                    const box = $( `<div class = 'meme-component' style = 'backdrop-filter: brightness(200%);' id = 'cropper'></div`)
+                    $("#cropper").show()
                         .width('100%')
                         .height('100%')
                         .draggable({containment: "parent"})
                         .resizable({containment: "parent", handles: "all"})
-                    cont.append(box);
-                    $(canv).parent().append(cont);
                 }
                 $("#uploadImgBtn")
                     .show().off("click")
                     .click((baseImg ? upload_base_image : upload_extra_image)(create, img, canv))
+                $("#cropper").hide()
             }
             reader.readAsDataURL(base);
         } else {
@@ -53,7 +56,6 @@ function display_image(create, input) {
 }
 
 const upload_base_image = (create, img, display) => function(e) {
-    console.log(img.id)
     cropBaseImage(create, img, display, $("#cropper"));
 
     $("#img-btns").hide()

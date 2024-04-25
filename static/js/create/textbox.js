@@ -102,7 +102,7 @@ function settings_menu(x) {
         <option value="'Century Gothic', sans-serif">Century Gothic</option>
     </select>
 </div>
-<div class = "two-items">
+<div class = "d-flex justify-conent-end">
     <div>
         <label for = "font-color-${x}">Color:</label>
         <input type = "color" id = "fontcolor-${x}" value = "#000000" class = "form-control settings-font-color">
@@ -112,7 +112,7 @@ function settings_menu(x) {
         <input type = "color" id = "fontshadow-${x}" value = "#ffffff" class = "form-control settings-font-shadow">
     </div>
 </div>
-<div class = "two-items">
+<div class = "d-flex justify-conent-end">
     <div>
         <input type = "checkbox" id = "bold-${x}" class = "form-check-input settings-bold">
         <label for = "bold-${x}">Bold</label>
@@ -122,7 +122,7 @@ function settings_menu(x) {
         <label for = "italics-${x}">Italics</label>
     </div>
 </div>
-<div class = "two-items">
+<div class = "d-flex justify-conent-end">
     <div>
         <input type = "checkbox" id = "underline-${x}" class = "form-check-input settings-underline">
         <label for = "underline-${x}">Underline</label>
@@ -132,7 +132,7 @@ function settings_menu(x) {
         <label for = "strikethrough-${x}">Strike</label>
     </div>
 </div>
-<div class = "two-items">
+<div class = "d-flex justify-conent-end">
     <div>
         <input type = "checkbox" id = "shadow-${x}" class = "form-check-input settings-shadow">
         <label for = "shadow-${x}">Shadow</label>

@@ -101,7 +101,7 @@
     <div class = "modal-dialog" role = "document">
         <div class = "modal-content">
             <div class = "modal-header">
-                <h3 class = "modal-title">Insert Additional Image</h3>
+                <h3 class = "modal-title" id = "insert-modal-title">Upload Base Image</h3>
                 <button id = "upload-close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
                     Close
                 </button>
@@ -112,10 +112,13 @@
                         Select Image
                     </button>
                     <button id = "uploadImgBtn" class = "btn btn-primary" style = "margin: auto; width: 40%; text-align: center;" data-dismiss = "modal" aria-label = "Close">
-                        Insert Image
+                        Add Image
                     </button>
                 </div>
                 <div style = 'position: relative;'>
+                    <div class = 'text-box-container' style = 'backdrop-filter: brightness(50%);'>
+                        <div class = 'meme-component' style = 'backdrop-filter: brightness(200%);' id = 'cropper'></div>
+                    </div>
                     <canvas
                         style = "margin: 1rem auto; display: block;"
                         id = "added-image-preview" 
