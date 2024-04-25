@@ -17,7 +17,7 @@ function add_text_box(create) {
     $("#meme").append($(`
         <div class = 'text-box-container' style = 'top: 0'>
             <div class = 'meme-component' style = 'height: 3rem;'>
-                <div class = 'meme-text' id = 'meme-text-${create.textboxes.length}'></div>
+                <div class = 'meme-text' id = 'meme-text-${create.textboxes.length}' style='color: rgb(0, 0, 0);'></div>
             </div>
         </div>`))
     $(".meme-component").each(enable_meme_component)

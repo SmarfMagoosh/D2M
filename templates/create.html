@@ -180,23 +180,25 @@
             </div>
         </div>
     </div>
-    <div id = "meme">
-        <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;" id = "img-btns">
-            <button 
-                class = "btn btn-primary"
-                data-target="#add-image"
-                data-toggle="modal">
-                Upload an Image
-            </button>
-            <button 
-                class = "btn btn-primary" 
-                data-toggle = "modal" 
-                data-target = "#template-list">
-                Or use a template!
-            </button>
+    <div>
+        <div id = "meme">
+            <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;" id = "img-btns">
+                <button 
+                    class = "btn btn-primary"
+                    data-target="#add-image"
+                    data-toggle="modal">
+                    Upload an Image
+                </button>
+                <button 
+                    class = "btn btn-primary" 
+                    data-toggle = "modal" 
+                    data-target = "#template-list">
+                    Or use a template!
+                </button>
+            </div>
+            <canvas id = "meme-img" height = "0" class = "border"></canvas>
+            <canvas id = "drawing" height = "0"></canvas>
         </div>
-        <canvas id = "meme-img" height = "0" class = "border"></canvas>
-        <canvas id = "drawing" height = "0"></canvas>
     </div>
 </div>
 <div id = "right-content" class = "col-lg">

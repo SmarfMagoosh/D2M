@@ -72,7 +72,7 @@
     right: 0;
     margin: auto;
     text-align: center;
-    max-width: calc(100% - 12px);
+    max-width: calc(100%)/*calc(100% - 12px)*/;
     height: calc(100%);
 }
 

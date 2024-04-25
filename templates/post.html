@@ -13,7 +13,8 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <!-- <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/> -->
+    <link rel = "stylesheet" href = "{{ url_for('static', filename='css/jquery_ui.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='js/navBar.js') }}"></script>
 
         <!-- Include Bootstrap JS and jQuery -->
@@ -24,13 +25,13 @@
 
 {% block content %}
 
-<div id = "left-content">
+<div id = "left-content" class="border border-3 rounded">
     <div id = "meme">
         <!-- put the image source here!-->
-        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image" width="425">
+        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image">
     </div>
 </div>
-<div id = "right-content">
+<div id = "right-content"class="border border-3 rounded">
     <div id = "details">
         <!-- put the meme details here!-->
         <h2> {{ post["title"] }} </h2>
@@ -38,15 +39,14 @@
             <h4>{{ post.username }}</h4>
         </a>      
         <h5> 
-            {{ post["numLikes"] }} like{%if post["numLikes"] != 1%}s{%endif%}
-            <span class="badge" id = "post-tag" {% if not post["tag"] %}hidden{%endif%}>#{{ post["tag"] }}</span>
+            <span id="num-likes">{{ post["numLikes"] }}</span> like{% if post["numLikes"] != 1 %}s{% endif %}
+            <span class="badge" id="post-tag"> {% if not post["tag"] %} No tags {% else %}#{{ post["tag"] }}{% endif %}</span>
         </h5>
             
     </div>
     <div class="post-buttons">
-        
-        <button id="like-btn" data-postId="{{ post['id'] }}" data-liked="{{ has_liked }}"><i class="fa-solid fa-thumbs-up"></i></button>  
-        <button id="dislike-btn" data-postId="{{ post['id'] }}" data-disliked="{{ has_disliked }}"><i class="fa-solid fa-thumbs-down"></i></button>   
+        <button id="like-btn" data-postId="{{ post['id'] }}" data-liked="{{ has_liked }}"><i class="fa-solid fa-thumbs-up"></i></button> 
+        <button id="dislike-btn" data-postId="{{ post['id'] }}" data-disliked="{{ has_disliked }}"><i class="fa-solid fa-thumbs-down"></i></button>  
         <button id="bookmark-btn" data-postId="{{ post['id'] }}" data-bookmark="{{ has_bookmarked }}" ><i class="fa-solid fa-bookmark"></i></button>
         {% if loggedInUser.username == post.username%}
         <!-- <button id="delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button> -->
@@ -87,7 +87,7 @@
     <h1> Comments:</h1>
 
     {% for comment in post.comments %}
-    <div class="comment-box">
+    <div class="comment-box border rounded bg-body-secondary">
         <div class="comment">
             <p class="comment-time">{{ comment.timePosted }}</p>
             <div class="comment-content">
