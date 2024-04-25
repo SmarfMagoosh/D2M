@@ -15,8 +15,8 @@ body {
 /* Style the tab */
 .tab {
     overflow: hidden;
-    border: 1px solid #ccc;
-    background-color: #f1f1f1;
+    border: 1px solid var(--bs-secondary-bg);
+    background-color: var(--bs-secondary-bg);
   }
   
   /* Style the buttons inside the tab */
@@ -33,12 +33,12 @@ body {
   
   /* Change background color of buttons on hover */
   .tab button:hover {
-    background-color: #ddd;
+    background-color: var(--bs-secondary-bg);
   }
   
   /* Create an active/current tablink class */
   .tab button.active {
-    background-color: #ccc;
+    background-color: var(--bs-secondary-bg);
   }
   
   /* Style the tab content */
@@ -47,6 +47,11 @@ body {
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;
+  }
+
+   /* CSS for the image links */
+   .image-link {
+    border-radius: 1rem; /* Adjust the value as needed */
   }
 
   
