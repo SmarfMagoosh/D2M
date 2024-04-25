@@ -19,11 +19,6 @@ body {
     text-decoration: none;
   }
 
-  /* CSS for the image links */
-  .image-link {
-    border-radius: 40px; /* Adjust the value as needed */
-  }
-
   .post-container{
     margin: 0px !important;
   }
