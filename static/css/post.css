@@ -12,22 +12,18 @@
     max-width: 100%; /* Set the maximum width of the image to 100% of its container */
     height: auto; /* Allow the height to adjust based on the image */
     overflow: hidden; /* Hide any overflow from the image */
-    border: #cccccc solid 2px; /* Use a color that fits your design */
-    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
    
 }
 /* Style for the image */
-#post-image img {
+#post-image div img {
     max-width: 100%; /* Make the image fill the container horizontally */
     height: auto; /* Allow the height to adjust based on the original aspect ratio */
     display: block; /* Ensure the image behaves as a block element */
 }
 
 #right-content {
-    border: #cccccc solid 2px; /* Use a color that fits your design */
     padding: 1rem;
-    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -99,8 +95,8 @@
 }
 
 .comment-box {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    /* background-color: #f9f9f9; */
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
     padding: 10px;
     margin-bottom: 10px;
 }
