@@ -100,6 +100,8 @@
   border-color: var(--bs-border-color);
   border-width: thin;
   border-style: solid;
+  height: calc(50px + .5rem);
+  align-content: center;
 }
 .resultslink:hover {
   background-color: var(--bs-secondary-bg);
@@ -109,6 +111,11 @@
 
 .resultsdiv{
   padding: calc(var(--bs-gutter-x) * .25);
+}
+
+.resultsimg {
+  max-width: 50px;
+  max-height: 50px;
 }
 
 /* Styles for the circular button */

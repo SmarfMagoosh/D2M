@@ -16,11 +16,12 @@
 
 {% block content %}
   
-<div class="row" data-masonry='{"percentPosition": true }' style="width: 100%;">
+
+<div class="row post-container" data-masonry='{"percentPosition": true }' style="width: 100%; margin: 10px;">
   {% for post in posts %}
   <div class="column" style="width: 30%; margin: 10px; float: left;">
     <a href="{{ url_for('get_post', post_id=post.id) }}">
-        <img src="{{ url_for('static', filename=post['thumbnail']) }}" class= "image-link" alt="" style="width: 100%; ">
+        <img src="{{ url_for('static', filename=post['thumbnail']) }}" class= "image-link rounded-3" alt="" style="width: 100%;">
     </a>
   </div>
   {% endfor %}

@@ -1006,6 +1006,7 @@ def add_user():
     )
     db.session.add(new_user)
     db.session.commit()
+    os.mkdir(f"./static/images/users/{data['gccEmail']}")
     return jsonify(returnVal)
 
 # Define a route to handle AJAX requests for creating comments
