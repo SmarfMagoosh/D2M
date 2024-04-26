@@ -908,7 +908,7 @@ def post_meme():
         else:
             imgData = body["imgData"][22:] # TODO: save templates correctly
         thumbnailData = body["thumbnailData"][22:]
-        create_tag(body["tag"])
+        create_tag(body["tag"][:8])
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -918,7 +918,7 @@ def post_meme():
             username = body["user"],
             draw = body["drawing"],
             template = body["template"],
-            tag = body["tag"]
+            tag = body["tag"][:8]
         )
         db.session.add(post_inst)
         db.session.commit()
