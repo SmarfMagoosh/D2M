@@ -19,25 +19,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const images = document.querySelectorAll(".image-link");
 
     images.forEach((img) => {
-        setColumnHeight(img);
+        img.onload = () => {
+            img.style.height = (img.clientWidth + 1) + "px";
+            img.style.width = (img.clientWidth - 1) + "px";
+        };
     });
-    window.dispatchEvent(new Event('resize'));
 });
 
-window.addEventListener('resize', function() {
-    var columns = document.querySelectorAll('.column');
-
-    columns.forEach(function(column) {
-      var img = column.querySelector('img');
-      setColumnHeight(img);
-    });
-  });
-
-  function setColumnHeight(img) {
-    var column = img.parentNode.parentNode; // Get the parent div.column
-    var imgHeight = img.height; // Get the height of the image in pixels
-
-    // Set the flex property to adjust the height dynamically
-    column.style.flex = '1 1 auto';
-    column.style.height = imgHeight + 'px'; // Set column height to match the image height
-  }

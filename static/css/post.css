@@ -89,10 +89,9 @@
 
 @media screen and (max-width: 768px) {
     .post-buttons button {
-        width: auto; /* Adjust based on screen size */
-        height: auto; /* Adjust based on screen size */
+        width: 20px; /* Adjust based on screen size */
+        height: 20px; /* Adjust based on screen size */
     }
-    
 }
 
 .comment-box {
