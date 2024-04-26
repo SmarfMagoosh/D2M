@@ -528,7 +528,8 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", loggedInUser=user, user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        created_posts = user.postList
+        return render_template("profile.html", loggedInUser=user, user=user, liked_posts=reversed(liked_posts), bookmarked_posts=reversed(bookmarked_posts), created_posts = reversed(created_posts))
     else:
         loggedInUser = load_user(session.get('customIdToken'))
         user = User.query.filter_by(username=username).first()
@@ -546,7 +547,8 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, blocked=blocked, following=following, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        created_posts = user.postList
+        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, blocked=blocked, following=following, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts, created_posts = reversed(created_posts))
         
 @app.get('/getCurrentSettings/')
 def getCurrentSettings():
