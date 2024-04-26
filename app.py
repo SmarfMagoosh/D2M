@@ -809,7 +809,7 @@ def toggle_follow_status():
             db.session.add(new_follow)
             db.session.commit()
             is_following = True
-            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower", f"/profile/{otherUser.username}")
+            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower", f"/profile/{currUser.username}")
 
         # Reload user1 instance to update followList
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
