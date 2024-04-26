@@ -5,16 +5,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setButtons();
     // get correct color for the tag
-    const tag = $("#post-tag").text().substring(1);
-    var hash = 0, i, chr;
-    if (tag.length === 0) return hash;
-    for (i = 0; i < tag.length; i++) {
-      chr = tag.charCodeAt(i);
-      hash = ((hash << 5) - hash) + chr;
-      hash |= 0; // Convert to 32bit integer
+    const tag = $("#post-tag").text().trim();
+    if(tag === "no tag"){
+        $("#post-tag").addClass("badge-secondary");
     }
-    const colors = ["primary", /*"secondary",*/ "success", "warning", "info"/*, "danger"*/];
-    $("#post-tag").addClass(`badge-${colors[Math.abs(hash)%colors.length]}`)
+    else{
+        var hash = 0, i, chr;
+        for (i = 1; i < tag.length; i++) {
+            chr = tag.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        const colors = ["primary", /*"secondary",*/ "success", "warning", "info"/*, "danger"*/];
+        $("#post-tag").addClass(`badge-${colors[Math.abs(hash)%colors.length]}`)
+    }
 
 $(document).ready(function() {
     // Event listener for delete button click
