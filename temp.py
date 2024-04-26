@@ -1,7 +1,13 @@
 import os
+from PIL import Image
 
-pfp = "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80"
-if os.path.isfile("static/images/users/u1@gcc.edu/pfp.png"):
-    pfp = "/static/images/users/u1@gcc.edu/pfp.png"
+def create_thumbnail(image_path, thumbnail_path):
+    with Image.open(image_path) as img:
+        width, height = img.size
+        ratio = 400 / width
+        img.thumbnail((width * ratio, height * ratio))
+        img.save(thumbnail_path)
 
-print(pfp)
+for file in os.listdir("./static/meme-templates"):
+    create_thumbnail(f"./static/meme-templates/{file}", f"./static/template-thumbnails/{file}")
+    print(f"/static/meme-templates/{file}")
