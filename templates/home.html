@@ -21,10 +21,11 @@
   {% for post in posts %}
   <div class="column" style="width: 30%; margin: 10px; float: left;">
     <a href="{{ url_for('get_post', post_id=post.id) }}">
-        <img src="{{ url_for('static', filename=post['thumbnail']) }}" class= "image-link rounded-3" alt="" style="width: 100%;">
+        <img src="{{ url_for('static', filename=post['thumbnail']) }}" class= "image-link rounded-3" alt="" style="width: 100%; flex-direction: column;" onload="setColumnHeight(this);">
     </a>
   </div>
   {% endfor %}
 </div>
  
+
 {% endblock %}
