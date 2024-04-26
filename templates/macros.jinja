@@ -1,0 +1,19 @@
+{% macro display_posts(postList, id = "") %}
+    <div id = "{{id}}" class="row post-container" data-masonry='{"percentPosition": true }' style="width: 100%; margin: 10px;">
+    {% for post in postList %}
+        {% if post.id %}
+            <div class="column" style="width: 30%; margin: 10px; float: left;" style = "height: 100%;">
+                <a href="{{ url_for('get_post', post_id=post.id) }}">
+                    <img src="{{ url_for('static', filename=post['thumbnail']) }}" class= "image-link rounded-1" alt="" style="width: 100%; height = 100px;">
+                </a>
+            </div>
+        {% else %}
+            <div class="column" style="width: 30%; margin: 10px; float: left;">
+                <a href="{{ url_for('get_post', post_id=post.postID) }}" style = "height: 100%;">
+                    <img src="{{ url_for('static', filename=post.thumbnail()) }}" class= "image-link rounded-1" alt="" style="width: 100%; height = 100px">
+                </a>
+            </div>
+        {% endif %}
+    {% endfor %}
+    </div>
+{% endmacro %}

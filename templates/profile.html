@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros.jinja" import display_posts with context %}
 
 {% block title %} 
 {{user.username}}
@@ -15,122 +16,75 @@
 {% block content %}
 <div class="row px-4" > 
     <div class=" mx-auto">
-    <!-- Profile widget --> 
-    <div class="shadow rounded overflow-hidden" style="background-color: var(--bs-secondary-bg);"> 
-    <div class="px-4 pt-0 pb-4 cover" style="background-image: url('/static/images/users/{{ user.gccEmail }}/banner.png')"> 
-        <div class="media align-items-end profile-head"> 
-            <div class="profile mr-2" style="margin-bottom: 4.5rem;">
-                <img id="pfp" data-user="{{ user['gccEmail'] }}" src="/static/images/users/{{user.gccEmail}}/pfp.png" alt="..." width="130" class="rounded mb-2 img-thumbnail bg-body-secondary border-2 border-dark">
-            </div>
-            <div class="media-body mb-4"> 
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="bg-body-secondary rounded px-2 border border-2 border-dark">
-                        <h2 class="mt-0 mb-0" id="username">{{user.username}}</h2>
-                        <h5 class="mt-1" id="email">({{user.gccEmail}})</h5>
+        <div class="shadow rounded overflow-hidden" style="background-color: var(--bs-secondary-bg);"> 
+            <div class="px-4 pt-0 pb-4 cover" style="background-image: url('/static/images/users/{{ user.gccEmail }}/banner.png')"> 
+                <div class="media align-items-end profile-head"> 
+                    <div class="profile mr-2" style="margin-bottom: 4.5rem;">
+                        <img id="pfp" data-user="{{ user['gccEmail'] }}" src="/static/images/users/{{user.gccEmail}}/pfp.png" alt="..." width="130" class="rounded mb-2 img-thumbnail bg-body-secondary border-2 border-dark">
                     </div>
-                    {% if loggedInUser and loggedInUser.gccEmail != user.gccEmail %}
-                    <div>
-                        <button id="blockButton" href="#" class="btn btn-dark btn-sm">
-                            {% if blocked %}
-                                Unblock
-                            {% else %}
-                                Block
+                    <div class="media-body mb-4"> 
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="bg-body-secondary rounded px-2 border border-2 border-dark">
+                                <h2 class="mt-0 mb-0" id="username">{{user.username}}</h2>
+                                <h5 class="mt-1" id="email">({{user.gccEmail}})</h5>
+                            </div>
+                            {% if loggedInUser and loggedInUser.gccEmail != user.gccEmail %}
+                            <div>
+                                <button id="blockButton" href="#" class="btn btn-dark btn-sm">
+                                    {% if blocked %}
+                                        Unblock
+                                    {% else %}
+                                        Block
+                                    {% endif %}
+                                </button>
+
+                                {% if not blocked %}
+                                    <button id="followButton" href="#" class="btn btn-dark btn-sm">
+                                        {% if following %}
+                                            Unfollow
+                                        {% else %}
+                                            Follow
+                                        {% endif %}
+                                    </button>
+                                {% else %}
+                                    <button id="followButton" href="#" style="display: none;" class="btn btn-dark btn-sm">
+                                        {% if following %}
+                                            Unfollow
+                                        {% else %}
+                                            Follow
+                                        {% endif %}
+                                    </button>
+                                {% endif %}
+                            </div>
                             {% endif %}
-                        </button>
-
-                        {% if not blocked %}
-                            <button id="followButton" href="#" class="btn btn-dark btn-sm">
-                                {% if following %}
-                                    Unfollow
-                                {% else %}
-                                    Follow
-                                {% endif %}
-                            </button>
-                        {% else %}
-                            <button id="followButton" href="#" style="display: none;" class="btn btn-dark btn-sm">
-                                {% if following %}
-                                    Unfollow
-                                {% else %}
-                                    Follow
-                                {% endif %}
-                            </button>
+                        </div>
+                        {% if loggedInUser and loggedInUser.gccEmail == user.gccEmail %}
+                        <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block" style="--bs-btn-border-color: var(--bs-tertiary-bg); width: 7rem;">Edit profile</a>
                         {% endif %}
-                    </div>
-                    {% endif %}
-                </div>
-                {% if loggedInUser and loggedInUser.gccEmail == user.gccEmail %}
-                <a href="{{ url_for('get_settings') }}" class="btn btn-dark btn-sm btn-block" style="--bs-btn-border-color: var(--bs-tertiary-bg); width: 7rem;">Edit profile</a>
-                {% endif %}
-            </div> 
-        </div>
-        
-    </div> 
-    <div class="p-4 d-flex justify-content-end text-center bg-body-secondary"> 
-        <!-- <ul class="list-inline mb-0"> 
-            <li class="list-inline-item">                         
-                    <h5 class="font-weight-bold mb-0 d-block">215</h5>
-            <small class="text-muted"> 
-                        <i class="fas fa-image mr-1"></i>Photos</small> 
-                      </li> 
-                    <li class="list-inline-item"> 
-                        <h5 class="font-weight-bold mb-0 d-block">745</h5>                            
-                        <small class="text-muted"> 
-                        <i class="fas fa-user mr-1"></i>Followers</small> 
-                        </li> 
-                        <li class="list-inline-item"> 
-                            <h5 class="font-weight-bold mb-0 d-block">340</h5>
-                            <small class="text-muted"> 
-                                <i class="fas fa-user mr-1"></i>Following</small> 
-                            </li> 
-                         </ul>  -->
                     </div> 
-                    <div class="px-4 py-3 bg-body-secondary"> 
-                        <h5 class="mb-0">Bio</h5>
-                         <div class="p-4 rounded shadow-sm bg-body-tertiary mb-2">
-                             <p class="font-italic mb-0">{{user.bio}} </p> 
-                         </div>
-
-                  <div class="tab border border-2" style="background-color: var(--bs-body-bg);">
-                   <button class="tablinks" onclick="openTab(event, 'Created')">Created</button>
-                    <button class="tablinks" onclick="openTab(event, 'Liked')">Liked</button>
-                    <button class="tablinks" onclick="openTab(event, 'Bookmarked')">Bookmarked </button>
-                  </div>
-                              
-                  <div id="Created" class="tabcontent row" data-masonry='{"percentPosition": true }' style="background-color: var(--bs-body-bg); width: 100%;">
-                    {% for post in user.postList  %}
-                    <div class="column" style="width: 31%; margin: 10px; float: left;">
-                        <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                            <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" class="image-link">
-                            </a>
-                      </div>
-                   {% endfor %}
-                  </div>
-
-
-                              
-                  <div id="Liked" class="tabcontent row" data-masonry='{"percentPosition": true }' style="background-color: var(--bs-secondary-bg); width: 100%;">
-                   {% for post in liked_posts %}
-                   <div class="column" style="width: 31%; margin: 10px; float: left; border-radius: 20px;">
-                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                        <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
-                        </a>
-                  </div>
-                    {% endfor %}
-                  </div>
-                              
-                  <div id="Bookmarked" class="tabcontent row" data-masonry='{"percentPosition": true }' style="background-color: var(--bs-secondary-bg); width: 100%;">
-                    {% for post in bookmarked_posts %}
-                   <div class="column" style="width: 31%; margin: 10px; float: left; border-radius: 20px;">
-                    <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                        <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" width="425" class="image-link">
-                        </a>
-                  </div>
-                    {% endfor %}
-
-                  </div>
-                           
+                </div>
+            </div> 
+        <div class="px-4 py-3 bg-body-secondary"> 
+            <h5 class="mb-0">Bio</h5>
+            <div class="p-4 rounded shadow-sm bg-body-tertiary mb-2">
+                <p class="font-italic mb-0">{{user.bio}} </p> 
+            </div>
         </div>
+
+        <div class="tab border border-2" style="background-color: var(--bs-body-bg);">
+            <button class="tablinks active">Created</button>
+            <button class="tablinks">Liked</button>
+            <button class="tablinks">Bookmarked </button>
+        </div>
+                    
+        {{ display_posts(user.postList, "created") }}
+
+        {{ display_posts(liked_posts, "liked") }}
+
+        {{ display_posts(bookmarked_posts, "bookmarked") }}
+        </div>           
     </div>
+</div>
     <script>
         // Function to execute when the follow button is clicked
 

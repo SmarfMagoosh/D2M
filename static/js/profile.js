@@ -5,12 +5,21 @@
  there is a logged in user the json contains basic user info.
  ~Bryce */
 
- document.addEventListener('DOMContentLoaded', function() {
-  checkImages();
+document.addEventListener('DOMContentLoaded', function() {
+    checkImages();
+    $(".post-container").hide()
+    $("#created").show()
+    $(".tablinks").click(e => {
+    const tab = $(e.target).text().toLowerCase();
+    $(".post-container").hide()
+    $(`#${tab}`).show();
+    $(".tablinks").removeClass("active");
+    $(e.target).addClass("active");
+    })
 });
 
 
- function checkImages() {
+function checkImages() {
   gccEmail = document.getElementById('pfp').getAttribute('data-user')
   fetch(`/profile_json/${gccEmail}`)
     .then(response => response.json())
@@ -22,19 +31,3 @@
       console.error('Error fetching profile data:', error);
     });
 }
-
-
-
-function openTab(evt, tabName) {
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-      tabcontent[i].style.display = "none";
-    }
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-      tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-  }
