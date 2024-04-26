@@ -424,22 +424,19 @@ async function getCurrentUser() {
 
 
 //DOES NOT WORK YET
-function fetchNumLikes(postID) {
-    // Make an AJAX request to the backend to retrieve the number of likes
-    $.ajax({
-        url: '/get_num_likes/',
-        method: 'GET',
-        data: { postID: postID },
-        success: function(response) {
-            // Update the UI with the fetched number of likes
-            $('#num-likes').text(response.numLikes);
-            // Here you can update your UI with the fetched number of likes
-        },
-        error: function(xhr, status, error) {
-            console.error('Error fetching number of likes:', error);
+async function fetchNumLikes(postID) {
+    try {
+        const response = await fetch('/get_num_likes/'+postID);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-    });
+        const numLikes = await response.text(); // Assuming the response is text
+        $('#num-likes').text(numLikes);
+    } catch (error) {
+        console.error('Error fetching number of likes:', error);
+    }
 }
+
 
 
 });

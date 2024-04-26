@@ -1,8 +1,8 @@
 #main-content-div {
     width: 80%;
     display: grid;
-    grid-template-columns: 50% 50%;
-    margin: auto;
+    grid-template-columns: 50% 70%;
+    margin: 2rem;
         padding: 5%;
 
 }
@@ -72,8 +72,8 @@
 }
 
 .post-buttons button {
-    width: 50px; /* Adjust according to your preference */
-    height: 50px; /* Adjust according to your preference */
+    width: 3.5rem; /* Adjust according to your preference */
+    height: 3.5rem; /* Adjust according to your preference */
     border-radius: 50%; /* Makes the button circular */
     background-color: #9c9c9c; /* Change to your desired button color */
     border: none;
@@ -101,6 +101,7 @@
     margin-bottom: 10px;
 }
 
+
 .comment-time {
     color: #999;
     font-size: 0.8em;
@@ -109,6 +110,15 @@
 .comment-content {
     margin-top: 5px;
 }
+
+
+#right-content #post-title {
+    max-width: fit-content !important; /* Adjust as needed */
+    max-height: 5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 
 /* Default styles */
 #left-content,

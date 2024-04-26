@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -29,6 +29,7 @@
         <a class="navbar-brand" href="{{ url_for('get_home') }}" style = "margin-left: .75rem;">
             <img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:3.5rem;height:3.5rem;border-radius: 10px;">
         </a>
+        <img src="{{url_for('static', filename='images/logo2.png')}}" alt="D2M tezt" style="width:7rem;height:3.5rem;border-radius: 10px;">
 
         <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -132,7 +133,7 @@
 
             {% if not templates %}
             <a href="{{ url_for('get_create') }}" class="circular-button-link">
-                <button class="circular-button">+</button>
+                <button class="circular-button" style="display: flexbox;"><p style="height:auto;">+</p></button>
             </a>
             {% endif %}
             
