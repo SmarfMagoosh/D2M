@@ -28,13 +28,15 @@
 <div id = "left-content" class="border border-3 rounded">
     <div id = "meme">
         <!-- put the image source here!-->
-        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image">
+        <img src = "{{ url_for('static', filename=post['thumbnail']) }}" alt = "" id = "post-image" style="display: block; margin:auto; width: 95%; border-radius: 1rem; ">
     </div>
 </div>
 <div id = "right-content"class="border border-3 rounded">
     <div id = "details">
         <!-- put the meme details here!-->
-        <h2> {{ post["title"] }} </h2>
+        <h2> 
+            <p class="title" id="post-title"> {{ post["title"] }} </p>
+        </h2>
         <a href="{{ url_for('get_profile', username=post.username) }}">
             <h4>{{ post.username }}</h4>
         </a>      
@@ -62,7 +64,25 @@
             <button id="remix-btn" ><i class="fa-solid fa-file-pen"></i></button>
         </a> 
     </div>
-
+    <div id = "comment-content" style="max-height: 10rem;  overflow-y: scroll; margin-top: 1rem">  
+        {% for comment in post.comments %}
+        <div class="comment-box border rounded bg-body-secondary">
+            <div class="comment">
+                <p class="comment-time">{{ comment.timePosted }}</p>
+                <div class="comment-content d-flex justify-content-between" >
+                    <p ><strong>{{ comment.username }}</strong>: {{ comment.content }}</p>
+                    {% if loggedInUser.username == comment.username or loggedInUser.username == post.username %} 
+                    <button data-commentId="{{ comment.id }}" type="button" class="btn btn-danger" id="deleteCommentBtn" data-toggle="modal" data-target="#confirmCommentDeleteModal" style="text-align: right; max-height: 2.5rem">
+                        <i class="fa-solid fa-trash"></i> 
+                    </button>
+                    {% endif %} 
+                </div>
+                
+            </div>
+        </div>
+        
+        {% endfor %}
+    </div>
     <form id="comment-form" data-postId="{{ post['id'] }}">
         <br>
         <h5><label for="comment">Leave a Comment:</label><br></h5>
@@ -83,26 +103,7 @@
     </div>
 </div>
 
-<div id = "comment-content">
-    <h1> Comments:</h1>
 
-    {% for comment in post.comments %}
-    <div class="comment-box border rounded bg-body-secondary">
-        <div class="comment">
-            <p class="comment-time">{{ comment.timePosted }}</p>
-            <div class="comment-content">
-                <p><strong>{{ comment.username }}</strong>: {{ comment.content }}</p>
-            </div>
-            {% if loggedInUser.username == comment.username or loggedInUser.username == post.username %} 
-            <button data-commentId="{{ comment.id }}" type="button" class="btn btn-danger" id="deleteCommentBtn" data-toggle="modal" data-target="#confirmCommentDeleteModal">
-                <i class="fa-solid fa-trash"></i> 
-            </button>
-            {% endif %} 
-        </div>
-    </div>
-    
-    {% endfor %}
-</div>
 
 
 <!-- Confirmation Modal -->

@@ -912,7 +912,7 @@ def post_meme():
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
-            title = body["title"],
+            title = body["title"][:50],
             backImage = "", #updated later
             timePosted = datetime.now(),
             username = body["user"],
@@ -1035,6 +1035,11 @@ def create_comment_route():
 
     # Return a response indicating success
     return {'message': 'Comment created successfully'}, 200
+
+@app.route('/get_num_likes/<int:id>', methods=['GET'])
+def get_num_likes(id):
+    post = Post.query.get_or_404(id)
+    return str(post.numLikes)  # Return the number of likes as a string
 
 # Define a route to handle AJAX requests for creating comments
 @app.post('/create_report/')
