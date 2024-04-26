@@ -189,6 +189,10 @@ body{
   color: inherit;
 }
 
+.notif-time{
+  font-size: .75rem;
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
