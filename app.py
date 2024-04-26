@@ -1291,7 +1291,7 @@ def get_likes():
         'posts': [p.render_json() for p in recent]
     }
 
-@app.route('/search', methods=['GET'])
+@app.route('/search/', methods=['GET'])
 def search():
     search_query = request.args.get('query', default=None)
     tag = request.args.get('tag', default=None)
@@ -1299,7 +1299,7 @@ def search():
     matching_posts = Post.query
     
     if search_query != None:
-        matching_users = matching_users.filter(User.username.ilike(f'%{search_query}%'))
+        matching_users = matching_users.filter((User.username.ilike(f'%{search_query}%')) | (User.gccEmail.ilike(f'%{search_query}%')))
         matching_posts = matching_posts.filter(Post.title.ilike(f'%{search_query}%'))
     
     if tag != None:
