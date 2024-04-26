@@ -426,6 +426,8 @@ async function getCurrentUser() {
     }
 }
 
+
+//DOES NOT WORK YET
 async function fetchNumLikes(postID) {
     try {
         const response = await fetch('/get_num_likes/'+postID);
@@ -439,47 +441,6 @@ async function fetchNumLikes(postID) {
     }
 }
 
-window.addEventListener('resize', function() {
-    var columns = document.querySelectorAll('.column');
 
-    columns.forEach(function(column) {
-      var img = column.querySelector('img');
-      setColumnHeight(img);
-    });
-  });
 
-  function setColumnHeight(img) {
-    var column = img.parentNode.parentNode; // Get the parent div.column
-    var imgHeight = img.height; // Get the height of the image in pixels
-
-    // Set the flex property to adjust the height dynamically
-    column.style.flex = '1 1 auto';
-    column.style.height = imgHeight + 'px'; // Set column height to match the image height
-  }
-
-  window.addEventListener('resize', function() {
-    var windowWidth = window.innerWidth;
-    var mainContentDiv = document.getElementById('main-content-div');
-    var leftContent = document.getElementById('left-content');
-    var rightContent = document.getElementById('right-content');
-  
-    if (windowWidth < 786) {
-      // If window width is less than 786px, stack left content on top of right content
-      mainContentDiv.style.gridTemplateColumns = '100%';
-      leftContent.style.width = '100%';
-      leftContent.style.marginRight = '0';
-      rightContent.style.width = '100%';
-      rightContent.style.padding = '0';
-    } else {
-      // Otherwise, display both contents side by side
-      mainContentDiv.style.gridTemplateColumns = '50% 70%';
-      leftContent.style.width = 'auto';
-      leftContent.style.marginRight = '1rem';
-      rightContent.style.width = 'auto';
-      rightContent.style.padding = '1rem';
-    }
-  });
-  
-  // Call the resize event listener initially to set the layout based on the initial window width
-  window.dispatchEvent(new Event('resize'));
 });
