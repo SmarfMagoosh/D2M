@@ -907,11 +907,15 @@ def delete_comment(id):
     user = load_user(session.get('customIdToken'))
     comment = Comment.query.get(id)
     postID = comment.postID
-    if (user and comment) and ((user.gccEmail == comment.username) or (Post.query.get(postID) == postID)):
-        entry_to_delete = Comment.query.get_or_404(id)
-        db.session.delete(entry_to_delete)
-        db.session.commit()
-        return 'Entry deleted successfully'
+    if (user and comment):
+        is_comment_owner = (user.username == comment.username) or (user.gccEmail == comment.username)
+        post = Post.query.get(postID)
+        is_post_owner = post.owner.gccEmail == user.gccEmail if post else False
+        if is_comment_owner or is_post_owner:
+            entry_to_delete = Comment.query.get_or_404(id)
+            db.session.delete(entry_to_delete)
+            db.session.commit()
+            return 'Entry deleted successfully'
     else:
         return 'Entry not deleted'
 
