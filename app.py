@@ -105,7 +105,7 @@ def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 with app.app_context():
-    # db.drop_all()
+    #db.drop_all()
     db.create_all()
 
 #define db classes and tables here
@@ -407,7 +407,7 @@ class Comment(db.Model) :
 		}
 
 with app.app_context():
-    # db.drop_all()
+    #db.drop_all()
     db.create_all()
 
     # tag1 = Tag(tag="tag1")
