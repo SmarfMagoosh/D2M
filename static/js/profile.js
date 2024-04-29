@@ -1,9 +1,3 @@
-// account = sessionStorage.getItem("customIdToken")
-/* FYI this ^^^^ is outdated. To get the current user you now how to make a fetch
- request to fetch('/getUserInfo'). This responds with a json. The json contains 
- a 'loggedIn' field that contains a boolean to see if there's a logged in user. If
- there is a logged in user the json contains basic user info.
- ~Bryce */
 
  document.addEventListener('DOMContentLoaded', function() {
   checkImages();
@@ -40,6 +34,20 @@ function openTab(evt, tabName) {
     window.dispatchEvent(new Event('resize'));
   }
 
-  
+  window.addEventListener('resize', function() {
+    var columns = document.querySelectorAll('.column');
 
-  
+    columns.forEach(function(column) {
+      var img = column.querySelector('img');
+      setColumnHeight(img);
+    });
+  });
+
+  function setColumnHeight(img) {
+    var column = img.parentNode.parentNode; // Get the parent div.column
+    var imgHeight = img.height; // Get the height of the image in pixels
+
+    // Set the flex property to adjust the height dynamically
+    column.style.flex = '1 1 auto';
+    column.style.height = imgHeight + 'px'; // Set column height to match the image height
+  }

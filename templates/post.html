@@ -59,9 +59,9 @@
         {% else %}
         <button id="report-btn" type="button" class="btn" data-postId="{{ post['id'] }}" data-toggle="modal" data-target="#exampleModal"><i class="fa-solid fa-flag"></i></button>
         {% endif %}
-        <button id="copy-link-btn" type="button" class="btn"><i class="fa-solid fa-link"></i></button>
+        <button id="copy-link-btn"><i class="fa-solid fa-link"></i></button>
         <a href="{{ url_for('get_remix', post_id=post.id ) }}">
-            <button id="remix-btn" type="button" class="btn"><i class="fa-solid fa-file-pen"></i></button>
+            <button id="remix-btn" ><i class="fa-solid fa-file-pen"></i></button>
         </a> 
     </div>
     <div id = "comment-content" style="max-height: 10rem;  overflow-y: scroll; margin-top: 1rem">  
