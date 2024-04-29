@@ -8,6 +8,7 @@ import re
 from flask import Flask, session, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
+from sqlalchemy import event
 from apscheduler.schedulers.background import BackgroundScheduler
 from io import BytesIO
 from PIL import Image
@@ -105,10 +106,11 @@ def create_thumbnail(image_data, filepath, dimensions = (400, 800)):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 with app.app_context():
-    # db.drop_all()
+    #db.drop_all()
     db.create_all()
 
 #define db classes and tables here
+
 
 class User(db.Model) :
     __tablename__ = 'Users'
@@ -134,6 +136,7 @@ class User(db.Model) :
     followList = db.relationship('Follow', back_populates='follower', foreign_keys='Follow.user1')
     followerList = db.relationship('Follow', back_populates='followed', foreign_keys='Follow.user2')
     blockList = db.relationship('Block', back_populates='blocker', foreign_keys='Block.user1')
+    
 
     def postlist_to_json(self):
         return {
@@ -185,6 +188,19 @@ class User(db.Model) :
             "pfp": pfp,
             "banner": banner
         }
+    # Define a function to handle cascading updates when the username changes
+    def handle_username_update(mapper, connection, target):
+        old_username = connection.scalar(
+            db.select([mapper.columns.username]).where(mapper.primary_key[0] == target.gccEmail)
+        )
+        if old_username != target.username:
+            # Perform your cascading updates here
+            # For example, update references to the old username in other tables
+            pass
+
+
+    
+    
 
 class Report(db.Model) :
     __tablename__ = 'Reports'
@@ -391,7 +407,7 @@ class ExtraImage(db.Model):
 class Comment(db.Model) :
     __tablename__ = 'Comments'
     commentID = db.Column(db.Integer, primary_key = True, autoincrement=True)
-    content = db.Column(db.String, nullable = False)
+    content = db.Column(db.String(200), nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
@@ -407,7 +423,7 @@ class Comment(db.Model) :
 		}
 
 with app.app_context():
-    # db.drop_all()
+    #db.drop_all()
     db.create_all()
 
     # tag1 = Tag(tag="tag1")
@@ -445,6 +461,7 @@ with app.app_context():
     # db.session.add(notif)
     # db.session.add_all((tag1,tag2,tag3,tag4,tag5,tag6))
     # db.session.commit()
+
 
 # for the update to like counts every 10 minutes
 scheduler = BackgroundScheduler()
@@ -528,7 +545,8 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", loggedInUser=user, user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        created_posts = reversed(user.postList)
+        return render_template("profile.html", loggedInUser=user, user=user, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts, created_posts = created_posts)
     else:
         loggedInUser = load_user(session.get('customIdToken'))
         user = User.query.filter_by(username=username).first()
@@ -546,7 +564,8 @@ def get_profile(username = None):
         liked_posts = Post.query.filter(Post.postID.in_(liked_post_ids)).all()
         # Fetch the bookmarked posts
         bookmarked_posts = Post.query.filter(Post.postID.in_(bookmarked_post_ids)).all()
-        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, blocked=blocked, following=following, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts)
+        created_posts = reversed(user.postList)
+        return render_template("profile.html", loggedInUser=load_user(session.get('customIdToken')), user=user, blocked=blocked, following=following, liked_posts=liked_posts, bookmarked_posts=bookmarked_posts , created_posts = created_posts)
         
 @app.get('/getCurrentSettings/')
 def getCurrentSettings():
@@ -887,7 +906,8 @@ def delete_entry(id):
 def delete_comment(id):
     user = load_user(session.get('customIdToken'))
     comment = Comment.query.get(id)
-    if user and comment and user.username == comment.username:
+    postID = comment.postID
+    if (user and comment) and ((user.gccEmail == comment.username) or (Post.query.get(postID) == postID)):
         entry_to_delete = Comment.query.get_or_404(id)
         db.session.delete(entry_to_delete)
         db.session.commit()
@@ -1391,6 +1411,7 @@ def loginExisting():
         return jsonify({'exists': bcrypt.checkpw(password.encode('utf-8'), user.backupPasswordHash), 'email': user.gccEmail})
     else:
         return jsonify({'exists': False, 'email': ""})
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MAIN

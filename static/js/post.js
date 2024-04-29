@@ -441,6 +441,29 @@ async function fetchNumLikes(postID) {
     }
 }
 
+window.addEventListener('resize', function() {
+    var windowWidth = window.innerWidth;
+    var mainContentDiv = document.getElementById('main-content-div');
+    var leftContent = document.getElementById('left-content');
+    var rightContent = document.getElementById('right-content');
+  
+    if (windowWidth < 786) {
+      // If window width is less than 786px, stack left content on top of right content
+      mainContentDiv.style.gridTemplateColumns = '100%';
+      leftContent.style.width = '100%';
+      leftContent.style.marginRight = '0';
+      rightContent.style.width = '100%';
+      rightContent.style.padding = '0';
+    } else {
+      // Otherwise, display both contents side by side
+      mainContentDiv.style.gridTemplateColumns = '50% 70%';
+      leftContent.style.width = 'auto';
+      leftContent.style.marginRight = '1rem';
+      rightContent.style.width = 'auto';
+      rightContent.style.padding = '1rem';
+    }
+  });
+
 
 
 });
