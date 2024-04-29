@@ -809,7 +809,7 @@ def toggle_follow_status():
             db.session.add(new_follow)
             db.session.commit()
             is_following = True
-            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower", f"/profile/{otherUser.username}")
+            create_notification(otherUserEmail, f"{currUser.username} has followed you", "New Follower", f"/profile/{currUser.username}")
 
         # Reload user1 instance to update followList
         currUser = User.query.filter_by(gccEmail=currUser.gccEmail).first()
@@ -908,17 +908,17 @@ def post_meme():
         else:
             imgData = body["imgData"][22:] # TODO: save templates correctly
         thumbnailData = body["thumbnailData"][22:]
-        create_tag(body["tag"])
+        create_tag(body["tag"][:8])
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
-            title = body["title"],
+            title = body["title"][:50],
             backImage = "", #updated later
             timePosted = datetime.now(),
             username = body["user"],
             draw = body["drawing"],
             template = body["template"],
-            tag = body["tag"]
+            tag = body["tag"][:8]
         )
         db.session.add(post_inst)
         db.session.commit()
@@ -1006,6 +1006,7 @@ def add_user():
     )
     db.session.add(new_user)
     db.session.commit()
+    os.mkdir(f"./static/images/users/{data['gccEmail']}")
     return jsonify(returnVal)
 
 # Define a route to handle AJAX requests for creating comments
@@ -1034,6 +1035,11 @@ def create_comment_route():
 
     # Return a response indicating success
     return {'message': 'Comment created successfully'}, 200
+
+@app.route('/get_num_likes/<int:id>', methods=['GET'])
+def get_num_likes(id):
+    post = Post.query.get_or_404(id)
+    return str(post.numLikes)  # Return the number of likes as a string
 
 # Define a route to handle AJAX requests for creating comments
 @app.post('/create_report/')
@@ -1285,7 +1291,7 @@ def get_likes():
         'posts': [p.render_json() for p in recent]
     }
 
-@app.route('/search', methods=['GET'])
+@app.route('/search/', methods=['GET'])
 def search():
     search_query = request.args.get('query', default=None)
     tag = request.args.get('tag', default=None)
@@ -1293,7 +1299,7 @@ def search():
     matching_posts = Post.query
     
     if search_query != None:
-        matching_users = matching_users.filter(User.username.ilike(f'%{search_query}%'))
+        matching_users = matching_users.filter((User.username.ilike(f'%{search_query}%')) | (User.gccEmail.ilike(f'%{search_query}%')))
         matching_posts = matching_posts.filter(Post.title.ilike(f'%{search_query}%'))
     
     if tag != None:

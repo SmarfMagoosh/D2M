@@ -14,3 +14,15 @@ window.addEventListener('resize', function() {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const images = document.querySelectorAll(".image-link");
+
+    images.forEach((img) => {
+        img.onload = () => {
+            img.style.height = (img.clientWidth + 1) + "px";
+            img.style.width = (img.clientWidth - 1) + "px";
+        };
+    });
+});
+

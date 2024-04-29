@@ -1,8 +1,8 @@
 #main-content-div {
     width: 80%;
     display: grid;
-    grid-template-columns: 50% 50%;
-    margin: auto;
+    grid-template-columns: 50% 70%;
+    margin: 2rem;
         padding: 5%;
 
 }
@@ -12,22 +12,18 @@
     max-width: 100%; /* Set the maximum width of the image to 100% of its container */
     height: auto; /* Allow the height to adjust based on the image */
     overflow: hidden; /* Hide any overflow from the image */
-    border: #cccccc solid 2px; /* Use a color that fits your design */
-    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
    
 }
 /* Style for the image */
-#post-image img {
+#post-image div img {
     max-width: 100%; /* Make the image fill the container horizontally */
     height: auto; /* Allow the height to adjust based on the original aspect ratio */
     display: block; /* Ensure the image behaves as a block element */
 }
 
 #right-content {
-    border: #cccccc solid 2px; /* Use a color that fits your design */
     padding: 1rem;
-    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -76,8 +72,8 @@
 }
 
 .post-buttons button {
-    width: 50px; /* Adjust according to your preference */
-    height: 50px; /* Adjust according to your preference */
+    width: 3.5rem; /* Adjust according to your preference */
+    height: 3.5rem; /* Adjust according to your preference */
     border-radius: 50%; /* Makes the button circular */
     background-color: #9c9c9c; /* Change to your desired button color */
     border: none;
@@ -99,11 +95,12 @@
 }
 
 .comment-box {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    /* background-color: #f9f9f9; */
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
     padding: 10px;
     margin-bottom: 10px;
 }
+
 
 .comment-time {
     color: #999;
@@ -113,6 +110,15 @@
 .comment-content {
     margin-top: 5px;
 }
+
+
+#right-content #post-title {
+    max-width: fit-content !important; /* Adjust as needed */
+    max-height: 5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 
 /* Default styles */
 #left-content,

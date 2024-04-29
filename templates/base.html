@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -29,6 +29,9 @@
         <a class="navbar-brand" href="{{ url_for('get_home') }}" style = "margin-left: .75rem;">
             <img src="{{url_for('static', filename='images/logo.png')}}" alt="D2M logo" style="width:3.5rem;height:3.5rem;border-radius: 10px;">
         </a>
+        <a class="navbar-brand" href="{{ url_for('get_home') }}" style = "margin-left: .75rem;">
+            <img src="{{url_for('static', filename='images/logo2.png')}}" alt="D2M text" style="width:7rem;height:3.5rem;border-radius: 10px;">
+        </a>
 
         <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -55,7 +58,7 @@
                 <h3 id="no-results" hidden>No Results</h3>
                 <div class="col-6" id="postResultTemplate" hidden>
                     <a href="/post/10" class="resultslink rounded">
-                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" class="m-1 resultsimg">
                         <span><strong>post name</strong></span>
                         by
                         <span><em>username</em></span>
@@ -63,7 +66,7 @@
                 </div>
                 <div id="userResultTemplate" hidden>
                     <a href="/profile/u1" class="resultslink rounded">
-                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" height="50" class="m-1">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=80" class="m-1 resultsimg">
                         <span><strong>username</strong></span>
                     </a>
                 </div>
@@ -132,7 +135,7 @@
 
             {% if not templates %}
             <a href="{{ url_for('get_create') }}" class="circular-button-link">
-                <button class="circular-button">+</button>
+                <button class="circular-button" style="display: flexbox;"><p style="height:auto;">+</p></button>
             </a>
             {% endif %}
             
