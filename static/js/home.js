@@ -20,9 +20,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     images.forEach((img) => {
         img.onload = () => {
-            img.style.height = (img.clientWidth + 1) + "px";
-            img.style.width = (img.clientWidth - 1) + "px";
+            setColumnHeight(img)
         };
     });
+    window.dispatchEvent(new Event('resize'));
 });
+
+function setColumnHeight(img) {
+    var column = img.parentNode.parentNode; // Get the parent div.column
+    var imgHeight = img.height; // Get the height of the image in pixels
+    var fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize); // Get the root font size in pixels
+    var imgHeightREM = imgHeight / fontSize; // Convert the image height to REM units
+    column.style.height = imgHeightREM + 'rem'; // Set the height of the column to match the image height in REM units
+  }
 
