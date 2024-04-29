@@ -427,7 +427,7 @@ async function getCurrentUser() {
 }
 
 
-
+//DOES NOT WORK YET
 async function fetchNumLikes(postID) {
     try {
         const response = await fetch('/get_num_likes/'+postID);

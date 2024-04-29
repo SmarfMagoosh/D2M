@@ -407,7 +407,7 @@ class ExtraImage(db.Model):
 class Comment(db.Model) :
     __tablename__ = 'Comments'
     commentID = db.Column(db.Integer, primary_key = True, autoincrement=True)
-    content = db.Column(db.String, nullable = False)
+    content = db.Column(db.String(200), nullable = False)
     # highly recommended to use ISO format, is possible to use db.DateTime instead of db.String
     timePosted = db.Column(db.String, nullable = False)
     username = db.Column(db.String, db.ForeignKey('Users.username'))
