@@ -101,7 +101,7 @@
     <div class = "modal-dialog" role = "document">
         <div class = "modal-content">
             <div class = "modal-header">
-                <h3 class = "modal-title">Insert Additional Image</h3>
+                <h3 class = "modal-title" id = "image-modal-header">Upload Base Image</h3>
                 <button id = "upload-close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
                     Close
                 </button>
@@ -214,7 +214,7 @@
         <button id = "new-box-btn" class = "btn btn-dark">Add Text Area</button>
     </div>
     <div class="dropdown-center input-group my-3">
-        <input type="text" placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
+        <input type="text" placeholder = "Give your post a title!" id = "post-title" class = "form-control" maxlength="50"></textarea>
         <button id="c-tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control rounded-end ps-1" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="margin: unset;">no tag</button>
         <ul class="dropdown-menu px-3" style="width: 20rem;">
             <li>
@@ -227,11 +227,10 @@
         </ul>
     </div>
     <div class = "d-flex justify-content-end">
+        <button id = "save-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Save</button>
         {% if loggedInUser %}
         <button id = "post-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>
-        {% else %}
-        <button id = "save-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Save</button>
-        {%endif %}
+        {% endif %}
         <a href = "/home/" class = "btn btn-danger" style="width: 6vw;">Cancel</a>
     </div>
 </div>

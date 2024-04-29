@@ -2,6 +2,7 @@ $("document").ready(() => {
     window.switching = true;
 
     const create = {}
+    window.get_create = () => create
     create.btns = localStorage.theme === "dark" ? "light" : "dark"
     $(".btn-dark").removeClass("btn-dark").addClass(`btn-${create.btns}`)
     fetch("/getUserInfo/")

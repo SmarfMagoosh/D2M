@@ -50,8 +50,11 @@ function dmToggleFlip(){
     const theme = dm_toggle.checked ? "dark" : "light"
     if (theme == "dark") {
         $(".btn-dark").removeClass("btn-dark").addClass("btn-light")
+        $(".bg-light").removeClass("bg-light").addClass("bg-dark")
     } else {
         $(".btn-light").removeClass("btn-light").addClass("btn-dark")
+        $(".bg-dark").removeClass("bg-dark").addClass("bg-light")
+
     }
     setTheme(theme)
     setStoredTheme(theme)
