@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 resizeColumns(); // Call the function to resize columns
             }
         };
-    });
+    }); 
     setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
     }, 200)
