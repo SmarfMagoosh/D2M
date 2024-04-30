@@ -74,7 +74,7 @@ function search() {
         numargs++;
         tag = `tag=${tagDropdownBtn.innerText.substring(1)}`;
     }
-    let query = searchBar.value;
+    let query = searchBar.value.trim();
     if(query != "") {
         numargs++;
         query = `query=${query}`
