@@ -46,7 +46,10 @@
         </h5>
             
     </div>
+
+    {% if loggedInUser.username %}
     <div class="post-buttons">
+        
         <button id="like-btn" type="button" class="btn" data-postId="{{ post['id'] }}" data-liked="{{ has_liked }}"><i class="fa-solid fa-thumbs-up"></i></button> 
         <button id="dislike-btn" type="button" class="btn" data-postId="{{ post['id'] }}" data-disliked="{{ has_disliked }}"><i class="fa-solid fa-thumbs-down"></i></button>  
         <button id="bookmark-btn" type="button" class="btn" data-postId="{{ post['id'] }}" data-bookmark="{{ has_bookmarked }}" ><i class="fa-solid fa-bookmark"></i></button>
@@ -64,6 +67,8 @@
             <button id="remix-btn" ><i class="fa-solid fa-file-pen"></i></button>
         </a> 
     </div>
+    {% endif %}
+    
     <div id = "comment-content" style="max-height: 10rem;  overflow-y: scroll; margin-top: 1rem">  
         {% for comment in post.comments %}
         <div class="comment-box border rounded bg-body-secondary">
@@ -83,12 +88,14 @@
         
         {% endfor %}
     </div>
+    {% if loggedInUser.username %}
     <form id="comment-form" data-postId="{{ post['id'] }}">
         <br>
         <h5><label for="comment">Leave a Comment:</label><br></h5>
         <textarea id="comment-box" placeholder="Enter your comment" class="form-control" style="resize: none;"></textarea><br>
         <input type="submit" class = "btn btn-secondary" value="Submit!">
     </form>
+    {% endif %} 
     {% if loggedInUser.username == post.username %} 
         {% for report in post.reportsList %}
         <div class="alert alert-warning comment-box">

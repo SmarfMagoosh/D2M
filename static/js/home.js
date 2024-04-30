@@ -17,14 +17,26 @@ window.addEventListener('resize', function() {
 
 document.addEventListener('DOMContentLoaded', function () {
     const images = document.querySelectorAll(".image-link");
+    var loadedImagesCount = 0;
 
     images.forEach((img) => {
         img.onload = () => {
-            setColumnHeight(img)
+            loadedImagesCount++;
+            if (loadedImagesCount === images.length) {
+                // All images have finished loading
+                resizeColumns(); // Call the function to resize columns
+            }
         };
     });
-    window.dispatchEvent(new Event('resize'));
 });
+
+function resizeColumns() {
+    var columns = document.querySelectorAll('.column');
+    columns.forEach(function(column) {
+        var img = column.querySelector(".image-link");
+        setColumnHeight(img);
+    });
+}
 
 function setColumnHeight(img) {
     var column = img.parentNode.parentNode; // Get the parent div.column
@@ -32,5 +44,4 @@ function setColumnHeight(img) {
     var fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize); // Get the root font size in pixels
     var imgHeightREM = imgHeight / fontSize; // Convert the image height to REM units
     column.style.height = imgHeightREM + 'rem'; // Set the height of the column to match the image height in REM units
-  }
-
+}
