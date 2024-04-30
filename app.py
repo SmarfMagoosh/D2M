@@ -974,7 +974,7 @@ def post_meme():
                 height = tb["height"],
                 top = tb.get("top", "auto"),
                 left = tb.get("left", "auto"),
-                content = tb["text"]
+                content = tb["text"][:50]
             )
             db.session.add(tb_inst)
         db.session.commit()
