@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
     }, 200)
+    window.addEventListener("scroll", () => {
+        window.dispatchEvent(new Event('resize'));
+    })
 });
 
 function resizeColumns() {
