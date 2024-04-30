@@ -78,10 +78,9 @@
                   </div>
                               
                   <div id="Created" class="tabcontent row" data-masonry='{"percentPosition": true }' style="background-color: var(--bs-body-bg); width: 100%;">
-                    {% for post in user.postList  %}
+                    {% for post in created_posts  %}
                     <div class="column" style="width: 31%; margin: 10px; float: left;">
                         <a href="{{ url_for('get_post', post_id=post.postID) }}">
-                            <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" class="image-link">
                             <img src="{{ url_for('static', filename=post.thumbnail()) }}" alt="" class="image-link">
                             </a>
                       </div>
