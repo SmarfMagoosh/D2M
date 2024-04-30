@@ -93,6 +93,22 @@ $("document").ready(() => {
             if(tagContainsQuery) count++;
         }
     });
+
+    $("#template-search").on("input", e => {
+        const query = e.target.value.toLowerCase()
+        function filter(i, elem) {
+            if (elem.innerText.toLowerCase().includes(query)) {
+                $(elem).show()
+            } else {
+                $(elem).hide()
+            }
+        }
+        if (query === "") {
+            $(".meme-template").show()
+        } else {
+            $(".meme-template").each(filter)
+        }
+    })
 })
 
 function adjust_spacing(create, value, position) {
@@ -236,7 +252,6 @@ function init_remix(create) {
     const remixed_img = new Image()
     remixed_img.src = create.remix.backImage
     remixed_img.onload = () => {
-        console.log("uploading")
         upload_base_image(create, remixed_img, null)(null)
 
         // remove default text boxes

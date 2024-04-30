@@ -151,15 +151,7 @@ textarea.form-control, #post-title {
     margin-bottom: 0.5rem;
 }
 
-/* .two-items {
-    display: grid;
-    grid-template-columns: 50% 50%;
-} */
-
 /* MODAL SETTINGS */
-#template-list img {
-    width: 100%;
-}
 
 .modal-button {
     height: 5rem;
