@@ -5,12 +5,6 @@
     padding: 1rem;
     width: 90%;
     border-radius: 1rem;
-    min-height: 40vh;
-}
-
-#left-content, #right-content {
-    margin: 0.5rem;
-    height: fit-content
 }
 
 #fileInput, #addImgInput {
@@ -72,15 +66,15 @@
     right: 0;
     margin: auto;
     text-align: center;
-    max-width: calc(100%)/*calc(100% - 12px)*/;
-    height: calc(100%);
+    max-width: 100%;
+    height: 100%;
 }
 
 /* left tool bar */
 
 #image-tool-bar {
     margin: 0rem auto 1rem;
-    width: calc(100% - 12px);
+    width: 100%;
     display: flex;
     justify-content: space-between;
 }
@@ -92,7 +86,7 @@
 #image-tools > div {
     display: flex;
     margin: 1rem auto;
-    width: calc(100% - 12px);
+    width: 100%;
     justify-content: space-between;
 }
 
@@ -141,7 +135,7 @@ textarea.form-control, #post-title {
 }
 
 #post-title {
-    width: 14rem;
+    width: 12rem;
 }
 
 #right-content > div {
@@ -157,15 +151,7 @@ textarea.form-control, #post-title {
     margin-bottom: 0.5rem;
 }
 
-.two-items {
-    display: grid;
-    grid-template-columns: 50% 50%;
-}
-
 /* MODAL SETTINGS */
-#template-list img {
-    width: 100%;
-}
 
 .modal-button {
     height: 5rem;

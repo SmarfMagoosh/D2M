@@ -2,6 +2,7 @@ $("document").ready(() => {
     window.switching = true;
 
     const create = {}
+    window.get_create = () => create
     create.btns = localStorage.theme === "dark" ? "light" : "dark"
     $(".btn-dark").removeClass("btn-dark").addClass(`btn-${create.btns}`)
     fetch("/getUserInfo/")
@@ -92,6 +93,22 @@ $("document").ready(() => {
             if(tagContainsQuery) count++;
         }
     });
+
+    $("#template-search").on("input", e => {
+        const query = e.target.value.toLowerCase()
+        function filter(i, elem) {
+            if (elem.innerText.toLowerCase().includes(query)) {
+                $(elem).show()
+            } else {
+                $(elem).hide()
+            }
+        }
+        if (query === "") {
+            $(".meme-template").show()
+        } else {
+            $(".meme-template").each(filter)
+        }
+    })
 })
 
 function adjust_spacing(create, value, position) {
@@ -235,7 +252,6 @@ function init_remix(create) {
     const remixed_img = new Image()
     remixed_img.src = create.remix.backImage
     remixed_img.onload = () => {
-        console.log("uploading")
         upload_base_image(create, remixed_img, null)(null)
 
         // remove default text boxes
@@ -261,9 +277,6 @@ function init_remix(create) {
             if (tb.decorations[4]) { $(`#shadow-${i}`).click() }
             if (tb.decorations[5]) { $(`#capitals-${i}`).click() }
             $(`#shadow-${i}`).trigger("change")
-            $(`#meme-text-${i}`).parent(".meme-component")
-                .css("top", tb.top).css("left", tb.left)
-                .width(tb.width).height(tb.height)
         })
 
         // set temporary title

@@ -18,78 +18,79 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
     <!--html2canvas-->
-    <script src = "{{url_for('static', filename='js/external/html2canvas.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/external/html2canvas.min.js')}}"></script>
     
     <!--Icon library-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!--Local Files-->
-    <script src = "../static/js/create/textbox.js"></script>
-    <script src = "../static/js/create/drawing.js"></script>
-    <script src = "../static/js/create/add_image.js"></script>
-    <script src = "../static/js/create.js"></script>
-    <link rel = "stylesheet" href = "../static/css/create.css">
+    <script src="../static/js/create/textbox.js"></script>
+    <script src="../static/js/create/drawing.js"></script>
+    <script src="../static/js/create/add_image.js"></script>
+    <script src="../static/js/create.js"></script>
+    <link rel="stylesheet" href="../static/css/create.css">
 
     {% if post %}
     <script>
-        $(document).ready(() => {
-            window.remix = JSON.parse(`{{post}}`.replaceAll('&#39;', '"').replaceAll("True", "true").replaceAll("False", "false"))
+        $(document).ready(()=> {
+            window.remix=JSON.parse(`{{post}}`.replaceAll('&#39;', '"').replaceAll("True", "true").replaceAll("False", "false"))
         })
     </script>
     {% endif %}
 {% endblock %}
 
 {% block content %}
-<input id = "fileInput" type = "file" accept = "image/*">
-<div id = "save-display" class = "modal fade" tabindex="-1" role="dialog">
-    <div class = "modal-dialog" role="document">
+<input id="fileInput" type="file" accept="image/*">
+<div id="save-display" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class = "modal-header">
+            <div class="modal-header">
                 <h3 class="modal-title">Save your meme</h3>
-                <button id = "save-display-dismiss" class="btn btn-secondary">
+                <button id="save-display-dismiss" class="btn btn-secondary">
                     Close
                 </button>
             </div>
             <div class="modal-body">
-                <img id="assembled-meme" src = "" alt="it appears we're having issues getting that meme ready...">
-                <a id = "meme-download"><i class = "fa-solid fa-download"></i></a>
+                <img id="assembled-meme" src="" alt="it appears we're having issues getting that meme ready...">
+                <a id="meme-download"><i class="fa-solid fa-download"></i></a>
             </div>
         </div>
     </div>
 </div>
-<div id = "template-list" class = "modal fade" tabindex = "-1" role = "dialog">
-    <div class = "modal-dialog" role = "document">
-        <div class = "modal-content">
-            <div class = "modal-header">
-                <h3 class = "modal-title">Select a Template</h3>
+<div id="template-list" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Select a Template</h3>
                 <button 
-                    class = "btn btn-primary" 
+                    class="btn btn-primary" 
                     data-dismiss="modal"
                     data-target="#add-image"
                     data-toggle="modal">
                     Upload your own!
                 </button>
-                <button id = "close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                <button id="close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
                     Close
                 </button>
             </div>
-            <div class = "modal-body">
+            <div class="modal-body">
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" class="form-control" id="template-search" placeholder="Search...">
+                </div>
                 {% for template in templates %}
-                <div class = "card mb-3" style = "width: auto; height: 5rem; cursor: pointer;">
-                    <div class = "row no-gutters">
-                        <div class = "col-md-4">
-                            <img src = "{{ template }}" style = "width: 12vw; height: 5rem; border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem;">
+                <div class="card meme-template" style="width: auto; height: fit-content; max-height: 8rem; cursor: pointer; margin-bottom: 1rem; overflow: hidden;">
+                    <div class="d-flex justify-content-left">
+                        <div style="padding: 0;">
+                            <img src="{{ template }}" style="width: 12vw; border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem;">
                         </div>
-                        <div class = "col-md-8">
-                            <div class = "card-body">
-                                <p>{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</p>
-                            </div>
+                        <div class="card-body" style="width: 100%">
+                            <p class="template-name" style="font-size: 1.5rem; display: block; margin: auto; text-align:center">{{ template.split("/")[-1].replace("%20", " ")[:-4] }}</p>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-            <div class = "modal-footer">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
                     Close
                 </button>
@@ -97,142 +98,142 @@
         </div>
     </div>
 </div>
-<div id = "add-image" class = "modal fade" tabindex = "-1" role = "dialog">
-    <div class = "modal-dialog" role = "document">
-        <div class = "modal-content">
-            <div class = "modal-header">
-                <h3 class = "modal-title">Insert Additional Image</h3>
-                <button id = "upload-close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+<div id="add-image" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="image-modal-header">Upload Base Image</h3>
+                <button id="upload-close" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
                     Close
                 </button>
             </div>
-            <div class = "modal-body">
-                <div style = "margin-top: 1rem; display: flex; justify-content: space-around;">
-                    <button id = "addImgBtn" class = "btn btn-primary" style = "margin: auto; width: 40%; text-align: center;">
+            <div class="modal-body">
+                <div style="margin-top: 1rem; display: flex; justify-content: space-around;">
+                    <button id="addImgBtn" class="btn btn-primary" style="margin: auto; width: 40%; text-align: center;">
                         Select Image
                     </button>
-                    <button id = "uploadImgBtn" class = "btn btn-primary" style = "margin: auto; width: 40%; text-align: center;" data-dismiss = "modal" aria-label = "Close">
+                    <button id="uploadImgBtn" class="btn btn-primary" style="margin: auto; width: 40%; text-align: center;" data-dismiss="modal" aria-label="Close">
                         Insert Image
                     </button>
                 </div>
-                <div style = 'position: relative;'>
+                <div style='position: relative;'>
                     <canvas
-                        style = "margin: 1rem auto; display: block;"
-                        id = "added-image-preview" 
-                        style = "display: block; margin: auto; border: solid black 2px;"
-                        height = "0">
+                        style="margin: 1rem auto; display: block;"
+                        id="added-image-preview" 
+                        style="display: block; margin: auto; border: solid black 2px;"
+                        height="0">
                     </canvas>
                 </div>
             </div>
-            <div class = "modal-footer">
+            <div class="modal-footer">
             </div>
         </div>
     </div>
 </div>
-<div id = "left-content" class = "col-lg">
-    <div id = "image-tool-bar">
-        <button class = "btn btn-secondary image-tool">Adjust Spacing</button>
+<div id="left-content" class="col-lg">
+    <div id="image-tool-bar">
+        <button class="btn btn-secondary image-tool">Adjust Spacing</button>
         <button 
-            class = "btn btn-secondary image-tool"
-            data-toggle = "modal"
-            data-target = "#add-image"
-            id = "image-modal-button">Add Image</button>
-        <button class = "btn btn-secondary image-tool">Draw</button>
+            class="btn btn-secondary image-tool"
+            data-toggle="modal"
+            data-target="#add-image"
+            id="image-modal-button">Add Image</button>
+        <button class="btn btn-secondary image-tool">Draw</button>
     </div>
-    <div id = "image-tools">
-        <div id = "drawing-tools">
+    <div id="image-tools">
+        <div id="drawing-tools">
             <div>
-                <label for = "color">Color</label>
-                <input type = "color" id = "color" value = "#000000" class = "form-control">
+                <label for="color">Color</label>
+                <input type="color" id="color" value="#000000" class="form-control">
             </div>
             <div>
-                <label for = "thickness">Brush Size</label>
-                <input type = "number" id = "thickness" value = "5" min = "1" max = "100" class = "form-control">
+                <label for="thickness">Brush Size</label>
+                <input type="number" id="thickness" value="5" min="1" max="100" class="form-control">
             </div>
             <div>
-                <button class = "btn btn-danger" id = "erase">Erase</button>
+                <button class="btn btn-danger" id="erase">Erase</button>
             </div>
         </div>
-        <div id = "spacing-tools">
+        <div id="spacing-tools">
             <div>
-                <select id = "space-arrangement" class = "form-control">
-                    <option value = "0.99">Top</option>
-                    <option value = "0.5">Top and Bottom</option>
-                    <option value = "0">Bottom</option>
+                <select id="space-arrangement" class="form-control">
+                    <option value="0.99">Top</option>
+                    <option value="0.5">Top and Bottom</option>
+                    <option value="0">Bottom</option>
                 </select>
             </div>
             <div>
-                <select id = "spacer" class = "form-control">
-                    <option value = "0.0">0% </option>
-                    <option value = "0.1">10%</option>
-                    <option value = "0.2">20%</option>
-                    <option value = "0.3">30%</option>
-                    <option value = "0.4">40%</option>
-                    <option value = "0.5">50%</option>
-                    <option value = "0.6">60%</option>
-                    <option value = "0.7">70%</option>
-                    <option value = "0.8">80%</option>
-                    <option value = "0.9">90%</option>
+                <select id="spacer" class="form-control">
+                    <option value="0.0">0% </option>
+                    <option value="0.1">10%</option>
+                    <option value="0.2">20%</option>
+                    <option value="0.3">30%</option>
+                    <option value="0.4">40%</option>
+                    <option value="0.5">50%</option>
+                    <option value="0.6">60%</option>
+                    <option value="0.7">70%</option>
+                    <option value="0.8">80%</option>
+                    <option value="0.9">90%</option>
                 </select>
             </div>
         </div>
     </div>
     <div>
-        <div id = "meme">
-            <div style = "margin: auto; width: fit-content; margin-bottom: 1rem;" id = "img-btns">
+        <div id="meme">
+            <div style="margin: auto; width: fit-content; margin-bottom: 1rem;" id="img-btns">
                 <button 
-                    class = "btn btn-primary"
+                    class="btn btn-primary"
                     data-target="#add-image"
                     data-toggle="modal">
                     Upload an Image
                 </button>
                 <button 
-                    class = "btn btn-primary" 
-                    data-toggle = "modal" 
-                    data-target = "#template-list">
+                    class="btn btn-primary" 
+                    data-toggle="modal" 
+                    data-target="#template-list">
                     Or use a template!
                 </button>
             </div>
-            <canvas id = "meme-img" height = "0" class = "border"></canvas>
-            <canvas id = "drawing" height = "0"></canvas>
+            <canvas id="meme-img" height="0" class="border"></canvas>
+            <canvas id="drawing" height="0"></canvas>
         </div>
     </div>
 </div>
-<div id = "right-content" class = "col-lg">
+<div id="right-content" class="col-lg">
     <div>
         <button
-            id = "switch-btn"
-            class = "btn btn-primary" 
+            id="switch-btn"
+            class="btn btn-primary" 
             data-target="#template-list" 
             data-toggle="modal"
             style="width: 100%;">
             Switch Template
         </button>
     </div>
-    <div id = "text-tool-bar"></div>
+    <div id="text-tool-bar"></div>
     <div>
-        <button id = "new-box-btn" class = "btn btn-dark">Add Text Area</button>
+        <button id="new-box-btn" class="btn btn-dark">Add Text Area</button>
     </div>
     <div class="dropdown-center input-group my-3">
-        <input type="text" placeholder = "Give your post a title!" id = "post-title" class = "form-control"></textarea>
-        <button id="c-tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control rounded-end ps-1" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="margin: unset;">no tag</button>
+        <input type="text" placeholder="Give your post a title!" id="post-title" class="form-control" maxlength="50"></textarea>
+        <button id="c-tag-dropdown-btn" class="btn btn-secondary dropdown-toggle form-control rounded-end ps-1 font-monospace" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="margin: unset;">no tag</button>
+
         <ul class="dropdown-menu px-3" style="width: 20rem;">
             <li>
-                <input type="text" id="cTagInput" placeholder="Enter tag..." class="form-control" maxlength="8">
+                <input type="text" id="cTagInput" placeholder="Enter tag..." class="form-control font-monospace" maxlength="10">
             </li>
             <li class="dropdown-divider"></li>
             <div id="newTaglist">
-                <button class="btn badge mb-1 c-tag-badge" id="create-tag-template" style="margin-left: unset;" hidden>template</button>
+                <button class="btn badge mb-1 c-tag-badge font-monospace" id="create-tag-template" style="margin-left: unset;" hidden>template</button>
             </div>
         </ul>
     </div>
-    <div class = "d-flex justify-content-end">
+    <div class="d-flex justify-content-end">
+        <button id="save-btn" class="btn btn-primary" style="width: 6vw; margin-right: 1rem;">Save</button>
         {% if loggedInUser %}
-        <button id = "post-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>
-        {% else %}
-        <button id = "save-btn" class = "btn btn-primary" style="width: 6vw; margin-right: 1rem;">Save</button>
-        {%endif %}
-        <a href = "/home/" class = "btn btn-danger" style="width: 6vw;">Cancel</a>
+        <button id="post-btn" class="btn btn-primary" style="width: 6vw; margin-right: 1rem;">Post</button>
+        {% endif %}
+        <a href="/home/" class="btn btn-danger" style="width: 6vw;">Cancel</a>
     </div>
 </div>
 </div>
