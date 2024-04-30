@@ -157,7 +157,7 @@ class User(db.Model) :
         }
         
     def search_result_json(self):
-        pfp = "/static/images/users/default-pfp.png"
+        pfp = "/static/images/default-pfp.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
         return{
@@ -166,8 +166,8 @@ class User(db.Model) :
         }
     
     def profile_json(self):
-        pfp = "/static/images/users/default-pfp.png"
-        banner = "/static/images/users/default-banner.png"
+        pfp = "/static/images/default-pfp.png"
+        banner = "/static/images/default-banner.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
             banner = f"/static/images/users/{self.gccEmail}/banner.png"
@@ -178,8 +178,8 @@ class User(db.Model) :
         }
     
     def profile_json(self):
-        pfp = "/static/images/users/default-pfp.png"
-        banner = "/static/images/users/default-banner.png"
+        pfp = "/static/images/default-pfp.png"
+        banner = "/static/images/default-banner.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
             banner = f"/static/images/users/{self.gccEmail}/banner.png"
@@ -188,17 +188,7 @@ class User(db.Model) :
             "pfp": pfp,
             "banner": banner
         }
-    # Define a function to handle cascading updates when the username changes
-    def handle_username_update(mapper, connection, target):
-        old_username = connection.scalar(
-            db.select([mapper.columns.username]).where(mapper.primary_key[0] == target.gccEmail)
-        )
-        if old_username != target.username:
-            # Perform your cascading updates here
-            # For example, update references to the old username in other tables
-            pass
-
-
+   
     
     
 
@@ -628,7 +618,14 @@ def post_settings():
     if returnVal['success'] == False:
         return jsonify(returnVal)
     
-    user.username = json_data.get('username')
+    newUname = json_data.get('username')
+    if user.username != newUname:
+        for post in user.postList:
+            post.username = newUname
+        for comment in user.commentList:
+            comment.username = newUname
+    user.username = newUname
+    
     user.bio = json_data.get('bio')
     
     icon = json_data.get("icon")
@@ -641,9 +638,7 @@ def post_settings():
     
     user.backupEmail = json_data.get('backup_email')
 
-    oldPassword = json_data.get('old_password')
     newPassword = json_data.get('change_password')
-    confirmPassword = json_data.get('confirm_password')
 
     user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
 
@@ -932,7 +927,7 @@ def post_meme():
         else:
             imgData = body["imgData"][22:] # TODO: save templates correctly
         thumbnailData = body["thumbnailData"][22:]
-        create_tag(body["tag"][:8])
+        create_tag(body["tag"][:10])
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -942,7 +937,7 @@ def post_meme():
             username = body["user"],
             draw = body["drawing"],
             template = body["template"],
-            tag = body["tag"][:8]
+            tag = body["tag"][:10]
         )
         db.session.add(post_inst)
         db.session.commit()
@@ -995,10 +990,10 @@ def post_meme():
             create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {user.username}", f"/post/{post_inst.postID}")
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
-        return {"message" : "posted successfully"}, 200
+        return {"message" : "posted successfully", "postID" : post_inst.postID}, 200
     except Exception as e:
         print(e.with_traceback())
-        return {"message": "error in posting"}, 500 
+        return {"message": "error in posting", "postID": -1}, 500 
 
 @app.post('/add_user/')
 def add_user():

@@ -4,7 +4,8 @@
 
 .cover {
     background-size: cover;
-    background-repeat: no-repeat
+    background-repeat: no-repeat;
+    background-position: center center;
 }
 
 body {
@@ -55,3 +56,24 @@ body {
   }
 
   
+  /* Style for columns */
+.column {
+  width: calc(100% / 3); /* Ensure each column takes up one-third of the container's width */
+  margin: 10px; /* Add spacing around each column */
+  float: left; /* Align columns horizontally */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+/* Responsive design for columns */
+@media screen and (max-width: 768px) {
+  .column {
+      width: 100%; /* Change column width to full width on smaller screens */
+  }
+}
+
+/* Additional styles for images within columns */
+.column img {
+  display: block; /* Ensure images fill the entire column width */
+  max-width: 100%; /* Make sure images don't exceed the column width */
+  height: auto; /* Maintain aspect ratio of images */
+}

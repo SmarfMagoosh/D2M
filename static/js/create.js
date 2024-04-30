@@ -173,11 +173,22 @@ function post(create) {
                         method: "POST",
                         body: JSON.stringify(meme),
                         headers: { "Content-Type": "application/json" }
-                    }).then(response => {
-                        if (response.ok) {
-                            window.location.href = "/profile/"
-                        } else {
+                    })
+                    .then(response => {
+                        if(response.ok)
+                            return response.json()
+                        else{
                             alert("Sorry, we had an issue posting this meme, please try again laters")
+                            return Promise.reject(response)
+                        }
+                    })
+                    .then(data => {
+                        console.log(data)
+                        if(data.postID !== -1){
+                            window.location.href = `/post/${data.postID}`
+                        }
+                        else{
+                            window.location.href = "/profile/"
                         }
                     })
                 })
