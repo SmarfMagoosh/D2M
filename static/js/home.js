@@ -17,23 +17,21 @@ window.addEventListener('resize', function() {
 
 document.addEventListener('DOMContentLoaded', function () {
     const images = document.querySelectorAll(".image-link");
-    var loadedImagesCount = 0;
-
-    images.forEach((img) => {
-        img.onload = () => {
-            loadedImagesCount++;
-            if (loadedImagesCount === images.length) {
-                // All images have finished loading
-                resizeColumns(); // Call the function to resize columns
-            }
-        };
-    }); 
-    setTimeout(() => {
+    const allImagesLoadedPromise = new Promise((resolve) => {
+        let loadedImagesCount = 0
+        images.forEach((img) => {
+            img.onload = () => {
+                loadedImagesCount++
+                if (loadedImagesCount === images.length) {
+                    resolve()
+                }
+            };
+        });
+    });
+    allImagesLoadedPromise.then(() => {
+        resizeColumns();
         window.dispatchEvent(new Event('resize'));
-    }, 200)
-    window.addEventListener("scroll", () => {
-        window.dispatchEvent(new Event('resize'));
-    })
+    });
 });
 
 function resizeColumns() {
