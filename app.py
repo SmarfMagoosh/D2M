@@ -628,7 +628,14 @@ def post_settings():
     if returnVal['success'] == False:
         return jsonify(returnVal)
     
-    user.username = json_data.get('username')
+    newUname = json_data.get('username')
+    if user.username != newUname:
+        for post in user.postList:
+            post.username = newUname
+        for comment in user.commentList:
+            comment.username = newUname
+    user.username = newUname
+    
     user.bio = json_data.get('bio')
     
     icon = json_data.get("icon")
@@ -641,9 +648,7 @@ def post_settings():
     
     user.backupEmail = json_data.get('backup_email')
 
-    oldPassword = json_data.get('old_password')
     newPassword = json_data.get('change_password')
-    confirmPassword = json_data.get('confirm_password')
 
     user.backupPasswordHash = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
 
@@ -932,7 +937,7 @@ def post_meme():
         else:
             imgData = body["imgData"][22:] # TODO: save templates correctly
         thumbnailData = body["thumbnailData"][22:]
-        create_tag(body["tag"][:8])
+        create_tag(body["tag"][:10])
         post_inst = Post(
             spacing = body["spacing"],
             space_arrangement = body["space_arrangement"],
@@ -942,7 +947,7 @@ def post_meme():
             username = body["user"],
             draw = body["drawing"],
             template = body["template"],
-            tag = body["tag"][:8]
+            tag = body["tag"][:10]
         )
         db.session.add(post_inst)
         db.session.commit()
