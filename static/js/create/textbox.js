@@ -3,11 +3,13 @@ function textbox_init(create) {
 }
 
 function add_text_box(create) {
+    const style = localStorage.getItem("theme") == "dark" ? "light" : "dark"
+    console.log(style)
     const textbox = $(`
     <div style = "display: flex; justify-content: left">
-        <textarea placeholder = "Enter Text" id = "text-${create.textboxes.length}" class = "form-control text-box" rows = "1" style = "resize: none"></textarea>
+        <textarea placeholder = "Enter Text" id = "text-${create.textboxes.length}" class = "form-control text-box" rows = "1" style = "resize: none" maxlength = "100"></textarea>
         <div class = "dropdown">
-            <button class = "btn btn-${create.btns} settings-menu" type = "button"><i class = "fa-solid fa-gear"></i></button>
+            <button class = "btn btn-${style} settings-menu" type = "button"><i class = "fa-solid fa-gear"></i></button>
             <div class = "dropdown-menu">${settings_menu(create.textboxes.length)}</div>
         </div>
         <button class = "btn btn-danger trash-btn"><i class = "fa-solid fa-trash"></i></button>
@@ -102,42 +104,42 @@ function settings_menu(x) {
         <option value="'Century Gothic', sans-serif">Century Gothic</option>
     </select>
 </div>
-<div class = "two-items">
-    <div>
+<div class = "d-flex justify-content-between">
+    <div style = "width: 50%;">
         <label for = "font-color-${x}">Color:</label>
         <input type = "color" id = "fontcolor-${x}" value = "#000000" class = "form-control settings-font-color">
     </div>
-    <div>
+    <div style = "width: 50%;">
         <label for = "font-shadow-${x}">Outline:</label>
         <input type = "color" id = "fontshadow-${x}" value = "#ffffff" class = "form-control settings-font-shadow">
     </div>
 </div>
-<div class = "two-items">
-    <div>
+<div class = "d-flex justify-content-end">
+    <div style = "width: 45%;">
         <input type = "checkbox" id = "bold-${x}" class = "form-check-input settings-bold">
         <label for = "bold-${x}">Bold</label>
     </div>
-    <div>
+    <div style = "width: 45%;">
         <input type = "checkbox" id = "italics-${x}" class = "form-check-input settings-italics">
         <label for = "italics-${x}">Italics</label>
     </div>
 </div>
-<div class = "two-items">
-    <div>
+<div class = "d-flex justify-content-end">
+    <div style = "width: 45%;">
         <input type = "checkbox" id = "underline-${x}" class = "form-check-input settings-underline">
         <label for = "underline-${x}">Underline</label>
     </div>
-    <div>
+    <div style = "width: 45%;">
         <input type = "checkbox" id = "strikethrough-${x}" class = "form-check-input settings-strikethrough">
         <label for = "strikethrough-${x}">Strike</label>
     </div>
 </div>
-<div class = "two-items">
-    <div>
+<div class = "d-flex justify-content-end">
+    <div style = "width: 45%;">
         <input type = "checkbox" id = "shadow-${x}" class = "form-check-input settings-shadow">
         <label for = "shadow-${x}">Shadow</label>
     </div>
-    <div>
+    <div style = "width: 45%;">
         <input type = "checkbox" id = "capitals-${x}" class = "form-check-input settings-capitals">
         <label for = "capitals-${x}">All Caps</label>
     </div>

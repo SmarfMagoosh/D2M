@@ -1,17 +1,22 @@
 function add_image_init(create) {
     create.images = []
     $("#switch-btn").click(e => {
-        console.log("toggling on")
         window.switching = true
+        $("#image-modal-header").text("Upload Base Image")
     })
     $("#addImgBtn").click(e => $("#fileInput").click())
     $("#uploadImgBtn").hide()
-    $("#upload-close").click(e => {
-        if (window.switching) {
+    $("#upload-close").click(e => {    
+        $(`#${$(e.target).attr("data-dismiss")}`).modal("close")
+    })
+    $("#image-modal-button").click(e => {
+        if (create.baseImg === undefined) {
+            window.switching = true;
+        } else {
             window.switching = false;
         }
-        $(`#${$(e.target).attr("data-dismiss")}`).modal("close")
-        console.log("toggling off")
+        $("#image-modal-header").text("Insert Additional Image")
+        $(`#${$(e.target).attr("data-dismiss")}`).modal("open")
     })
 }
 
@@ -53,7 +58,6 @@ function display_image(create, input) {
 }
 
 const upload_base_image = (create, img, display) => function(e) {
-    console.log(img.id)
     cropBaseImage(create, img, display, $("#cropper"));
 
     $("#img-btns").hide()
@@ -84,9 +88,10 @@ const upload_extra_image = (create, img, display) => function(e) {
     $("#uploadImgBtn").hide()
     reset_canvas()
 
+    const style = localStorage.getItem("theme") == "dark" ? "dark" : "light"
     const tool = $(`
     <div style = "display: flex; justify-content: left;">
-        <textarea style = "width: 22.75rem" class = "form-control text-box" readonly = "true">${img.id}</textarea>
+        <textarea style = "width: 22.75rem" class = "form-control text-box bg-${style}" readonly = "true">${img.id}</textarea>
         <button class = "btn btn-danger img-trash-btn"><i class = "fa-solid fa-trash"></i></button>
     </div>`)
     $("#text-tool-bar").append(tool)
