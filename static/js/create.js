@@ -277,9 +277,6 @@ function init_remix(create) {
             if (tb.decorations[4]) { $(`#shadow-${i}`).click() }
             if (tb.decorations[5]) { $(`#capitals-${i}`).click() }
             $(`#shadow-${i}`).trigger("change")
-            $(`#meme-text-${i}`).parent(".meme-component")
-                .css("top", tb.top).css("left", tb.left)
-                .width(tb.width).height(tb.height)
         })
 
         // set temporary title
