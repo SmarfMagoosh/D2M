@@ -28,9 +28,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
     });
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 200)
 });
 
 function resizeColumns() {
+    console.log("hello world")
     var columns = document.querySelectorAll('.column');
     columns.forEach(function(column) {
         var img = column.querySelector(".image-link");
