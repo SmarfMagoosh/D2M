@@ -141,6 +141,7 @@ function post(create) {
             alert("You must upload an image before posting!")
         } else {
             // assemble meme
+            $("#post-btn").html("<span class='spinner-border' role='status'></span>")
             const textBoxes = []
             $(".text-box").each((i, elem) => {
                 if ($(elem).attr("id") !== undefined) {
