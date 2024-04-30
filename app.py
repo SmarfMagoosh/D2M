@@ -188,17 +188,7 @@ class User(db.Model) :
             "pfp": pfp,
             "banner": banner
         }
-    # Define a function to handle cascading updates when the username changes
-    def handle_username_update(mapper, connection, target):
-        old_username = connection.scalar(
-            db.select([mapper.columns.username]).where(mapper.primary_key[0] == target.gccEmail)
-        )
-        if old_username != target.username:
-            # Perform your cascading updates here
-            # For example, update references to the old username in other tables
-            pass
-
-
+   
     
     
 
