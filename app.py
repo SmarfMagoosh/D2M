@@ -157,7 +157,7 @@ class User(db.Model) :
         }
         
     def search_result_json(self):
-        pfp = "/static/images/users/default-pfp.png"
+        pfp = "/static/images/default-pfp.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
         return{
@@ -166,8 +166,8 @@ class User(db.Model) :
         }
     
     def profile_json(self):
-        pfp = "/static/images/users/default-pfp.png"
-        banner = "/static/images/users/default-banner.png"
+        pfp = "/static/images/default-pfp.png"
+        banner = "/static/images/default-banner.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
             banner = f"/static/images/users/{self.gccEmail}/banner.png"
@@ -178,8 +178,8 @@ class User(db.Model) :
         }
     
     def profile_json(self):
-        pfp = "/static/images/users/default-pfp.png"
-        banner = "/static/images/users/default-banner.png"
+        pfp = "/static/images/default-pfp.png"
+        banner = "/static/images/default-banner.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
             banner = f"/static/images/users/{self.gccEmail}/banner.png"
