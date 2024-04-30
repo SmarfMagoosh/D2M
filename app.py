@@ -157,7 +157,7 @@ class User(db.Model) :
         }
         
     def search_result_json(self):
-        pfp = "/static/images/users/default-pfp.png"
+        pfp = "/static/images/default-pfp.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
         return{
@@ -166,8 +166,8 @@ class User(db.Model) :
         }
     
     def profile_json(self):
-        pfp = "/static/images/users/default-pfp.png"
-        banner = "/static/images/users/default-banner.png"
+        pfp = "/static/images/default-pfp.png"
+        banner = "/static/images/default-banner.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
             banner = f"/static/images/users/{self.gccEmail}/banner.png"
@@ -178,8 +178,8 @@ class User(db.Model) :
         }
     
     def profile_json(self):
-        pfp = "/static/images/users/default-pfp.png"
-        banner = "/static/images/users/default-banner.png"
+        pfp = "/static/images/default-pfp.png"
+        banner = "/static/images/default-banner.png"
         if os.path.isfile(f"static/images/users/{self.gccEmail}/pfp.png"):
             pfp = f"/static/images/users/{self.gccEmail}/pfp.png"
             banner = f"/static/images/users/{self.gccEmail}/banner.png"
@@ -990,10 +990,10 @@ def post_meme():
             create_notification(u.gccEmail, f"{post_inst.title}", f"New post from {user.username}", f"/post/{post_inst.postID}")
         db.session.commit()
         create_thumbnail(thumbnailData, f"./static/images/thumbnails/{post_inst.postID}.png")
-        return {"message" : "posted successfully"}, 200
+        return {"message" : "posted successfully", "postID" : post_inst.postID}, 200
     except Exception as e:
         print(e.with_traceback())
-        return {"message": "error in posting"}, 500 
+        return {"message": "error in posting", "postID": -1}, 500 
 
 @app.post('/add_user/')
 def add_user():
