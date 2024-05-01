@@ -68,21 +68,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 function search() {
-    let numargs = 0;
+    var body = {}
     let tag = "";
     if (tagDropdownBtn.innerText != "no tag"){
-        numargs++;
-        tag = `tag=${tagDropdownBtn.innerText.substring(1)}`;
+        body["tag"] = tagDropdownBtn.innerText.substring(1);
     }
     let query = searchBar.value.trim();
     if(query != "") {
-        numargs++;
-        query = `query=${query}`
+        body["query"] = query;
     }
     // to satisfy acceptance test 3.3
-    if(numargs == 0) return;
+    if(Object.keys(body).length == 0) return;
     // Make an AJAX request to your Flask route
-    fetch(`/search${numargs !== 0 ? "?":""}${query}${numargs === 2 ? "&" : ""}${tag}`)
+    fetch('/search', {method: "POST", body: JSON.stringify({
+        query: query,
+        tag: tag
+    }), headers: { "Content-type": "application/json; charset=UTF-8" }})
         .then(response => response.json())
         .then(data => {
             displaySearchResults(data);
