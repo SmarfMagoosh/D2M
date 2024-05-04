@@ -888,7 +888,7 @@ def toggle_block_status():
 def delete_entry(id):
     user = load_user(session.get('customIdToken'))
     post = Post.query.get(id)
-    if user and post and user.username == post.username:
+    if user and post and (user.username == post.username or user.gccEmail == "BEHRBN22@GCC.EDU" or user.gccEmail == "DREHEREN20@GCC.EDU" or user.gccEmail == "TZIOVANNISCM21@GCC.EDU"):
         entry_to_delete = Post.query.get_or_404(id)
         db.session.delete(entry_to_delete)
         db.session.commit()
