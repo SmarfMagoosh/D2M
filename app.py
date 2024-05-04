@@ -1310,11 +1310,10 @@ def get_likes():
         'posts': [p.render_json() for p in recent]
     }
 
-@app.route('/search/', methods=['POST'])
+@app.route('/search/', methods=['GET'])
 def search():
-    body: dict = request.json
-    search_query = body['query']
-    tag = body['tag']
+    search_query = request.args.get('query', default=None)
+    tag = request.args.get('tag', default=None)
     matching_users = User.query
     matching_posts = Post.query
     
