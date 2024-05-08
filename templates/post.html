@@ -53,7 +53,7 @@
         <button id="like-btn" type="button" class="btn" data-postId="{{ post['id'] }}" data-liked="{{ has_liked }}"><i class="fa-solid fa-thumbs-up"></i></button> 
         <button id="dislike-btn" type="button" class="btn" data-postId="{{ post['id'] }}" data-disliked="{{ has_disliked }}"><i class="fa-solid fa-thumbs-down"></i></button>  
         <button id="bookmark-btn" type="button" class="btn" data-postId="{{ post['id'] }}" data-bookmark="{{ has_bookmarked }}" ><i class="fa-solid fa-bookmark"></i></button>
-        {% if loggedInUser.username == post.username or loggedInUser.gccEmail == "BEHRBN22@GCC.EDU" or loggedInUser.gccEmail == "DREHEREN20@GCC.EDU" or loggedInUser.gccEmail == "TZIOVANNISCM21@GCC.EDU"%}
+        {% if loggedInUser.username == post.username or loggedInUser.gccEmail == "DREHEREN20@GCC.EDU" or loggedInUser.gccEmail == "TZIOVANNISCM21@GCC.EDU"%}
         <!-- <button id="delete-btn" data-postId="{{ post['id'] }}" ><i class="fa-solid fa-trash"></i></button> -->
         <!-- Delete Post Button -->
         <button id="delete-btn" data-postId="{{ post['id'] }}" type="button" class="btn btn-danger" id="deletePostBtn" data-toggle="modal" data-target="#confirmDeleteModal">
